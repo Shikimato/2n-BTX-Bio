@@ -1,0 +1,1700 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas de Biomoléculas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF1EC; --surface:#FFFFFF; --surface2:#F6F8F4; --ink:#16201B; --muted:#56635C; --line:#D7DDD6; --grid:rgba(22,32,27,.05);
+  --O:#C9302A; --N:#2953C9; --P:#B85F00; --S:#8C7400; --Na:#7240B5;
+  --lip:#A85F00; --nuc:#5B3DB8; --pro:#047857; --glu:#B4234F; --pra:#1D5C9E;
+  --on:#FFFFFF; --ok:#0F7A49; --bad:#B8312A; --halo:.30;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1311; --surface:#151C19; --surface2:#1A2420; --ink:#E4ECE7; --muted:#9BA9A1; --line:#2A3631; --grid:rgba(228,236,231,.05);
+    --O:#FF7A70; --N:#8DAAFF; --P:#FFAD5C; --S:#E3C64C; --Na:#C9A2FF;
+    --lip:#F0A43A; --nuc:#A891FF; --pro:#43CDA2; --glu:#FF7A9E; --pra:#76AEF0;
+    --on:#0E1311; --ok:#45CE8A; --bad:#FF7A70; --halo:.38; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1311; --surface:#151C19; --surface2:#1A2420; --ink:#E4ECE7; --muted:#9BA9A1; --line:#2A3631; --grid:rgba(228,236,231,.05);
+  --O:#FF7A70; --N:#8DAAFF; --P:#FFAD5C; --S:#E3C64C; --Na:#C9A2FF;
+  --lip:#F0A43A; --nuc:#A891FF; --pro:#43CDA2; --glu:#FF7A9E; --pra:#76AEF0;
+  --on:#0E1311; --ok:#45CE8A; --bad:#FF7A70; --halo:.38; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:130px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Atkinson Hyperlegible',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:16px;line-height:1.55;--accent:var(--lip)}
+body[data-tab="nuc"]{--accent:var(--nuc)} body[data-tab="pro"]{--accent:var(--pro)} body[data-tab="glu"]{--accent:var(--glu)} body[data-tab="pra"]{--accent:var(--pra)}
+h1,h2,h3,h4{font-family:'Bricolage Grotesque','Atkinson Hyperlegible',system-ui,sans-serif;letter-spacing:-.01em;line-height:1.15}
+.wrap{max-width:1300px;margin:0 auto;padding:0 16px}
+@media(min-width:700px){.wrap{padding:0 24px}}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* cabecera */
+header.top{padding:26px 0 14px}
+.brand{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.kicker{margin:0 0 4px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;font-size:13px}
+.brand h1{font-size:clamp(30px,5vw,52px);margin:0;font-weight:800}
+.lede{margin:8px 0 0;color:var(--muted);max-width:70ch}
+.bar{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;gap:10px 16px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding-top:10px;padding-bottom:10px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{appearance:none;border:1.5px solid var(--line);background:var(--surface);font-weight:700;padding:8px 15px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;min-height:44px}
+.tab:hover{border-color:var(--c)}
+.tab .dot{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.tab[aria-selected="true"]{background:var(--c);border-color:var(--c);color:var(--on)}
+.tab[aria-selected="true"] .dot{background:var(--on)}
+.toggles{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tg{appearance:none;border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 11px;min-height:40px;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;gap:7px}
+.tg .box{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--muted);display:inline-grid;place-items:center}
+.tg[aria-pressed="true"]{border-color:var(--accent)}
+.tg[aria-pressed="true"] .box{background:var(--accent);border-color:var(--accent)}
+.tg[aria-pressed="true"] .box::after{content:"";width:8px;height:4px;border:2px solid var(--on);border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+.tg.theme{padding:6px 9px}
+
+/* teoría */
+.panel{padding:22px 0 60px}
+.theory .th-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.th-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+.th-card h3{margin:0 0 8px;font-size:19px;color:var(--accent)}
+.th-card p{margin:0 0 8px}
+.th-card.tip{background:color-mix(in srgb,var(--accent) 9%,var(--surface));border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+ul.mini{margin:0;padding-left:18px} ul.mini li{margin:3px 0}
+ul.tree{margin:0;padding-left:16px} ul.tree ul{padding-left:18px;margin:2px 0 6px;color:var(--muted)}
+.small{font-size:14px;color:var(--muted)}
+.helix-card{display:flex;flex-direction:column;align-items:center}
+.helix-card h3{align-self:flex-start}
+#helixAnim{width:100%;max-width:200px}
+.helix{width:100%;height:auto;display:block}
+.hx1,.hx2{fill:none;stroke:var(--ink);stroke-width:4;stroke-linecap:round}
+.hx2{opacity:.45}
+
+/* subnav y secciones */
+.subnav{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 6px}
+.subnav a{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:7px 14px 7px 8px;font-size:14px;font-weight:700;min-height:40px}
+.subnav a span{background:var(--accent);color:var(--on);border-radius:999px;font-size:12px;padding:2px 7px}
+.subnav a:hover{border-color:var(--accent)}
+.sec{margin-top:40px}
+.sec-h{display:flex;align-items:baseline;gap:12px}
+.sec-n{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:28px;color:var(--accent)}
+.sec-h h2{margin:0;font-size:clamp(22px,3vw,30px)}
+.clue{margin:8px 0 16px;padding:10px 14px;border-radius:12px;background:color-mix(in srgb,var(--accent) 8%,transparent);max-width:100ch}
+.clue b:first-child{color:var(--accent)}
+
+/* tarjetas */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card.wide{grid-column:span 2}
+@media(max-width:760px){.card.wide{grid-column:auto}}
+.card-h{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.card-h h3{margin:0;font-size:20px}
+.card-h .sub{margin:3px 0 0;color:var(--muted);font-size:14px}
+.icon-btn{appearance:none;border:1px solid var(--line);background:var(--surface2);border-radius:10px;width:44px;height:44px;display:grid;place-items:center;cursor:pointer;flex:none;color:var(--muted)}
+.icon-btn:hover{color:var(--ink);border-color:var(--accent)}
+.ctls{display:flex;flex-wrap:wrap;gap:8px}
+.ctls:empty{display:none}
+.seg{display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px;background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:3px}
+.seg-l{font-size:12px;color:var(--muted);padding:0 6px;font-weight:700}
+.seg button{appearance:none;border:0;background:transparent;border-radius:9px;padding:6px 11px;min-height:36px;cursor:pointer;font-size:14px;font-weight:700}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on)}
+.seg button:hover:not([aria-pressed="true"]){background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.ctl-text{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-weight:700;flex-wrap:wrap}
+.ctl-text input{font:inherit;font-size:16px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:8px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface2);color:var(--ink);min-height:44px;width:min(260px,100%)}
+.ctl-text input:focus{border-color:var(--accent);outline:none}
+.figs{display:flex;flex-wrap:wrap;gap:14px 24px;justify-content:center;align-items:center;background-color:var(--surface2);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:18px 18px;border-radius:12px;padding:14px;min-height:150px;overflow-x:auto}
+figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:6px;max-width:100%;min-width:0}
+figcaption{font-size:13.5px;color:var(--muted);text-align:center;max-width:60ch}
+.card-b{font-size:15px}
+.card-b p{margin:0 0 8px}
+.eq{font-family:'Atkinson Hyperlegible',sans-serif;font-weight:700;background:var(--surface2);border-radius:8px;padding:6px 10px;display:inline-block}
+.facts{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 0}
+.facts div{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:4px 10px;font-size:13.5px}
+.facts dt{display:inline;color:var(--muted)} .facts dt::after{content:": "}
+.facts dd{display:inline;margin:0;font-weight:700}
+.legend{display:none;flex-wrap:wrap;gap:6px}
+.show-groups .legend:not([hidden]){display:flex}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:3px 9px 3px 5px;border-radius:999px;background:var(--surface2);border:1px solid var(--line)}
+.chip i{width:14px;height:14px;border-radius:50%;opacity:.75}
+
+/* svg moleculares */
+svg.mol{width:calc(var(--w) * 1px);max-width:100%;height:auto;overflow:visible;display:block}
+.big svg.mol{width:calc(var(--w) * 1.55px)}
+.mol .bd{stroke:var(--ink);stroke-width:1.7;stroke-linecap:round}
+.mol .bd.bold{stroke-width:5.5}
+.mol .bd.hb{stroke:var(--muted);stroke-width:1.6;stroke-dasharray:3 4}
+.mol .lbl{font-family:'Atkinson Hyperlegible',sans-serif;font-size:15px;fill:var(--ink)}
+.color-el .mol .e-O{fill:var(--O)} .color-el .mol .e-N{fill:var(--N)} .color-el .mol .e-P{fill:var(--P)} .color-el .mol .e-S{fill:var(--S)} .color-el .mol .e-Na{fill:var(--Na)}
+.mol .num{font-size:10px;fill:var(--accent);font-weight:700}
+.mol .nums{display:none} .show-nums .mol .nums{display:inline}
+.mol .halos{display:none;opacity:var(--halo)} .show-groups .mol .halos{display:inline}
+.mol .anno{font-size:12px;fill:var(--muted);font-style:italic}
+.mol .grp{display:none} .show-groups .mol .grp{display:inline}
+.mol .op{fill:var(--muted);font-weight:700;font-family:'Atkinson Hyperlegible',sans-serif}
+.mol .arw{stroke:var(--ink);stroke-width:1.8} .mol .arwh{fill:var(--ink)}
+.mol .arl{font-size:12.5px;fill:var(--muted)}
+.mol .ringl{fill:var(--muted);font-weight:700;opacity:.8}
+.mol .tag{font-size:12px;fill:var(--muted);font-weight:700;letter-spacing:.03em}
+.mol .ct{fill:var(--ink)} .mol .ct.b{font-weight:700}
+.mol .dashbox{fill:none;stroke:var(--muted);stroke-width:1.4;stroke-dasharray:6 5}
+.mol .tail{fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mol .tl{stroke:var(--muted);stroke-width:1.6}
+.mol .tn{fill:var(--glu);fill-opacity:.85;stroke:var(--surface);stroke-width:.8}
+.mol .tn.br{fill:#A855F7} .mol .tn.root{fill:var(--ink)}
+.mol .hbl{stroke:var(--muted);stroke-width:1.6;stroke-dasharray:3 3}
+.mol .bb{stroke:var(--muted);stroke-width:3;stroke-linecap:round}
+.mol .sug{fill:#F59E0B;stroke:var(--surface);stroke-width:1}
+.mol .ph{fill:#F97316;stroke:var(--surface);stroke-width:1.2}
+.mol .bl{fill:#fff;font-weight:700;font-size:15px}
+.mol .dn1{fill:var(--glu)} .mol .dn2{fill:var(--glu);fill-opacity:.4}
+.mol .bead{stroke:var(--surface);stroke-width:1.5} .mol .b0{fill:#22C55E} .mol .b1{fill:#3B82F6} .mol .b2{fill:#F59E0B} .mol .b3{fill:#EC4899}
+.mol .bead+text{fill:#fff}
+.mol .ribbon{fill:none;stroke:var(--pro);stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+.mol .ribbon.b2{stroke:#F59E0B} .mol .ribbonh{fill:#F59E0B}
+.mol .blob{fill-opacity:.55;stroke:var(--surface);stroke-width:2} .mol .blob.b0{fill:#22C55E}.mol .blob.b1{fill:#3B82F6}.mol .blob.b2{fill:#F59E0B}.mol .blob.b3{fill:#EC4899}
+.mini-leg{display:flex;gap:14px;justify-content:center;font-size:12.5px;color:var(--muted);margin-top:6px}
+.mini-leg span{display:inline-flex;align-items:center;gap:5px}
+.mini-leg i{width:11px;height:11px;border-radius:3px}
+.lg-g{background:var(--glu)} .lg-b{background:#A855F7}
+
+/* tablas */
+.aagrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;width:100%}
+.aacol{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.aacol h4{margin:0 0 6px;font-size:14px}
+.aacol.k0 h4{color:#B26A00} .aacol.k1 h4{color:var(--pro)} .aacol.k2 h4{color:var(--bad)} .aacol.k3 h4{color:var(--N)}
+.aacol ul{list-style:none;margin:0;padding:0}
+.aacol li{display:grid;grid-template-columns:24px 1fr auto;gap:6px;align-items:center;font-size:14px;padding:2px 0;border-bottom:1px dashed var(--line)}
+.aacol li:last-child{border-bottom:0}
+.aacol .one{font-weight:700;background:var(--surface2);border-radius:6px;text-align:center}
+.aacol .three{color:var(--muted);font-size:12.5px}
+table.cmp{border-collapse:collapse;width:100%;font-size:14.5px;background:var(--surface);border-radius:12px;overflow:hidden}
+table.cmp th,table.cmp td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+table.cmp thead th{background:color-mix(in srgb,var(--accent) 14%,var(--surface));font-family:'Bricolage Grotesque',sans-serif;font-size:16px}
+table.cmp tbody th{color:var(--muted);font-weight:700;width:28%}
+
+/* diálogo */
+dialog#zoom{border:0;padding:0;background:transparent;max-width:min(1200px,96vw);width:100%;max-height:94vh}
+dialog#zoom::backdrop{background:rgba(5,10,8,.6)}
+dialog#zoom .card{max-height:92vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog#zoom .figs{min-height:260px}
+
+/* práctica */
+.quiz-wrap{display:grid;grid-template-columns:300px 1fr;gap:18px;align-items:start}
+@media(max-width:860px){.quiz-wrap{grid-template-columns:1fr}}
+.qset,.qmain{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px}
+.qset h2{margin:0 0 6px;font-size:22px}
+fieldset{border:0;padding:0;margin:14px 0}
+legend{font-weight:700;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.opt{display:flex;align-items:center;gap:10px;min-height:40px;cursor:pointer}
+.opt input{width:18px;height:18px;accent-color:var(--accent)}
+.btn{appearance:none;border:1.5px solid var(--line);background:var(--surface2);border-radius:12px;padding:10px 18px;min-height:46px;font-weight:700;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on)}
+.btn.primary:hover{filter:brightness(1.08)}
+.qintro{text-align:center;padding:30px 10px;color:var(--muted)}
+.qintro h3{color:var(--ink);font-size:24px;margin:10px 0}
+.qi-hex{fill:color-mix(in srgb,var(--accent) 18%,transparent);stroke:var(--accent);stroke-width:3}
+.qi-q{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:40px;fill:var(--accent)}
+.qhead{display:flex;justify-content:space-between;font-weight:700;color:var(--muted);font-size:14px}
+.progress{height:6px;background:var(--surface2);border-radius:99px;margin:8px 0 12px;overflow:hidden}
+.progress span{display:block;height:100%;background:var(--accent);transition:width .3s}
+.qtitle{margin:4px 0 12px;font-size:24px}
+.quiz-fig{min-height:220px}
+.quiz-fig .halos,.quiz-fig .nums,.quiz-fig .grp,.quiz-fig .tag{display:none!important}
+.qopts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px;margin-top:14px}
+.qopt{appearance:none;display:flex;align-items:center;gap:10px;text-align:left;border:1.5px solid var(--line);background:var(--surface2);border-radius:12px;padding:10px 14px;min-height:54px;cursor:pointer;font-weight:700}
+.qopt:hover:not(:disabled){border-color:var(--accent)}
+.qopt kbd{font-family:inherit;font-size:12px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:1px 7px;color:var(--muted)}
+.qopt.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--surface))}
+.qopt.bad{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,var(--surface))}
+.qopt:disabled{cursor:default}
+.qfb{margin-top:14px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.fb{border-radius:12px;padding:12px 14px;width:100%}
+.fb.ok{background:color-mix(in srgb,var(--ok) 12%,transparent)} .fb.bad{background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.fb p{margin:0 0 4px} .fb-t{font-weight:700;font-size:17px}
+.fb.ok .fb-t{color:var(--ok)} .fb.bad .fb-t{color:var(--bad)}
+.qend{text-align:center;padding:16px}
+.ring{--p:0;width:130px;height:130px;border-radius:50%;margin:6px auto;display:grid;place-items:center;background:conic-gradient(var(--accent) calc(var(--p)*1%),var(--surface2) 0)}
+.ring span{width:100px;height:100px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:28px}
+.wrong{list-style:none;padding:0;max-width:520px;margin:0 auto 16px;text-align:left}
+.wrong li{display:flex;flex-direction:column;padding:8px 12px;border:1px solid var(--line);border-radius:10px;margin:6px 0}
+.wrong li span{color:var(--muted);font-size:14px}
+footer.foot{color:var(--muted);font-size:13px;padding:10px 16px 40px}
+</style>
+</head>
+<body class="color-el">
+<header class="top"><div class="wrap brand">
+  <div><p class="kicker">Biología · 1.º Bachillerato</p><h1>Atlas de biomoléculas orgánicas</h1>
+  <p class="lede">Aprende a reconocer lípidos, ácidos nucleicos, proteínas y glúcidos por su estructura. Usa los botones de cada ficha para cambiar de forma (lineal o cíclica, α o β, D o L…) y el botón de ampliar para verla en grande.</p></div>
+</div></header>
+<nav class="bar" aria-label="Navegación principal"><div class="wrap">
+  <div class="tabs" role="tablist" id="tabs" aria-label="Biomoléculas"></div>
+  <div class="toggles">
+    <button class="tg" data-toggle="show-groups" aria-pressed="false"><span class="box"></span>Grupos funcionales</button>
+    <button class="tg" data-toggle="show-nums" aria-pressed="false"><span class="box"></span>Numeración de C</button>
+    <button class="tg" data-toggle="color-el" aria-pressed="true"><span class="box"></span>Color por elemento</button>
+    <button class="tg theme" id="themeBtn" aria-label="Cambiar tema claro u oscuro"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/></svg></button>
+  </div>
+</div></nav>
+<main class="wrap" id="main"></main>
+<dialog id="zoom" aria-label="Ficha ampliada"></dialog>
+<footer class="wrap foot">Fórmulas dibujadas como proyecciones de Fischer (lineales), de Haworth (cíclicas) y fórmulas esqueléticas. Colores por elemento: <b style="color:var(--O)">O</b> · <b style="color:var(--N)">N</b> · <b style="color:var(--P)">P</b> · <b style="color:var(--S)">S</b>.</footer>
+<script>
+'use strict';
+/* ======================= MOTOR DE DIBUJO MOLECULAR ======================= */
+const D2R = Math.PI / 180, BL = 30;
+const cosd = a => Math.cos(a * D2R), sind = a => Math.sin(a * D2R);
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const r1 = v => Math.round(v * 10) / 10;
+
+const GROUPS = {
+  carboxilo: ['Grupo carboxilo (–COOH)', '#F59E0B'],
+  cola: ['Cadena hidrocarbonada (apolar)', '#94A3B8'],
+  insat: ['Doble enlace C=C', '#F43F5E'],
+  hidroxilo: ['Grupo hidroxilo (–OH)', '#38BDF8'],
+  agua: ['Átomos que forman H₂O', '#06B6D4'],
+  acido: ['Ácido graso', '#F59E0B'],
+  alcohol: ['Alcohol', '#38BDF8'],
+  ester: ['Enlace éster', '#EC4899'],
+  jabon: ['Sal de ácido graso (jabón)', '#A855F7'],
+  sosa: ['Base fuerte (NaOH)', '#A855F7'],
+  glicerina: ['Glicerina', '#38BDF8'],
+  fosfato: ['Grupo fosfato', '#F97316'],
+  colina: ['Alcohol aminado (colina)', '#8B5CF6'],
+  esfing: ['Esfingosina', '#14B8A6'],
+  glucido: ['Glúcido', '#22C55E'],
+  isop: ['Unidad de isopreno', '#22C55E'],
+  nucleo: ['Núcleo de esterano', '#94A3B8'],
+  ohpolar: ['–OH: zona polar', '#38BDF8'],
+  cadena: ['Cadena lateral', '#22C55E'],
+  aldehido: ['Grupo aldehído (–CHO)', '#F59E0B'],
+  cetona: ['Grupo cetona (C=O)', '#EC4899'],
+  ref: ['C asimétrico de referencia (D/L)', '#22C55E'],
+  anomerico: ['C anomérico y su –OH', '#F43F5E'],
+  glucosidico: ['Enlace O-glucosídico', '#F43F5E'],
+  ramif: ['Ramificación α(1→6)', '#A855F7'],
+  acetil: ['Grupo N-acetilo', '#8B5CF6'],
+  amino: ['Grupo amino', '#3B82F6'],
+  alfa: ['Carbono α', '#94A3B8'],
+  R: ['Cadena lateral (R)', '#22C55E'],
+  peptidico: ['Enlace peptídico', '#F43F5E'],
+  nterm: ['Extremo N-terminal', '#3B82F6'],
+  cterm: ['Extremo C-terminal', '#F59E0B'],
+  pentosa: ['Pentosa', '#F59E0B'],
+  base: ['Base nitrogenada', '#8B5CF6'],
+  fosfodiester: ['Enlace fosfodiéster', '#F43F5E'],
+  dif: ['Diferencia: C2 sin –OH', '#F43F5E']
+};
+
+/* ---- etiquetas: subíndices, superíndices y color por elemento ---- */
+function tokenize(label) {
+  const segs = [];
+  for (let i = 0; i < label.length; i++) {
+    const ch = label[i];
+    if (ch === '_') { segs.push({ t: label[++i], sh: 'sub' }); continue; }
+    if (ch === '^') { segs.push({ t: label[++i], sh: 'sup' }); continue; }
+    if (/[0-9]/.test(ch)) { segs.push({ t: ch, sh: 'sub' }); continue; }
+    if (ch === '+' || ch === '−') { segs.push({ t: ch, sh: 'sup' }); continue; }
+    if (ch === 'N' && label[i + 1] === 'a') { segs.push({ t: 'Na', el: 'Na' }); i++; continue; }
+    if (/[A-Z]/.test(ch)) { segs.push({ t: ch, el: ch }); continue; }
+    segs.push({ t: ch });
+  }
+  return segs;
+}
+function segW(s) { if (s.sh) return 6.2; if (s.t.length > 1) return 16; if (/[A-Z]/.test(s.t)) return 9.8; if (s.t === "'" || s.t === '′') return 4; return 7.2; }
+function labW(l) { return tokenize(l).reduce((a, s) => a + segW(s), 0); }
+function prep(a) {
+  if (!a.label) { a._r = null; return; }
+  const segs = tokenize(a.label); a._segs = segs;
+  const w = segs.reduce((s, x) => s + segW(x), 0), fw = segW(segs[0]), lw = segW(segs[segs.length - 1]);
+  let x1;
+  if (a.align === 'l') x1 = -fw / 2; else if (a.align === 'r') x1 = lw / 2 - w; else x1 = -w / 2;
+  a._r = { x1: x1 - 1.5, x2: x1 + w + 1.5, y1: -9, y2: 9 };
+}
+
+class Mol {
+  constructor() { this.atoms = []; this.bonds = []; this.extras = []; }
+  a(x, y, label = '', o = {}) { this.atoms.push(Object.assign({ x, y, label }, o)); return this.atoms.length - 1; }
+  b(i, j, order = 1, o = {}) { this.bonds.push(Object.assign({ i, j, order }, o)); return this; }
+  t(x, y, str, o = {}) { this.extras.push(Object.assign({ type: 'text', x, y, str }, o)); return this; }
+  arrow(x1, y1, x2, y2, o = {}) { this.extras.push(Object.assign({ type: 'arrow', x1, y1, x2, y2 }, o)); return this; }
+  merge(o, dx = 0, dy = 0) {
+    const off = this.atoms.length;
+    o.atoms.forEach(a => this.atoms.push(Object.assign({}, a, { x: a.x + dx, y: a.y + dy })));
+    o.bonds.forEach(b => this.bonds.push(Object.assign({}, b, { i: b.i + off, j: b.j + off, inner: b.inner ? [b.inner[0] + dx, b.inner[1] + dy] : undefined })));
+    o.extras.forEach(e => {
+      const c = Object.assign({}, e);
+      if ('x' in c) { c.x += dx; c.y += dy; }
+      if ('x1' in c) { c.x1 += dx; c.x2 += dx; c.y1 += dy; c.y2 += dy; }
+      this.extras.push(c);
+    });
+    return this;
+  }
+  bbox() {
+    let x1 = 1e9, y1 = 1e9, x2 = -1e9, y2 = -1e9;
+    const inc = (a, b, c, d) => { x1 = Math.min(x1, a); y1 = Math.min(y1, b); x2 = Math.max(x2, c); y2 = Math.max(y2, d); };
+    for (const a of this.atoms) {
+      prep(a);
+      if (a._r) inc(a.x + a._r.x1 - 3, a.y - 12, a.x + a._r.x2 + 3, a.y + 12); else inc(a.x - 8, a.y - 8, a.x + 8, a.y + 8);
+      if (a.num) { const n = a.na || [9, -11]; inc(a.x + n[0] - 10, a.y + n[1] - 8, a.x + n[0] + 10, a.y + n[1] + 6); }
+    }
+    for (const e of this.extras) {
+      if (e.type === 'text') {
+        const fs = e.size || 12; const w = e.str.length * fs * 0.55; const anc = e.anchor || 'middle';
+        const lx = anc === 'middle' ? e.x - w / 2 : anc === 'end' ? e.x - w : e.x;
+        inc(lx, e.y - fs, lx + w, e.y + 4);
+      } else if (e.type === 'arrow') {
+        inc(Math.min(e.x1, e.x2), e.y1 - (e.label ? 22 : 8), Math.max(e.x1, e.x2), e.y1 + (e.label2 ? 24 : 8));
+      }
+    }
+    return { x1, y1, x2, y2 };
+  }
+}
+
+function exitT(a, dx, dy) {
+  const r = a._r; let tx = Infinity, ty = Infinity;
+  if (dx > 1e-6) tx = r.x2 / dx; else if (dx < -1e-6) tx = r.x1 / dx;
+  if (dy > 1e-6) ty = r.y2 / dy; else if (dy < -1e-6) ty = r.y1 / dy;
+  return Math.max(0, Math.min(tx, ty));
+}
+const ln = (x1, y1, x2, y2, cls) => `<line class="${cls}" x1="${r1(x1)}" y1="${r1(y1)}" x2="${r1(x2)}" y2="${r1(y2)}"/>`;
+
+function bondSVG(A, B, b) {
+  let dx = B.x - A.x, dy = B.y - A.y; const len = Math.hypot(dx, dy); if (len < 1) return '';
+  dx /= len; dy /= len;
+  const t1 = A._r ? exitT(A, dx, dy) + 2 : 0, t2 = B._r ? exitT(B, -dx, -dy) + 2 : 0;
+  if (t1 + t2 > len - 3) return '';
+  const x1 = A.x + dx * t1, y1 = A.y + dy * t1, x2 = B.x - dx * t2, y2 = B.y - dy * t2, nx = -dy, ny = dx;
+  const cls = 'bd' + (b.style ? ' ' + b.style : '');
+  if (b.order === 2) {
+    if (b.inner) {
+      const s = ((b.inner[0] - A.x) * nx + (b.inner[1] - A.y) * ny) > 0 ? 1 : -1, o = 5 * s;
+      const s1 = A._r ? 1 : len * .15, s2 = B._r ? 1 : len * .15;
+      return ln(x1, y1, x2, y2, cls) + ln(x1 + dx * s1 + nx * o, y1 + dy * s1 + ny * o, x2 - dx * s2 + nx * o, y2 - dy * s2 + ny * o, cls);
+    }
+    const o = 2.7;
+    return ln(x1 + nx * o, y1 + ny * o, x2 + nx * o, y2 + ny * o, cls) + ln(x1 - nx * o, y1 - ny * o, x2 - nx * o, y2 - ny * o, cls);
+  }
+  if (b.order === 3) { const o = 4.4; return ln(x1, y1, x2, y2, cls) + ln(x1 + nx * o, y1 + ny * o, x2 + nx * o, y2 + ny * o, cls) + ln(x1 - nx * o, y1 - ny * o, x2 - nx * o, y2 - ny * o, cls); }
+  return ln(x1, y1, x2, y2, cls);
+}
+
+function labelSVG(a) {
+  const segs = a._segs; let anchor, x;
+  if (a.align === 'l') { anchor = 'start'; x = a.x - segW(segs[0]) / 2; }
+  else if (a.align === 'r') { anchor = 'end'; x = a.x + segW(segs[segs.length - 1]) / 2; }
+  else { anchor = 'middle'; x = a.x; }
+  let cur = 0, inner = '';
+  for (const s of segs) {
+    const sh = s.sh === 'sub' ? 4.5 : s.sh === 'sup' ? -6 : 0; const dy = sh - cur; cur = sh;
+    const cls = s.el && /^(O|N|P|S|Na)$/.test(s.el) ? ` class="e-${s.el}"` : '';
+    const fs = s.sh ? ' font-size="10.5"' : '';
+    inner += `<tspan${cls}${fs}${dy ? ` dy="${dy}"` : ''}>${esc(s.t)}</tspan>`;
+  }
+  return `<text class="lbl" x="${r1(x)}" y="${r1(a.y + 5.3)}" text-anchor="${anchor}">${inner}</text>`;
+}
+
+function svgMol(m, o = {}) {
+  const pad = o.pad ?? 12;
+  const bb = m.bbox();
+  const x0 = bb.x1 - pad, y0 = bb.y1 - pad, W = bb.x2 - bb.x1 + 2 * pad, H = bb.y2 - bb.y1 + 2 * pad;
+  let halos = '', bonds = '', labels = '', nums = '', ex = '';
+  const A = m.atoms;
+  for (const b of m.bonds) {
+    const a1 = A[b.i], a2 = A[b.j];
+    if (b.style !== 'hb' && a1.g && a1.g === a2.g && GROUPS[a1.g]) halos += `<line x1="${r1(a1.x)}" y1="${r1(a1.y)}" x2="${r1(a2.x)}" y2="${r1(a2.y)}" stroke="${GROUPS[a1.g][1]}" stroke-width="20" stroke-linecap="round"/>`;
+    bonds += bondSVG(a1, a2, b);
+  }
+  for (const a of A) {
+    if (a.g && GROUPS[a.g]) {
+      const c = GROUPS[a.g][1];
+      if (a._r) halos += `<rect x="${r1(a.x + a._r.x1 - 3)}" y="${r1(a.y - 11)}" width="${r1(a._r.x2 - a._r.x1 + 6)}" height="22" rx="11" fill="${c}"/>`;
+      else halos += `<circle cx="${r1(a.x)}" cy="${r1(a.y)}" r="10" fill="${c}"/>`;
+    }
+    if (a.label) labels += labelSVG(a);
+    if (a.num) { const n = a.na || [9, -11]; nums += `<text class="num" x="${r1(a.x + n[0])}" y="${r1(a.y + n[1] + 3.5)}" text-anchor="middle">${esc(a.num)}</text>`; }
+  }
+  for (const e of m.extras) {
+    if (e.type === 'text') ex += `<text class="${e.cls || 'anno'}" x="${r1(e.x)}" y="${r1(e.y)}" text-anchor="${e.anchor || 'middle'}"${e.size ? ` font-size="${e.size}"` : ''}>${esc(e.str)}</text>`;
+    else if (e.type === 'arrow') {
+      const { x1, y1, x2 } = e; const mx = (x1 + x2) / 2;
+      if (e.eq) {
+        ex += ln(x1, y1 - 3, x2 - 2, y1 - 3, 'arw') + `<path class="arwh" d="M${r1(x2)},${r1(y1 - 3)} l-10,-6 l0,6 z"/>`;
+        ex += ln(x1 + 2, y1 + 3, x2, y1 + 3, 'arw') + `<path class="arwh" d="M${r1(x1)},${r1(y1 + 3)} l10,6 l0,-6 z"/>`;
+      } else ex += ln(x1, y1, x2 - 6, y1, 'arw') + `<path class="arwh" d="M${r1(x2)},${r1(y1)} l-11,-5.5 l0,11 z"/>`;
+      if (e.label) ex += `<text class="arl" x="${r1(mx)}" y="${r1(y1 - 10)}" text-anchor="middle">${esc(e.label)}</text>`;
+      if (e.label2) ex += `<text class="arl" x="${r1(mx)}" y="${r1(y1 + 22)}" text-anchor="middle">${esc(e.label2)}</text>`;
+    }
+  }
+  const lab = o.label ? ` aria-label="${esc(o.label)}"` : '';
+  return `<svg class="mol" viewBox="${r1(x0)} ${r1(y0)} ${r1(W)} ${r1(H)}" style="--w:${Math.round(W)}" role="img"${lab}><g class="halos">${halos}</g><g>${bonds}</g><g>${labels}</g><g class="nums">${nums}</g><g>${ex}</g></svg>`;
+}
+
+/* concatenar dibujos en horizontal (reacciones, comparaciones) */
+function hcat(items, o = {}) {
+  const gap = o.gap ?? 22; const m = new Mol(); let x = 0;
+  for (const it of items) {
+    if (it instanceof Mol) {
+      const bb = it.bbox(); const ay = o.align === 'center' ? (bb.y1 + bb.y2) / 2 : (it.ay ?? 0);
+      m.merge(it, x - bb.x1, -ay); x += bb.x2 - bb.x1 + gap;
+    } else if (it.op === '→' || it.op === '⇌') {
+      const w = it.w || Math.max(64, Math.max((it.label || '').length, (it.label2 || '').length) * 6.6 + 14);
+      m.arrow(x, 0, x + w, 0, { label: it.label, label2: it.label2, eq: it.op === '⇌' }); x += w + gap;
+    } else { m.t(x + 8, 8, it.op, { cls: 'op', size: 24 }); x += 16 + gap; }
+  }
+  return m;
+}
+
+/* ---- utilidades de construcción ---- */
+function bondTo(m, from, ang, label = '', o = {}, order = 1, len = BL, bo = {}) {
+  const p = m.atoms[from]; const id = m.a(p.x + len * cosd(ang), p.y - len * sind(ang), label, o); m.b(from, id, order, bo); return id;
+}
+function row(m, x, y, items, gap = 14) {
+  const ids = []; let cx = x, pw = 0;
+  items.forEach((it, i) => {
+    const [lab, o = {}, ord = 1] = Array.isArray(it) ? it : [it];
+    const w = lab ? labW(lab) : 6; if (i > 0) cx += pw / 2 + gap + w / 2;
+    const id = m.a(cx, y, lab, Object.assign({}, o)); if (i > 0) m.b(ids[i - 1], id, ord); ids.push(id); pw = w;
+  });
+  return ids;
+}
+
+/* ======================= LÍPIDOS ======================= */
+function fattyChain(m, c1, h0, n, cis = [], g = 'cola', nums = true, pt0 = -60) {
+  const ids = [c1]; let prev = c1, h = h0, pt = pt0; const cs = new Set(cis);
+  for (let k = 2; k <= n; k++) {
+    const p = m.atoms[prev];
+    const id = m.a(p.x + BL * cosd(h), p.y - BL * sind(h), '', { g: (cs.has(k - 1) || cs.has(k)) ? 'insat' : g, num: nums ? String(k) : undefined });
+    m.b(prev, id, cs.has(k - 1) ? 2 : 1); ids.push(id); prev = id;
+    const t = cs.has(k - 1) ? pt : -pt; h += t; pt = t;
+  }
+  for (const k of cs) {
+    const a = ids[k - 1], b = ids[k], pa = ids[k - 2], nb = ids[k + 1];
+    const bd = m.bonds.find(x => x.i === a && x.j === b);
+    if (bd && pa != null && nb != null) { const A = m.atoms[pa], B = m.atoms[nb]; bd.inner = [(A.x + B.x) / 2, (A.y + B.y) / 2]; }
+  }
+  return ids;
+}
+function fattyAcidMol(n, cis = []) {
+  const m = new Mol(); const c1 = m.a(0, 0, '', { g: 'carboxilo', num: '1', na: [8, 12] });
+  bondTo(m, c1, 90, 'O', { g: 'carboxilo' }, 2);
+  bondTo(m, c1, 210, 'HO', { g: 'carboxilo', align: 'r' });
+  const ids = fattyChain(m, c1, -30, n, cis);
+  m.atoms[ids[n - 1]].num = n + ' (ω)';
+  return m;
+}
+function faGenSat() {
+  const m = new Mol(); const r = row(m, 0, 0, [['CH3', { g: 'cola' }], ['(CH2)_n', { g: 'cola' }], ['C', { g: 'carboxilo' }]], 16);
+  bondTo(m, r[2], 90, 'O', { g: 'carboxilo' }, 2, 32); bondTo(m, r[2], 0, 'OH', { g: 'carboxilo', align: 'l' }, 1, 32); return m;
+}
+function faGenInsat() {
+  const m = new Mol();
+  const r = row(m, 0, 0, [['CH3', { g: 'cola' }], ['(CH2)_n', { g: 'cola' }], ['CH', { g: 'insat' }], ['CH', { g: 'insat' }, 2], ['(CH2)_m', { g: 'cola' }], ['C', { g: 'carboxilo' }]], 16);
+  bondTo(m, r[5], 90, 'O', { g: 'carboxilo' }, 2, 32); bondTo(m, r[5], 0, 'OH', { g: 'carboxilo', align: 'l' }, 1, 32); return m;
+}
+function cisTransMol(cis) {
+  const m = new Mol(); const c2 = m.a(0, 0, '', { g: 'insat' }), c3 = m.a(BL + 4, 0, '', { g: 'insat' });
+  bondTo(m, c2, 240, 'R', { g: 'cola' }, 1, 32); bondTo(m, c3, cis ? -60 : 60, "R'", { g: 'cola' }, 1, 32);
+  bondTo(m, c2, 120, 'H', {}, 1, 30); bondTo(m, c3, cis ? 60 : -60, 'H', {}, 1, 30);
+  m.b(c2, c3, 2, cis ? { inner: [17, 20] } : {}); return m;
+}
+function esterReactants() {
+  const acid = new Mol(); let r = row(acid, 0, 0, [['R', { g: 'acido' }], ['C', { g: 'acido' }]], 16);
+  bondTo(acid, r[1], 90, 'O', { g: 'acido' }, 2, 32); bondTo(acid, r[1], 0, 'OH', { g: 'agua', align: 'l' }, 1, 32);
+  const alc = new Mol(); row(alc, 0, 0, [['H', { g: 'agua' }], ['O', { g: 'alcohol' }], ["R'", { g: 'alcohol' }]], 14);
+  return [acid, alc];
+}
+function esterMol() {
+  const m = new Mol(); const r = row(m, 0, 0, [['R', { g: 'acido' }], ['C', { g: 'ester' }], ['O', { g: 'ester' }], ["R'", { g: 'alcohol' }]], 16);
+  bondTo(m, r[1], 90, 'O', { g: 'ester' }, 2, 32); return m;
+}
+function esterificacion() {
+  const [acid, alc] = esterReactants(); const w = new Mol(); w.a(0, 0, 'H2O', { g: 'agua' });
+  return hcat([acid, { op: '+' }, alc, { op: '→', label: 'esterificación', label2: '(condensación)' }, esterMol(), { op: '+' }, w]);
+}
+function saponificacion() {
+  const naoh = new Mol(); naoh.a(0, 0, 'NaOH', { g: 'sosa' });
+  const soap = new Mol(); const r = row(soap, 0, 0, [['R', { g: 'jabon' }], ['C', { g: 'jabon' }], ['O−', { g: 'jabon' }]], 16);
+  bondTo(soap, r[1], 90, 'O', { g: 'jabon' }, 2, 32); soap.a(soap.atoms[r[2]].x + 34, 0, 'Na+', { g: 'jabon' });
+  const alc = new Mol(); row(alc, 0, 0, [['HO', { g: 'alcohol' }], ["R'", { g: 'alcohol' }]], 14);
+  return hcat([esterMol(), { op: '+' }, naoh, { op: '→', label: 'saponificación', label2: '(hidrólisis básica)' }, soap, { op: '+' }, alc]);
+}
+function glycerolMol() {
+  const m = new Mol(); const L = ['CH2', 'CH', 'CH2'];
+  const g = L.map((l, i) => m.a(0, i * 46, l, { g: 'glicerina', num: String(i + 1), na: [-22, -10] }));
+  m.b(g[0], g[1]); m.b(g[1], g[2]);
+  g.forEach(id => bondTo(m, id, 0, 'OH', { g: 'hidroxilo', align: 'l' }, 1, 40)); return m;
+}
+function glycerolBackbone(m, sp = 72) {
+  const L = ['CH2', 'CH', 'CH2'];
+  const g = L.map((l, i) => m.a(0, i * sp, l, { g: 'glicerina', num: String(i + 1), na: [-22, -10] }));
+  m.b(g[0], g[1]); m.b(g[1], g[2]); return g;
+}
+function acylTail(m, gid, n, cis, nums = false) {
+  const y = m.atoms[gid].y; const o = m.a(44, y, 'O', { g: 'ester' }); m.b(gid, o);
+  const cc = bondTo(m, o, 30, '', { g: 'ester' }); bondTo(m, cc, 90, 'O', { g: 'ester' }, 2);
+  fattyChain(m, cc, -30, n, cis || [], 'acido', nums);
+}
+function tagMol() { const m = new Mol(); const g = glycerolBackbone(m); g.forEach(id => acylTail(m, id, 16)); return m; }
+function waxMol() {
+  const m = new Mol();
+  const r = row(m, 0, 0, [['CH3', { g: 'acido' }], ['(CH2)14', { g: 'acido' }], ['C', { g: 'ester' }], ['O', { g: 'ester' }], ['CH2', { g: 'alcohol' }], ['(CH2)28', { g: 'alcohol' }], ['CH3', { g: 'alcohol' }]], 15);
+  bondTo(m, r[2], 90, 'O', { g: 'ester' }, 2, 32);
+  m.t((m.atoms[r[0]].x + m.atoms[r[2]].x) / 2, 40, 'ácido palmítico (16 C)', { cls: 'tag' });
+  m.t((m.atoms[r[3]].x + m.atoms[r[6]].x) / 2, 40, 'alcohol miricílico (30 C)', { cls: 'tag' });
+  return m;
+}
+function pcMol() {
+  const m = new Mol(); const g = glycerolBackbone(m);
+  acylTail(m, g[0], 16, []); acylTail(m, g[1], 18, [9]);
+  const o3 = m.a(-44, 144, 'O', { g: 'fosfato' }); m.b(g[2], o3);
+  const p = m.a(-88, 144, 'P', { g: 'fosfato' }); m.b(o3, p);
+  bondTo(m, p, 90, 'O', { g: 'fosfato' }, 2, 34); bondTo(m, p, -90, 'O−', { g: 'fosfato' }, 1, 34);
+  const o4 = m.a(-132, 144, 'O', { g: 'fosfato' }); m.b(p, o4);
+  const c1 = m.a(-132, 186, 'CH2', { g: 'colina' }); m.b(o4, c1);
+  const c2 = m.a(-132, 228, 'CH2', { g: 'colina' }); m.b(c1, c2);
+  const n = m.a(-132, 270, 'N+(CH3)3', { g: 'colina' }); m.b(c2, n);
+  return m;
+}
+/* diagramas de composición */
+function svgWrap(w, h, inner, label) { return `<svg class="mol" viewBox="0 0 ${w} ${h}" style="--w:${w}" role="img" aria-label="${esc(label || '')}">${inner}</svg>`; }
+function box(x, y, w, h, txt, g, o = {}) {
+  const c = GROUPS[g] ? GROUPS[g][1] : '#94A3B8'; const lines = txt.split('|'); const fs = o.fs || 13;
+  const ty = y + h / 2 - (lines.length - 1) * fs * 0.6 + fs * 0.35;
+  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${o.rx ?? 8}" fill="${c}" fill-opacity=".22" stroke="${c}" stroke-width="1.6"/>` +
+    lines.map((l, i) => `<text x="${x + w / 2}" y="${r1(ty + i * fs * 1.2)}" text-anchor="middle" font-size="${i ? fs - 1.5 : fs}" class="ct${i === 0 ? ' b' : ''}">${esc(l)}</text>`).join('');
+}
+const conn = (x1, y1, x2, y2) => ln(x1, y1, x2, y2, 'bd');
+const txt = (x, y, s, cls = 'tag', anchor = 'middle', fs) => `<text class="${cls}" x="${x}" y="${y}" text-anchor="${anchor}"${fs ? ` font-size="${fs}"` : ''}>${esc(s)}</text>`;
+function hexPts(cx, cy, r, rot = 0) { return [0, 1, 2, 3, 4, 5].map(i => { const a = (60 * i + 30 + rot) * D2R; return `${r1(cx + r * Math.cos(a))},${r1(cy + r * Math.sin(a))}`; }).join(' '); }
+function compPG() {
+  let s = box(6, 62, 108, 50, 'Alcohol|colina, serina…', 'colina') + conn(114, 87, 128, 87) + box(128, 64, 70, 46, 'Fosfato', 'fosfato') + conn(198, 87, 214, 87);
+  s += box(214, 14, 80, 146, 'Glicerina', 'glicerina');
+  s += conn(294, 45, 310, 45) + conn(294, 129, 310, 129);
+  s += box(310, 24, 300, 42, 'Ácido graso 1 (suele ser saturado)', 'acido', { rx: 21 }) + box(310, 108, 300, 42, 'Ácido graso 2 (suele ser insaturado)', 'acido', { rx: 21 });
+  s += txt(302, 37, 'éster', 'anno', 'middle', 10) + txt(108, 186, 'CABEZA POLAR (hidrófila)') + txt(460, 186, 'COLAS APOLARES (hidrófobas)');
+  return svgWrap(616, 198, s, 'Composición de un fosfoglicérido');
+}
+function compSphingo(type) {
+  let s = '';
+  if (type === 'fosfo') s += box(6, 30, 108, 50, 'Alcohol aminado|colina o etanolamina', 'colina') + conn(114, 55, 128, 55) + box(128, 32, 70, 46, 'Fosfato', 'fosfato') + conn(198, 55, 236, 55);
+  else {
+    s += box(6, 22, 192, 66, '', 'glucido');
+    [[40, 48], [82, 48], [124, 48], [166, 48]].forEach(([x, y], i) => { if (i) s += conn(x - 26, y, x - 16, y); s += `<polygon points="${hexPts(x, y, 15)}" fill="#22C55E" fill-opacity=".35" stroke="#22C55E" stroke-width="1.5"/>`; });
+    s += txt(102, 104, 'Glúcido: mono- u oligosacárido', 'tag') + conn(198, 55, 236, 55);
+  }
+  s += `<rect x="224" y="16" width="398" height="146" rx="16" class="dashbox"/>`;
+  s += box(236, 34, 376, 42, 'Esfingosina (aminoalcohol)', 'esfing', { rx: 21 }) + box(268, 108, 344, 42, 'Ácido graso', 'acido', { rx: 21 });
+  s += conn(284, 76, 284, 108) + txt(292, 96, 'enlace amida', 'anno', 'start', 11);
+  s += txt(423, 182, 'CERAMIDA = esfingosina + ácido graso') + txt(102, 152, type === 'fosfo' ? 'CABEZA POLAR' : 'CABEZA POLAR (glucídica)');
+  return svgWrap(628, 194, s, type === 'fosfo' ? 'Composición de un fosfoesfingolípido' : 'Composición de un glicoesfingolípido');
+}
+function bilayerSVG() {
+  let s = ''; const head = (x, y) => `<circle cx="${x}" cy="${y}" r="7.5" fill="#F97316" fill-opacity=".85"/>`;
+  const tails = (x, y, d) => { const k = 34 * d; return `<path class="tail" d="M${x - 3},${y + 7 * d} L${x - 3},${y + k}"/><path class="tail" d="M${x + 3},${y + 7 * d} L${x + 3},${y + 18 * d} L${x + 8},${y + 26 * d} L${x + 8},${y + k}"/>`; };
+  for (let i = 0; i < 13; i++) { const x = 20 + i * 21; s += tails(x, 40, 1) + head(x, 40) + tails(x, 140, -1) + head(x, 140); }
+  s += txt(146, 18, 'medio acuoso (polar)', 'anno') + txt(146, 94, 'interior hidrófobo', 'anno') + txt(146, 172, 'medio acuoso (polar)', 'anno') + txt(146, 194, 'BICAPA (membranas)');
+  const cx = 420, cy = 96, R = 60;
+  for (let i = 0; i < 18; i++) { const a = i * 20 * D2R; const hx = cx + R * Math.cos(a), hy = cy + R * Math.sin(a); const tx = cx + 16 * Math.cos(a), ty = cy + 16 * Math.sin(a); s += `<path class="tail" d="M${r1(hx - 8 * Math.cos(a))},${r1(hy - 8 * Math.sin(a))} L${r1(tx)},${r1(ty)}"/>` + `<circle cx="${r1(hx)}" cy="${r1(hy)}" r="7" fill="#A855F7" fill-opacity=".85"/>`; }
+  s += txt(cx, 194, 'MICELA (jabones, ácidos grasos)');
+  return svgWrap(500, 204, s, 'Bicapa lipídica y micela');
+}
+function isoprenoSemi() {
+  const m = new Mol(); const L2 = 40;
+  const c1 = m.a(0, 0, 'H2C', { align: 'r', g: 'isop', num: '1', na: [-12, -13] });
+  const c2 = bondTo(m, c1, -30, 'C', { g: 'isop', num: '2', na: [10, 10] }, 2, L2);
+  bondTo(m, c2, 90, 'CH3', { g: 'isop' }, 1, 36);
+  const c3 = bondTo(m, c2, 30, 'CH', { g: 'isop', num: '3', na: [0, -14] }, 1, L2);
+  bondTo(m, c3, -30, 'CH2', { align: 'l', g: 'isop', num: '4', na: [14, 12] }, 2, L2); return m;
+}
+function isoprenoSkel() {
+  const m = new Mol(); const c1 = m.a(0, 0, '', { g: 'isop' }); const c2 = bondTo(m, c1, -30, '', { g: 'isop' }, 2);
+  bondTo(m, c2, 90, '', { g: 'isop' }); const c3 = bondTo(m, c2, 30, '', { g: 'isop' }); bondTo(m, c3, -30, '', { g: 'isop' }, 2); return m;
+}
+const RST = { A: [1, 2, 3, 4, 5, 10], B: [5, 6, 7, 8, 9, 10], C: [8, 9, 11, 12, 13, 14], D: [13, 14, 15, 16, 17] };
+function steroidCoords() {
+  const s3 = Math.sqrt(3), H = (cx, cy) => [90, 30, -30, -90, -150, 150].map(a => [cx + BL * cosd(a), cy - BL * sind(a)]);
+  const cA = [0, 0], cB = [s3 * BL, 0], cC = [1.5 * s3 * BL, -1.5 * BL];
+  const A = H(...cA), B = H(...cB), C = H(...cC); const P = {};
+  [P[1], P[10], P[5], P[4], P[3], P[2]] = A; [P[9], P[8], P[7], P[6]] = [B[0], B[1], B[2], B[3]];
+  [P[12], P[13], P[14]] = [C[0], C[1], C[2]]; P[11] = C[5];
+  const cD = [(P[13][0] + P[14][0]) / 2 + BL * 0.688, (P[13][1] + P[14][1]) / 2], R = BL * 0.8507;
+  P[17] = [cD[0] + R * cosd(-72), cD[1] + R * sind(-72)]; P[16] = [cD[0] + R, cD[1]]; P[15] = [cD[0] + R * cosd(72), cD[1] + R * sind(72)];
+  return { P, cen: { A: cA, B: cB, C: cC, D: cD } };
+}
+function steroidAtoms(m, list, g = 'nucleo') {
+  const { P, cen } = steroidCoords(); const id = {};
+  for (const k of list) {
+    const rs = Object.keys(RST).filter(r => RST[r].includes(k));
+    const c = rs.reduce((a, r) => [a[0] + cen[r][0] / rs.length, a[1] + cen[r][1] / rs.length], [0, 0]);
+    const dx = P[k][0] - c[0], dy = P[k][1] - c[1], l = Math.hypot(dx, dy) || 1;
+    id[k] = m.a(P[k][0], P[k][1], '', { g, num: String(k), na: [dx / l * 12, dy / l * 12] });
+  }
+  return { id, P, cen };
+}
+function sideChain(m, from) {
+  const c20 = bondTo(m, from, 30, '', { g: 'cadena', num: '20', na: [0, 12] }); bondTo(m, c20, 90, '', { g: 'cadena', num: '21', na: [9, 0] });
+  let c = c20, h = -30;
+  for (const n of [22, 23, 24, 25]) { c = bondTo(m, c, h, '', { g: 'cadena', num: String(n), na: [0, h < 0 ? 12 : -12] }); h = -h; }
+  bondTo(m, c, 90, '', { g: 'cadena', num: '26', na: [9, 0] }); bondTo(m, c, -30, '', { g: 'cadena', num: '27', na: [9, 6] });
+}
+const ST_E = [[1, 2], [2, 3], [3, 4], [4, 5], [5, 10], [10, 1], [5, 6], [6, 7], [7, 8], [8, 9], [9, 10], [8, 14], [9, 11], [11, 12], [12, 13], [13, 14], [13, 17], [17, 16], [16, 15], [15, 14]];
+function steroidMol(kind) {
+  const m = new Mol(); const all = Array.from({ length: 17 }, (_, i) => i + 1);
+  const { id, cen } = steroidAtoms(m, all);
+  for (const [a, b] of ST_E) { const dbl = kind === 'colesterol' && a === 5 && b === 6; m.b(id[a], id[b], dbl ? 2 : 1, dbl ? { inner: cen.B } : {}); }
+  if (kind === 'esterano') for (const r of 'ABCD') m.t(cen[r][0], cen[r][1] + 5, r, { cls: 'ringl', size: 15 });
+  if (kind === 'colesterol') {
+    bondTo(m, id[3], 210, 'HO', { g: 'ohpolar', align: 'r' });
+    bondTo(m, id[10], 90, '', { g: 'nucleo', num: '19', na: [9, 0] }); bondTo(m, id[13], 90, '', { g: 'nucleo', num: '18', na: [-9, 0] });
+    sideChain(m, id[17]);
+  }
+  return m;
+}
+function vitDMol() {
+  const m = new Mol(); const { id, P } = steroidAtoms(m, [8, 9, 11, 12, 13, 14, 15, 16, 17]);
+  for (const [a, b] of [[8, 9], [9, 11], [11, 12], [12, 13], [13, 14], [14, 8], [13, 17], [17, 16], [16, 15], [15, 14]]) m.b(id[a], id[b]);
+  bondTo(m, id[13], 90, '', { g: 'nucleo', num: '18', na: [-9, 0] }); sideChain(m, id[17]);
+  const c7 = m.a(P[8][0], P[8][1] + 30, '', { g: 'cadena', num: '7', na: [10, 0] }); m.b(id[8], c7, 2);
+  const c6 = m.a(P[8][0] - 26, P[8][1] + 45, '', { g: 'cadena', num: '6', na: [-10, -4] }); m.b(c7, c6);
+  const x5 = P[8][0] - 26, y5 = P[8][1] + 75;
+  const c5 = m.a(x5, y5, '', { num: '5', na: [10, -6] }); m.b(c6, c5, 2);
+  const cy = y5 + 30; const V = [[0, -30], [26, -15], [26, 15], [0, 30], [-26, 15], [-26, -15]];
+  const ring = [c5]; const nm = ['4', '3', '2', '1', '10'];
+  for (let i = 1; i < 6; i++) ring.push(m.a(x5 + V[i][0], cy + V[i][1], '', { num: nm[i - 1], na: [V[i][0] * 0.45, V[i][1] * 0.45] }));
+  for (let i = 0; i < 6; i++) m.b(ring[i], ring[(i + 1) % 6]);
+  bondTo(m, ring[2], -30, 'OH', { g: 'ohpolar', align: 'l' });
+  bondTo(m, ring[5], 150, '', { num: '19', na: [-8, -8] }, 2);
+  return m;
+}
+
+/* ======================= GLÚCIDOS ======================= */
+const FIS = {
+  gliceraldehido: { top: 'CHO', rows: ['R'] },
+  dihidroxiacetona: { top: 'CH2OH', rows: ['CO'] },
+  eritrosa: { top: 'CHO', rows: ['R', 'R'] },
+  treosa: { top: 'CHO', rows: ['L', 'R'] },
+  eritrulosa: { top: 'CH2OH', rows: ['CO', 'R'] },
+  ribosa: { top: 'CHO', rows: ['R', 'R', 'R'], cyc: 1 },
+  desoxirribosa: { top: 'CHO', rows: ['H2', 'R', 'R'], cyc: 1 },
+  glucosa: { top: 'CHO', rows: ['R', 'L', 'R', 'R'], cyc: 1 },
+  fructosa: { top: 'CH2OH', rows: ['CO', 'L', 'R', 'R'], cyc: 1 },
+  galactosa: { top: 'CHO', rows: ['R', 'L', 'L', 'R'], cyc: 1 }
+};
+function fischerMol(sp, L = false) {
+  const m = new Mol(); const dy = 44; let y = 0, prev, n = 1;
+  const rws = L ? sp.rows.map(r => r === 'R' ? 'L' : r === 'L' ? 'R' : r) : sp.rows;
+  let last = -1; rws.forEach((r, i) => { if (r === 'R' || r === 'L') last = i; });
+  if (sp.top === 'CHO') { prev = m.a(0, 0, 'C', { g: 'aldehido', num: '1', na: [14, 8] }); bondTo(m, prev, 40, 'O', { g: 'aldehido' }, 2, 36); bondTo(m, prev, 140, 'H', { g: 'aldehido' }, 1, 32); }
+  else prev = m.a(0, 0, 'CH2OH', { num: '1', na: [32, -6] });
+  rws.forEach((r, i) => {
+    y += dy; n++; const ref = i === last;
+    const c = m.a(0, y, 'C', { g: r === 'CO' ? 'cetona' : ref ? 'ref' : undefined, num: String(n), na: [11, -12] }); m.b(prev, c);
+    const gO = ref ? 'ref' : undefined;
+    if (r === 'R') { bondTo(m, c, 180, 'H', {}, 1, 38); bondTo(m, c, 0, 'OH', { align: 'l', g: gO }, 1, 38); }
+    else if (r === 'L') { bondTo(m, c, 180, 'HO', { align: 'r', g: gO }, 1, 38); bondTo(m, c, 0, 'H', {}, 1, 38); }
+    else if (r === 'H2') { bondTo(m, c, 180, 'H', { g: 'dif' }, 1, 38); bondTo(m, c, 0, 'H', { g: 'dif' }, 1, 38); m.atoms[c].g = 'dif'; }
+    else if (r === 'CO') bondTo(m, c, 0, 'O', { g: 'cetona' }, 2, 38);
+    prev = c;
+  });
+  const b = m.a(0, y + dy, 'CH2OH', { num: String(n + 1), na: [32, -6] }); m.b(prev, b);
+  return m;
+}
+const RINGS = {
+  pyr: { H: 64, atoms: [['C5', -40, 0], ['O', 40, 0], ['C1', 80, 32], ['C2', 40, 64], ['C3', -40, 64], ['C4', -80, 32]] },
+  fur: { H: 60, atoms: [['O', 0, 0], ['P1', 56, 24], ['P2', 34, 60], ['P3', -34, 60], ['P4', -56, 24]] }
+};
+const LEFTF = { CH2OH: 'HOCH2', OH: 'HO', NH2: 'H2N', CH3: 'H3C' }, RIGHTF = { HOCH2: 'CH2OH', HO: 'OH', H2N: 'NH2', H3C: 'CH3' };
+function haworth(m, kind, ox, oy, subs, tf = {}, o = {}) {
+  const R = RINGS[kind]; const ids = {}, loc = {};
+  const T = (x, y) => [ox + (tf.mx ? -x : x), oy + (tf.my ? R.H - y : y)];
+  const cx = ox, cy = oy + R.H / 2;
+  for (const [k, x, y] of R.atoms) {
+    const [X, Y] = T(x, y); loc[k] = tf.my ? R.H - y : y;
+    const dx = X - cx, dy = Y - cy, l = Math.hypot(dx, dy) || 1;
+    ids[k] = m.a(X, Y, k === 'O' ? 'O' : '', { g: (o.g && o.g[k]) || o.ringG, num: o.nums && o.nums[k], na: [dx / l * 13, dy / l * 13 + 2] });
+  }
+  const ks = R.atoms.map(a => a[0]);
+  ks.forEach((k, i) => { const k2 = ks[(i + 1) % ks.length]; const bold = (loc[k] + loc[k2]) / 2 > R.H * 0.6; m.b(ids[k], ids[k2], 1, bold ? { style: 'bold' } : {}); });
+  for (const k of Object.keys(subs)) {
+    const s = subs[k]; if (!s || ids[k] == null) continue;
+    for (const side of ['up', 'down']) {
+      if (!s[side]) continue;
+      let dir = s[side + 'F'];
+      if (!dir) { const d = s[side + 'Dir'] || [0, side === 'up' ? -1 : 1]; dir = [tf.mx ? -d[0] : d[0], tf.ud ? -d[1] : d[1]]; }
+      const interior = (loc[k] > R.H * 0.6 && dir[1] < 0) || (loc[k] < R.H * 0.4 && dir[1] > 0);
+      const len = s[side + 'Len'] || (interior ? 21 : 28);
+      const P = m.atoms[ids[k]]; let lab = s[side];
+      const align = dir[0] > 0.3 ? 'l' : dir[0] < -0.3 ? 'r' : 'c';
+      if (align === 'r' && LEFTF[lab]) lab = LEFTF[lab]; if (align === 'l' && RIGHTF[lab]) lab = RIGHTF[lab];
+      const num = s[side + 'Num'];
+      const id = m.a(P.x + dir[0] * len, P.y + dir[1] * len, lab, { align, g: s[side + 'G'] || o.subG, num, na: num ? [align === 'r' ? -26 : align === 'l' ? 26 : 0, dir[1] < 0 ? -12 : 14] : undefined });
+      m.b(ids[k], id); ids[k + '_' + side] = id;
+    }
+  }
+  return ids;
+}
+const SUG = {
+  glc: an => ({ C1: an === 'α' ? { up: 'H', down: 'OH', downG: 'anomerico' } : { up: 'OH', down: 'H', upG: 'anomerico' }, C2: { up: 'H', down: 'OH' }, C3: { up: 'OH', down: 'H' }, C4: { up: 'H', down: 'OH' }, C5: { up: 'CH2OH', upNum: '6' } }),
+  gal: an => Object.assign(SUG.glc(an), { C4: { up: 'OH', down: 'H' } }),
+  nag: an => Object.assign(SUG.glc(an), { C2: { up: 'H', down: 'NHCOCH3', downG: 'acetil' } }),
+  rib: (an, deoxy) => ({ P1: an === 'α' ? { up: 'H', down: 'OH', downG: 'anomerico' } : { up: 'OH', down: 'H', upG: 'anomerico' }, P2: deoxy ? { up: 'H', down: 'H', downG: 'dif' } : { up: 'H', down: 'OH' }, P3: { up: 'H', down: 'OH' }, P4: { up: 'CH2OH', upDir: [-0.5, -0.87], down: 'H', upNum: '5' } }),
+  fru: an => ({ P1: an === 'β' ? { up: 'OH', upG: 'anomerico', down: 'CH2OH', downDir: [0.5, 0.87], downNum: '1' } : { up: 'CH2OH', upDir: [0.5, -0.87], upNum: '1', down: 'OH', downG: 'anomerico' }, P2: { up: 'OH', down: 'H' }, P3: { up: 'H', down: 'OH' }, P4: { up: 'CH2OH', upDir: [-0.5, -0.87], down: 'H', upNum: '6' } })
+};
+const PN = { C1: '1', C2: '2', C3: '3', C4: '4', C5: '5' };
+function haworthMono(key, an, L) {
+  const m = new Mol(); const tf = { ud: !!L };
+  if (key === 'glucosa' || key === 'galactosa') haworth(m, 'pyr', 0, 0, SUG[key === 'glucosa' ? 'glc' : 'gal'](an), tf, { nums: PN, g: { C1: 'anomerico' } });
+  else if (key === 'fructosa') haworth(m, 'fur', 0, 0, SUG.fru(an), tf, { nums: { P1: '2', P2: '3', P3: '4', P4: '5' }, g: { P1: 'anomerico' } });
+  else haworth(m, 'fur', 0, 0, SUG.rib(an, key === 'desoxirribosa'), tf, { nums: { P1: '1', P2: '2', P3: '3', P4: '4' }, g: { P1: 'anomerico', P2: key === 'desoxirribosa' ? 'dif' : undefined } });
+  return m;
+}
+function link(m, a, b, dir, note) {
+  const A = m.atoms[a], B = m.atoms[b]; const up = dir === 'up';
+  const o = m.a((A.x + B.x) / 2, up ? Math.min(A.y, B.y) - 30 : Math.max(A.y, B.y) + 30, 'O', { g: 'glucosidico' });
+  m.b(a, o); m.b(o, b);
+  if (note) { const P = m.atoms[o]; m.t(P.x, up ? P.y - 16 : P.y + 26, note, { cls: 'anno', size: 12 }); }
+  return o;
+}
+function disacMol(kind, an) {
+  const m = new Mol();
+  if (kind === 'maltosa') {
+    const s1 = SUG.glc('α'); s1.C1 = { up: 'H' }; const i1 = haworth(m, 'pyr', 0, 0, s1, {}, { nums: PN });
+    const s2 = SUG.glc(an); s2.C4 = { up: 'H' }; const i2 = haworth(m, 'pyr', 200, 0, s2, {}, { nums: PN, g: { C1: 'anomerico' } });
+    link(m, i1.C1, i2.C4, 'down', 'α(1→4)');
+  } else if (kind === 'celobiosa' || kind === 'lactosa') {
+    const s1 = (kind === 'lactosa' ? SUG.gal : SUG.glc)('β'); s1.C1 = { down: 'H' }; const i1 = haworth(m, 'pyr', 0, 0, s1, {}, { nums: PN });
+    const s2 = SUG.glc(an); s2.C4 = { up: 'H' }; const i2 = haworth(m, 'pyr', 200, 0, s2, { my: true, ud: true }, { nums: PN, g: { C1: 'anomerico' } });
+    link(m, i1.C1, i2.C4, 'up', 'β(1→4)');
+  } else if (kind === 'sacarosa') {
+    const s1 = SUG.glc('α'); s1.C1 = { up: 'H' }; const i1 = haworth(m, 'pyr', 0, 0, s1, {}, { nums: PN });
+    const s2 = SUG.fru('β'); s2.P1 = { down: 'CH2OH', downF: [0, -1], downNum: '1' };
+    const i2 = haworth(m, 'fur', 192, 8, s2, { mx: true, ud: true }, { nums: { P1: '2', P2: '3', P3: '4', P4: '5' } });
+    link(m, i1.C1, i2.P1, 'down', 'α(1→2)β');
+  }
+  return m;
+}
+function polyChain(kind) {
+  const m = new Mol(); const n = 3; const ids = [];
+  for (let i = 0; i < n; i++) {
+    const flip = (kind !== 'amilosa') && i % 2 === 1;
+    const an = kind === 'amilosa' ? 'α' : 'β';
+    const s = (kind === 'quitina' ? SUG.nag : SUG.glc)(an);
+    if (i < n - 1) { if (an === 'α') s.C1 = { up: 'H' }; else s.C1 = { down: 'H' }; }
+    if (i > 0) s.C4 = { up: 'H' };
+    ids.push(haworth(m, 'pyr', i * 200, 0, s, flip ? { my: true, ud: true } : {}, { nums: PN }));
+  }
+  for (let i = 0; i < n - 1; i++) {
+    let dir; if (kind === 'amilosa') dir = 'down'; else dir = i % 2 === 0 ? 'up' : 'down';
+    link(m, ids[i].C1, ids[i + 1].C4, dir, kind === 'amilosa' ? 'α(1→4)' : 'β(1→4)');
+  }
+  return m;
+}
+function branchMol() {
+  const m = new Mol(); const ids = [];
+  for (let i = 0; i < 3; i++) {
+    const s = SUG.glc('α'); if (i < 2) s.C1 = { up: 'H' }; if (i > 0) s.C4 = { up: 'H' };
+    if (i === 1) s.C5 = { up: 'CH2', upG: 'ramif', upNum: '6' };
+    ids.push(haworth(m, 'pyr', i * 200, 0, s, {}, { nums: PN }));
+  }
+  link(m, ids[0].C1, ids[1].C4, 'down', 'α(1→4)'); link(m, ids[1].C1, ids[2].C4, 'down', 'α(1→4)');
+  const ch2 = ids[1].C5_up; const P = m.atoms[ch2];
+  const o = m.a(P.x, P.y - 34, 'O', { g: 'ramif' }); m.b(ch2, o);
+  m.t(P.x + 14, P.y - 30, 'α(1→6)', { cls: 'anno', size: 12, anchor: 'start' });
+  const s3 = SUG.glc('α'); s3.C1 = { up: 'H' };
+  const i3 = haworth(m, 'pyr', P.x - 90, P.y - 34 - 32 - 32, s3, {}, { nums: PN }); m.b(i3.C1, o);
+  return m;
+}
+/* esquemas de polisacáridos */
+function treeSVG(o) {
+  const nodes = [], links = []; let rnd = o.seed || 7; const rand = () => { rnd = (rnd * 9301 + 49297) % 233280; return rnd / 233280; };
+  const step = o.step || 11;
+  function grow(x, y, ang, n, lv, parent) {
+    let px = x, py = y, prev = parent, side = rand() < .5 ? 1 : -1;
+    for (let i = 0; i < n; i++) {
+      px += step * Math.cos(ang); py += step * Math.sin(ang);
+      const id = nodes.length; nodes.push({ x: px, y: py, b: false }); if (prev != null) links.push([prev, id]); prev = id;
+      if (lv < o.levels && i >= 1 && i < n - 2 && (i % o.every) === (o.off ?? 1)) { nodes[id].b = true; grow(px, py, ang + side * o.spread * D2R, Math.max(3, Math.round(n * o.shrink)), lv + 1, id); side = -side; }
+      ang += (rand() - 0.5) * 0.15;
+    }
+  }
+  if (o.radial) { nodes.push({ x: 0, y: 0, b: true, root: 1 }); for (let k = 0; k < o.radial; k++) grow(0, 0, k * 2 * Math.PI / o.radial + 0.3, o.len, 1, 0); }
+  else grow(0, 0, 0, o.len, 1, null);
+  let x1 = 1e9, y1 = 1e9, x2 = -1e9, y2 = -1e9; nodes.forEach(n => { x1 = Math.min(x1, n.x); y1 = Math.min(y1, n.y); x2 = Math.max(x2, n.x); y2 = Math.max(y2, n.y); });
+  const pad = 12; let s = '';
+  links.forEach(([a, b]) => { s += ln(nodes[a].x, nodes[a].y, nodes[b].x, nodes[b].y, 'tl'); });
+  nodes.forEach(n => { s += `<polygon points="${hexPts(n.x, n.y, n.b ? 5.2 : 4.4)}" class="${n.root ? 'tn root' : n.b ? 'tn br' : 'tn'}"/>`; });
+  const W = x2 - x1 + 2 * pad, H = y2 - y1 + 2 * pad;
+  return `<svg class="mol" viewBox="${r1(x1 - pad)} ${r1(y1 - pad)} ${r1(W)} ${r1(H)}" style="--w:${Math.round(Math.min(W, o.maxw || 420))}" role="img" aria-label="${esc(o.label || '')}">${s}</svg>`;
+}
+const legendTree = (br) => `<div class="mini-leg"><span><i class="lg-g"></i>glucosa</span>${br ? '<span><i class="lg-b"></i>punto de ramificación α(1→6)</span>' : ''}</div>`;
+function helixSVG() {
+  let back = '', front = ''; const N = 30;
+  for (let i = 0; i < N; i++) { const t = i * 2 * Math.PI / 6; const x = 14 + i * 13, y = 50 + 30 * Math.sin(t), z = Math.cos(t); const el = `<polygon points="${hexPts(x, y, 6 + 1.6 * z)}" class="tn" opacity="${r1(0.55 + 0.45 * z)}"/>`; if (z < 0) back += el; else front += el; }
+  let path = ''; for (let i = 0; i <= (N - 1) * 4; i++) { const t = i / 4 * 2 * Math.PI / 6; path += (i ? 'L' : 'M') + r1(14 + i / 4 * 13) + ',' + r1(50 + 30 * Math.sin(t)); }
+  return svgWrap(410, 100, `<path d="${path}" class="tl" fill="none"/>${back}${front}` + txt(205, 97, '≈ 6 glucosas por vuelta de hélice', 'anno'), 'Hélice de amilosa');
+}
+function fibrilSVG() {
+  let s = ''; const rows = [24, 62, 100];
+  rows.forEach((y, r) => { for (let i = 0; i < 12; i++) { const x = 20 + i * 30; if (i) s += ln(x - 22, y, x - 8, y, 'tl'); s += `<polygon points="${hexPts(x, y, 8, i % 2 ? 0 : 30)}" class="tn"/>`; if (r < 2) s += ln(x, y + 9, x, y + 29, 'hbl'); } });
+  s += txt(195, 132, 'Cadenas paralelas unidas por puentes de hidrógeno (- - -) → microfibrillas', 'anno');
+  return svgWrap(390, 140, s, 'Microfibrilla de celulosa');
+}
+function donutSVG() {
+  const cx = 70, cy = 70, R = 52, r = 30; const arc = (a0, a1, cls) => { const p = (a, rr) => [cx + rr * Math.cos(a), cy + rr * Math.sin(a)]; const [x0, y0] = p(a0, R), [x1, y1] = p(a1, R), [x2, y2] = p(a1, r), [x3, y3] = p(a0, r); const lg = a1 - a0 > Math.PI ? 1 : 0; return `<path class="${cls}" d="M${r1(x0)},${r1(y0)} A${R},${R} 0 ${lg} 1 ${r1(x1)},${r1(y1)} L${r1(x2)},${r1(y2)} A${r},${r} 0 ${lg} 0 ${r1(x3)},${r1(y3)} Z"/>`; };
+  const a = -Math.PI / 2, b = a + 0.3 * 2 * Math.PI;
+  let s = arc(a, b, 'dn1') + arc(b, a + 2 * Math.PI - 0.0001, 'dn2');
+  s += `<rect x="150" y="36" width="14" height="14" rx="3" class="dn1"/>` + txt(172, 48, '30 % amilosa (lineal, helicoidal)', 'ct', 'start', 13);
+  s += `<rect x="150" y="80" width="14" height="14" rx="3" class="dn2"/>` + txt(172, 92, '70 % amilopectina (ramificada)', 'ct', 'start', 13);
+  return svgWrap(390, 142, s, 'Composición del almidón');
+}
+
+/* ======================= PROTEÍNAS ======================= */
+function aaMol(st) {
+  const m = new Mol(); const ca = m.a(0, 0, 'C', { g: 'alfa' });
+  const nL = (st === 'zwit' || st === 'cat') ? 'H3N+' : 'H2N';
+  const n = m.a(-50, 0, nL, { align: 'r', g: 'amino' }); m.b(n, ca);
+  const c = m.a(48, 0, 'C', { g: 'carboxilo' }); m.b(ca, c);
+  bondTo(m, c, 60, 'O', { g: 'carboxilo' }, 2, 32);
+  bondTo(m, c, -60, (st === 'zwit' || st === 'an') ? 'O−' : 'OH', { g: 'carboxilo', align: 'l' }, 1, 32);
+  bondTo(m, ca, 90, 'R', { g: 'R' }, 1, 36); bondTo(m, ca, -90, 'H', {}, 1, 36);
+  return m;
+}
+function peptideReaction() {
+  const a1 = new Mol(); let r = row(a1, 0, 0, [['H2N', { g: 'amino' }], ['C', { g: 'alfa' }], ['C', { g: 'carboxilo' }], ['OH', { g: 'agua' }]], 16);
+  bondTo(a1, r[1], 90, 'R1', { g: 'R' }, 1, 34); bondTo(a1, r[1], -90, 'H', {}, 1, 32); bondTo(a1, r[2], 90, 'O', { g: 'carboxilo' }, 2, 32);
+  const a2 = new Mol(); r = row(a2, 0, 0, [['H', { g: 'agua' }], ['N', { g: 'amino' }], ['C', { g: 'alfa' }], ['C', { g: 'carboxilo' }], ['OH', { g: 'carboxilo' }]], 16);
+  bondTo(a2, r[1], -90, 'H', { g: 'amino' }, 1, 32); bondTo(a2, r[2], 90, 'R2', { g: 'R' }, 1, 34); bondTo(a2, r[2], -90, 'H', {}, 1, 32); bondTo(a2, r[3], 90, 'O', { g: 'carboxilo' }, 2, 32);
+  const p = new Mol(); r = row(p, 0, 0, [['H2N', { g: 'amino' }], ['C', { g: 'alfa' }], ['C', { g: 'peptidico' }], ['N', { g: 'peptidico' }], ['C', { g: 'alfa' }], ['C', { g: 'carboxilo' }], ['OH', { g: 'carboxilo' }]], 16);
+  bondTo(p, r[1], 90, 'R1', { g: 'R' }, 1, 34); bondTo(p, r[1], -90, 'H', {}, 1, 32); bondTo(p, r[2], 90, 'O', { g: 'peptidico' }, 2, 32);
+  bondTo(p, r[3], -90, 'H', { g: 'peptidico' }, 1, 32); bondTo(p, r[4], 90, 'R2', { g: 'R' }, 1, 34); bondTo(p, r[4], -90, 'H', {}, 1, 32); bondTo(p, r[5], 90, 'O', { g: 'carboxilo' }, 2, 32);
+  const w = new Mol(); w.a(0, 0, 'H2O', { g: 'agua' });
+  return [hcat([a1, { op: '+' }, a2, { op: '→', label: 'condensación', label2: '(se libera H₂O)' }]), hcat([p, { op: '+' }, w])];
+}
+const PEP_REAL = [{ R: 'H', ab: 'Gly (glicina)' }, { R: 'CH3', ab: 'Ala (alanina)' }, { R: 'CH2OH', ab: 'Ser (serina)' }, { R: 'CH2SH', ab: 'Cys (cisteína)' }, { R: 'CH(CH3)2', ab: 'Val (valina)' }];
+function peptideMol(generic) {
+  const res = generic ? PEP_REAL.map((x, i) => ({ R: 'R' + (i + 1), ab: 'aminoácido ' + (i + 1) })) : PEP_REAL;
+  const m = new Mol(); const sp = 46; let x = 0;
+  let prevN = m.a(0, 0, 'H2N', { g: 'nterm' });
+  res.forEach((r, i) => {
+    const up = i % 2 === 0; const last = i === res.length - 1;
+    const ca = m.a(x + sp, 0, 'C', {}); m.b(prevN, ca);
+    bondTo(m, ca, up ? 90 : -90, r.R, { g: 'R' }, 1, 36); bondTo(m, ca, up ? -90 : 90, 'H', {}, 1, 32);
+    const c = m.a(x + 2 * sp, 0, 'C', { g: last ? 'cterm' : 'peptidico' }); m.b(ca, c);
+    bondTo(m, c, up ? -90 : 90, 'O', { g: last ? 'cterm' : 'peptidico' }, 2, 32);
+    m.t(x + sp, 78, r.ab, { cls: 'tag', size: 11 });
+    if (!last) { const nn = m.a(x + 3 * sp, 0, 'N', { g: 'peptidico' }); m.b(c, nn); bondTo(m, nn, up ? 90 : -90, 'H', { g: 'peptidico' }, 1, 32); prevN = nn; x += 3 * sp; }
+    else { const oh = m.a(x + 3 * sp - 8, 0, 'OH', { g: 'cterm', align: 'l' }); m.b(c, oh); }
+  });
+  m.t(0, -30, 'N-terminal', { cls: 'tag', size: 11 }); m.t(x + 3 * sp, -30, 'C-terminal', { cls: 'tag', size: 11 });
+  return m;
+}
+function levelsSVG() {
+  let s = '';
+  const letters = 'MKTAYIAKQR';
+  let p = ''; for (let i = 0; i < 10; i++) { const x = 18 + (i % 5) * 26, y = 44 + Math.floor(i / 5) * 46 + (i % 2) * 8; p += (i ? 'L' : 'M') + x + ',' + y; }
+  s += `<path d="${p}" class="tl" fill="none"/>`;
+  for (let i = 0; i < 10; i++) { const x = 18 + (i % 5) * 26, y = 44 + Math.floor(i / 5) * 46 + (i % 2) * 8; s += `<circle cx="${x}" cy="${y}" r="11" class="bead b${i % 4}"/>` + txt(x, y + 4, letters[i], 'ct b', 'middle', 11); }
+  s += txt(70, 160, 'Primaria', 'tag') + txt(70, 176, 'secuencia de aa', 'anno');
+  let h = 'M170,40'; for (let i = 0; i < 40; i++) { const t = i / 39; h += ` L${r1(170 + 18 * Math.sin(t * 6 * Math.PI) + 18)},${r1(30 + t * 50)}`; } s += `<path d="${h}" class="ribbon"/>`;
+  for (let k = 0; k < 3; k++) { const y = 96 + k * 14; s += `<path d="M${k % 2 ? 236 : 164},${y} L${k % 2 ? 172 : 222},${y}" class="ribbon b2"/><path d="M${k % 2 ? 172 : 222},${y - 5} l${k % 2 ? -10 : 10},5 l${k % 2 ? 10 : -10},5 z" class="ribbonh"/>`; }
+  s += txt(200, 160, 'Secundaria', 'tag') + txt(200, 176, 'α-hélice y lámina β', 'anno');
+  s += `<path d="M280,60 C300,20 350,30 340,60 C330,90 290,70 300,100 C310,130 360,120 350,95 C345,80 320,90 318,110 C316,135 280,130 285,105" class="ribbon"/>`;
+  s += txt(318, 160, 'Terciaria', 'tag') + txt(318, 176, 'plegamiento 3D', 'anno');
+  [[410, 62, 0], [452, 62, 1], [410, 104, 2], [452, 104, 3]].forEach(([x, y, k]) => { s += `<path d="M${x - 18},${y} C${x - 18},${y - 26} ${x + 20},${y - 24} ${x + 18},${y} C${x + 16},${y + 22} ${x - 18},${y + 24} ${x - 18},${y} Z" class="blob b${k}"/>`; });
+  s += txt(431, 160, 'Cuaternaria', 'tag') + txt(431, 176, 'varias cadenas', 'anno');
+  return svgWrap(490, 186, s, 'Niveles estructurales de las proteínas');
+}
+
+/* ======================= ÁCIDOS NUCLEICOS ======================= */
+function baseDef(b) {
+  const A = [], B = []; const add = (x, y, label, o = {}) => { A.push(Object.assign({ x, y, label, g: 'base' }, o)); return A.length - 1; };
+  const bond = (i, j, ord = 1, inner) => B.push({ i, j, order: ord, inner });
+  if (b === 'C' || b === 'T' || b === 'U' || b === 'pyr') {
+    const c = [0, -30], plain = b === 'C' || b === 'pyr';
+    const n1 = add(0, 0, 'N', { num: '1' }), c2 = add(-26, -15, '', { num: '2' }), n3 = add(-26, -45, plain ? 'N' : 'HN', { num: '3', align: plain ? 'c' : 'r' }), c4 = add(0, -60, '', { num: '4' }), c5 = add(26, -45, '', { num: '5' }), c6 = add(26, -15, '', { num: '6' });
+    if (b === 'pyr') { bond(n1, c2); bond(c2, n3, 2, c); bond(n3, c4); bond(c4, c5, 2, c); bond(c5, c6); bond(c6, n1, 2, c); return { A, B, attach: n1 }; }
+    bond(n1, c2); bond(c2, n3); bond(n3, c4, b === 'C' ? 2 : 1, c); bond(c4, c5); bond(c5, c6, 2, c); bond(c6, n1);
+    bond(c2, add(-52, 0, 'O'), 2);
+    if (b === 'C') bond(c4, add(0, -90, 'NH2')); else bond(c4, add(0, -90, 'O'), 2);
+    if (b === 'T') bond(c5, add(52, -60, 'CH3', { align: 'l' }));
+    return { A, B, attach: n1 };
+  }
+  const V = { C6: [0, -30], C5: [26, -15], C4: [26, 15], N3: [0, 30], C2: [-26, 15], N1: [-26, -15], N7: [54.53, -24.27], C8: [72.16, 0], N9: [54.53, 24.27] };
+  const hc = [0, 0], pc = [46.64, 0], G = b === 'G'; const i = {};
+  i.N1 = add(...V.N1, G ? 'HN' : 'N', { num: '1', align: G ? 'r' : 'c' }); i.C2 = add(...V.C2, '', { num: '2' }); i.N3 = add(...V.N3, 'N', { num: '3' });
+  i.C4 = add(...V.C4, '', { num: '4' }); i.C5 = add(...V.C5, '', { num: '5' }); i.C6 = add(...V.C6, '', { num: '6' });
+  i.N7 = add(...V.N7, 'N', { num: '7' }); i.C8 = add(...V.C8, '', { num: '8' }); i.N9 = add(...V.N9, 'N', { num: '9' });
+  bond(i.N1, i.C2); bond(i.C2, i.N3, 2, hc); bond(i.N3, i.C4); bond(i.C4, i.C5, 2, hc); bond(i.C5, i.C6); bond(i.C6, i.N1, G ? 1 : 2, hc);
+  bond(i.C5, i.N7); bond(i.N7, i.C8, 2, pc); bond(i.C8, i.N9); bond(i.N9, i.C4);
+  if (b === 'A') bond(i.C6, add(0, -60, 'NH2'));
+  if (G) { bond(i.C6, add(0, -60, 'O'), 2); bond(i.C2, add(-52, 30, 'H2N', { align: 'r' })); }
+  const th = 18 * D2R, [ox, oy] = V.N9; const rot = ([x, y]) => { x -= ox; y -= oy; return [x * Math.cos(th) - y * Math.sin(th), x * Math.sin(th) + y * Math.cos(th)]; };
+  A.forEach(a => { [a.x, a.y] = rot([a.x, a.y]); }); B.forEach(bd => { if (bd.inner) bd.inner = rot(bd.inner); });
+  return { A, B, attach: i.N9 };
+}
+const FLIPL = { HN: 'NH', NH: 'HN', H2N: 'NH2', NH2: 'H2N', CH3: 'H3C', H3C: 'CH3', HO: 'OH', OH: 'HO' };
+function placeBase(m, def, ax, ay, o = {}) {
+  const ring = def.A.filter(a => a.num); const cx = ring.reduce((s, a) => s + a.x, 0) / ring.length, cy = ring.reduce((s, a) => s + a.y, 0) / ring.length;
+  const ids = def.A.map(a => {
+    const lx = o.mirror ? -a.x : a.x; let label = a.label, align = a.align;
+    if (o.mirror && align && align !== 'c') { align = align === 'l' ? 'r' : 'l'; label = FLIPL[label] || label; }
+    let na; if (a.num) { const dx = (o.mirror ? -(a.x - cx) : a.x - cx), dy = a.y - cy, l = Math.hypot(dx, dy) || 1; na = [dx / l * 12, dy / l * 12 + 2]; }
+    return m.a(lx + ax, a.y + ay, label, { g: o.g || a.g, num: a.num, na, align });
+  });
+  def.B.forEach(b => m.b(ids[b.i], ids[b.j], b.order, b.inner ? { inner: [(o.mirror ? -b.inner[0] : b.inner[0]) + ax, b.inner[1] + ay] } : {}));
+  const att = ids[def.attach];
+  if (o.freeH) { const p = m.atoms[att]; const h = m.a(p.x, p.y + 28, 'H', { g: 'base' }); m.b(att, h); }
+  return { ids, attach: att };
+}
+function baseMol(b) { const m = new Mol(); placeBase(m, baseDef(b), 0, 0, { freeH: true }); return m; }
+function pentosaNuc(deoxy) {
+  const m = new Mol();
+  haworth(m, 'fur', 0, 0, SUG.rib('β', deoxy), {}, { nums: { P1: '1′', P2: '2′', P3: '3′', P4: '4′' }, g: { P2: deoxy ? 'dif' : undefined } });
+  m.atoms.forEach(a => { if (a.num === '5') a.num = '5′'; });
+  return m;
+}
+const NUC = { A: ['adenina', 'adenosina', 'adenosín', 'A'], G: ['guanina', 'guanosina', 'guanosín', 'G'], C: ['citosina', 'citidina', 'citidín', 'C'], T: ['timina', 'timidina', 'timidín', 'T'], U: ['uracilo', 'uridina', 'uridín', 'U'] };
+function nucName(sugar, base, nP) {
+  const d = sugar === 'desoxirribosa'; const N = NUC[base]; nP = +nP;
+  if (!nP) return { full: (d ? 'Desoxi' + N[1] : N[1][0].toUpperCase() + N[1].slice(1)), ab: 'nucleósido', kind: 'Nucleósido' };
+  const full = (d ? 'Desoxi' + N[2] : N[2][0].toUpperCase() + N[2].slice(1)) + ' ' + ['mono', 'di', 'tri'][nP - 1] + 'fosfato';
+  return { full, ab: (d ? 'd' : '') + N[3] + ['M', 'D', 'T'][nP - 1] + 'P', kind: 'Nucleótido' };
+}
+function nucleotideMol(sugar, base, nP) {
+  nP = +nP; const m = new Mol(); const deoxy = sugar === 'desoxirribosa';
+  const subs = { P1: { down: 'H' }, P2: deoxy ? { up: 'H', down: 'H' } : { up: 'H', down: 'OH' }, P3: { up: 'H', down: 'OH' }, P4: { down: 'H' } };
+  const ids = haworth(m, 'fur', 0, 0, subs, {}, { ringG: 'pentosa', subG: 'pentosa', nums: { P1: '1′', P2: '2′', P3: '3′', P4: '4′' } });
+  const c5 = m.a(-64, 0, nP ? 'CH2' : 'HOCH2', { g: 'pentosa', num: '5′', na: [0, -15], align: nP ? 'c' : 'r' }); m.b(ids.P4, c5);
+  if (nP) {
+    let x = -104; let prev = c5; const o = m.a(x, 0, 'O', { g: 'fosfato' }); m.b(prev, o); prev = o;
+    m.t(-84, 22, 'éster', { cls: 'anno grp', size: 10.5 });
+    for (let k = 0; k < nP; k++) {
+      x -= 40; const p = m.a(x, 0, 'P', { g: 'fosfato' }); m.b(prev, p);
+      bondTo(m, p, 90, 'O', { g: 'fosfato' }, 2, 32); bondTo(m, p, -90, 'O−', { g: 'fosfato' }, 1, 32);
+      x -= 40; const ol = m.a(x, 0, k === nP - 1 ? '−O' : 'O', { g: 'fosfato' }); m.b(p, ol); prev = ol;
+    }
+  }
+  const pb = placeBase(m, baseDef(base), 56, -8, { mirror: true }); m.b(ids.P1, pb.attach);
+  m.t(64, 12, 'N-glucosídico', { cls: 'anno grp', size: 10.5, anchor: 'start' });
+  return m;
+}
+function polyNucMol(type) {
+  const m = new Mol(); const deoxy = type === 'ADN';
+  const mk = (oy, top) => {
+    const subs = { P1: { down: 'H' }, P2: deoxy ? { up: 'H', down: 'H' } : { up: 'H', down: 'OH' }, P3: { up: 'H' }, P4: { down: 'H' } };
+    if (!top) subs.P3.down = 'OH';
+    const ids = haworth(m, 'fur', 0, oy, subs, {}, { ringG: 'pentosa', subG: 'pentosa', nums: { P1: '1′', P2: '2′', P3: '3′', P4: '4′' } });
+    const c5 = m.a(-64, oy, 'CH2', { g: 'pentosa', num: '5′', na: [0, -15] }); m.b(ids.P4, c5); return { ids, c5 };
+  };
+  const s1 = mk(0, true), s2 = mk(210, false);
+  const o = m.a(-104, 0, 'O', { g: 'fosfato' }); m.b(s1.c5, o); const p = m.a(-144, 0, 'P', { g: 'fosfato' }); m.b(o, p);
+  bondTo(m, p, 90, 'O', { g: 'fosfato' }, 2, 32); bondTo(m, p, -90, 'O−', { g: 'fosfato' }, 1, 32); const ol = m.a(-184, 0, '−O', { g: 'fosfato' }); m.b(p, ol);
+  const o3 = m.a(-34, 96, 'O', { g: 'fosfodiester' }); m.b(s1.ids.P3, o3);
+  const pp = m.a(-34, 134, 'P', { g: 'fosfodiester' }); m.b(o3, pp);
+  bondTo(m, pp, 155, 'O', { g: 'fosfodiester' }, 2, 36); bondTo(m, pp, 205, 'O−', { g: 'fosfodiester' }, 1, 36);
+  const o5 = m.a(-34, 172, 'O', { g: 'fosfodiester' }); m.b(pp, o5); m.b(o5, s2.c5);
+  let b1, b2;
+  if (deoxy) { b1 = pairedBase(m, 'A', s1.ids.P1); b2 = pairedBase(m, 'T', s2.ids.P1); }
+  else { b1 = placeBase(m, baseDef('A'), 56, -8, { mirror: true }); m.b(s1.ids.P1, b1.attach); b2 = placeBase(m, baseDef('U'), 56, 202, { mirror: true }); m.b(s2.ids.P1, b2.attach); }
+  m.t(-170, -52, "extremo 5′", { cls: 'tag', size: 12 });
+  m.t(-34, 326, "extremo 3′", { cls: 'tag', size: 12 });
+  m.t(-80, 138, 'fosfodiéster', { cls: 'anno', size: 11, anchor: 'end' });
+  if (!deoxy) return m;
+  m._bases = [b1.ids, b2.ids]; m._wc = [b1.wc, b2.wc];
+  return doubleStrand(m);
+}
+/* gira una cadena 180° (reflexión puntual) manteniendo los textos derechos */
+function rotMol(src) {
+  const m = new Mol();
+  src.atoms.forEach(a => {
+    let label = a.label, align = a.align;
+    if (align === 'l' || align === 'r') { align = align === 'l' ? 'r' : 'l'; label = FLIPL[label] || LEFTF[label] || RIGHTF[label] || label; }
+    m.atoms.push(Object.assign({}, a, { x: -a.x, y: -a.y, label, align, na: a.na ? [-a.na[0], -a.na[1]] : undefined, _r: undefined }));
+  });
+  src.bonds.forEach(b => m.bonds.push(Object.assign({}, b, { inner: b.inner ? [-b.inner[0], -b.inner[1]] : undefined })));
+  src.extras.forEach(e => m.extras.push(Object.assign({}, e, { x: -e.x, y: -e.y, anchor: e.anchor === 'end' ? 'start' : e.anchor === 'start' ? 'end' : e.anchor })));
+  return m;
+}
+const LFORM = { NH: 'HN', NH2: 'H2N', CH3: 'H3C' }, RFORM = { HN: 'NH', H2N: 'NH2', H3C: 'CH3' };
+/* orienta una base para que su borde de Watson-Crick apunte hacia "target" (grados) */
+function orientBase(def, wc, target, wantDown) {
+  for (const mir of [false, true]) {
+    const P = def.A.map(a => [mir ? -a.x : a.x, a.y]); const ring = def.A.map((a, i) => i).filter(i => def.A[i].num);
+    const c = [ring.reduce((s, i) => s + P[i][0], 0) / ring.length, ring.reduce((s, i) => s + P[i][1], 0) / ring.length];
+    const w = [(P[wc[0]][0] + P[wc[1]][0]) / 2, (P[wc[0]][1] + P[wc[1]][1]) / 2];
+    const th = target * D2R - Math.atan2(w[1] - c[1], w[0] - c[0]), co = Math.cos(th), si = Math.sin(th);
+    const R = ([x, y]) => { x -= c[0]; y -= c[1]; return [x * co - y * si, x * si + y * co]; };
+    const Q = P.map(R); const at = Q[def.attach];
+    if ((at[1] > 0) === wantDown) {
+      const l = Math.hypot(at[0], at[1]);
+      return { Q, inner: def.B.map(bd => bd.inner ? R([mir ? -bd.inner[0] : bd.inner[0], bd.inner[1]]) : null), wc: R(w), out: [at[0] / l, at[1] / l] };
+    }
+  }
+}
+function placeOriented(m, def, or, ax, ay) {
+  const dx = ax - or.Q[def.attach][0], dy = ay - or.Q[def.attach][1];
+  const nb = def.A.map(() => []); def.B.forEach(b => { nb[b.i].push(b.j); nb[b.j].push(b.i); });
+  const ids = def.A.map((a, i) => {
+    const [x, y] = or.Q[i]; let label = a.label, align = a.align;
+    if (LFORM[label] || RFORM[label]) {
+      const side = nb[i].length === 1 ? x - or.Q[nb[i][0]][0] : x;
+      const base = RFORM[label] || label;
+      if (side > 8) { label = base; align = 'l'; } else if (side < -8) { label = LFORM[base] || base; align = 'r'; } else { label = base; align = 'c'; }
+    }
+    const l = Math.hypot(x, y) || 1;
+    return m.a(x + dx, y + dy, label, { g: a.g, num: a.num, na: a.num ? [x / l * 12, y / l * 12 + 2] : undefined, align });
+  });
+  def.B.forEach((b, k) => m.b(ids[b.i], ids[b.j], b.order, or.inner[k] ? { inner: [or.inner[k][0] + dx, or.inner[k][1] + dy] } : {}));
+  return { ids, attach: ids[def.attach], wc: [or.wc[0] + dx, or.wc[1] + dy] };
+}
+function pairedBase(m, b, c1) {
+  const def = baseDef(b), wc = b === 'A' ? [0, 9] : [2, 7];
+  const or = orientBase(def, wc, 0, true); const C = m.atoms[c1];
+  const r = placeOriented(m, def, or, C.x - 32 * or.out[0], C.y - 32 * or.out[1]); m.b(c1, r.attach); return r;
+}
+function doubleStrand(m) {
+  const [wA, wT] = m._wc; const DX = wA[0] + wT[0] + 80, DY = wA[1] + wT[1];
+  const r = rotMol(m), off = m.atoms.length; const out = new Mol(); out.merge(m); out.merge(r, DX, DY);
+  const B2 = m._bases.map(ids => ids.map(i => i + off));
+  const hb = (i, j) => out.b(i, j, 1, { style: 'hb' });
+  hb(m._bases[0][0], B2[1][2]); hb(m._bases[0][9], B2[1][7]);
+  hb(B2[0][0], m._bases[1][2]); hb(B2[0][9], m._bases[1][7]);
+  return out;
+}
+const BCOL = { A: '#2F9E57', T: '#D9472F', G: '#D99A12', C: '#2F6FD6', U: '#9B4FD1' };
+const COMP = { A: 'T', T: 'A', G: 'C', C: 'G' };
+function ladderSVG(seq) {
+  const s0 = (seq || '').toUpperCase().replace(/U/g, 'T').replace(/[^ACGT]/g, '').slice(0, 14) || 'ATGC';
+  const n = s0.length, dx = 40, x0 = 56, W = x0 + n * dx + 40; let s = '';
+  const pent = (x, y) => `<polygon class="sug" points="${[0, 1, 2, 3, 4].map(i => { const a = (-90 + 72 * i) * D2R; return r1(x + 9 * Math.cos(a)) + ',' + r1(y + 9 * Math.sin(a)); }).join(' ')}"/>`;
+  const baseR = (x, y, h, b) => `<rect x="${x - 12}" y="${y}" width="24" height="${h}" rx="5" fill="${BCOL[b]}" fill-opacity=".9"/>` + `<text x="${x}" y="${y + h / 2 + 5}" text-anchor="middle" class="bl">${b}</text>`;
+  s += ln(x0 - 10, 30, x0 + (n - 1) * dx + 10, 30, 'bb') + ln(x0 - 10, 196, x0 + (n - 1) * dx + 10, 196, 'bb');
+  for (let i = 0; i < n; i++) {
+    const x = x0 + i * dx, b = s0[i], c = COMP[b];
+    s += baseR(x, 40, 58, b) + baseR(x, 128, 58, c);
+    const k = (b === 'G' || b === 'C') ? 3 : 2;
+    for (let j = 0; j < k; j++) { const xx = x + (j - (k - 1) / 2) * 7; s += ln(xx, 100, xx, 126, 'hbl'); }
+    s += pent(x, 30) + pent(x, 196);
+    if (i < n - 1) s += `<circle cx="${x + dx / 2}" cy="30" r="6" class="ph"/><circle cx="${x + dx / 2}" cy="196" r="6" class="ph"/>`;
+  }
+  s += txt(x0 - 30, 35, '5′', 'tag', 'middle', 14) + txt(x0 + (n - 1) * dx + 30, 35, '3′', 'tag', 'middle', 14);
+  s += txt(x0 - 30, 201, '3′', 'tag', 'middle', 14) + txt(x0 + (n - 1) * dx + 30, 201, '5′', 'tag', 'middle', 14);
+  s += txt(W / 2, 14, 'ADN · hebra codificante 5′→3′', 'anno') + txt(W / 2, 222, 'hebra molde 3′→5′ (antiparalela)', 'anno');
+  const yR = 262; s += ln(x0 - 10, yR, x0 + (n - 1) * dx + 10, yR, 'bb');
+  for (let i = 0; i < n; i++) { const x = x0 + i * dx, b = s0[i] === 'T' ? 'U' : s0[i]; s += baseR(x, yR + 10, 46, b) + pent(x, yR); }
+  s += txt(x0 - 30, yR + 5, '5′', 'tag', 'middle', 14) + txt(x0 + (n - 1) * dx + 30, yR + 5, '3′', 'tag', 'middle', 14) + txt(W / 2, yR + 76, 'ARNm transcrito (U en lugar de T, ribosa, una sola hebra)', 'anno');
+  return { svg: svgWrap(W, yR + 86, s, 'Doble hélice de ADN y ARN transcrito'), seq: s0 };
+}
+
+/* ======================= CONTENIDO ======================= */
+const F = s => s.replace(/([A-Za-z\)])(\d+)/g, '$1<sub>$2</sub>');
+const ANOM = [['α', 'α'], ['β', 'β']], SERIE = [['D', 'D'], ['L', 'L']], FORMA = [['lineal', 'Lineal'], ['ciclica', 'Cíclica'], ['ambas', 'Ambas']];
+const VISTA = [['detalle', 'Detalle'], ['esquema', 'Esquema'], ['ambas', 'Ambas']];
+
+const TABS = [
+  { id: 'lip', name: 'Lípidos', hash: 'lipidos' },
+  { id: 'nuc', name: 'Ácidos nucleicos', hash: 'acidos-nucleicos' },
+  { id: 'pro', name: 'Proteínas', hash: 'proteinas' },
+  { id: 'glu', name: 'Glúcidos', hash: 'glucidos' },
+  { id: 'pra', name: 'Práctica', hash: 'practica' }
+];
+
+const SECTIONS = {
+  lip: [
+    { id: 'sat', t: 'Ácidos grasos saturados', tip: 'Busca un <b>–COOH</b> en un extremo y una cadena larga en zigzag <b>sin dobles enlaces</b>. Casi siempre tienen un número par de carbonos (14–22).' },
+    { id: 'insat', t: 'Ácidos grasos insaturados', tip: 'Igual que un saturado, pero con uno o más <b>dobles enlaces C=C</b>. En configuración <i>cis</i> cada doble enlace dobla la cadena (un «codo»).' },
+    { id: 'reac', t: 'Reacciones de los ácidos grasos', tip: 'Esterificación: ácido + alcohol → éster + agua. Saponificación: éster + base fuerte (NaOH, KOH) → jabón + alcohol.' },
+    { id: 'simp', t: 'Lípidos saponificables simples', tip: 'Solo C, H y O. <b>Acilglicéridos</b>: glicerina + 1, 2 o 3 ácidos grasos. <b>Ceras</b>: un ácido graso + un monoalcohol de cadena larga.' },
+    { id: 'comp', t: 'Lípidos saponificables complejos', tip: 'Además de C, H y O tienen <b>P y N</b> (o un glúcido). Siempre: una <b>cabeza polar</b> y <b>dos colas apolares</b> → anfipáticos, forman membranas.' },
+    { id: 'insap', t: 'Lípidos insaponificables', tip: 'No contienen ácidos grasos: no forman jabones. <b>Isoprenoides</b>: múltiplos de 5 C ramificados. <b>Esteroides</b>: 4 anillos fusionados (tres de 6 C y uno de 5 C).' }
+  ],
+  nuc: [
+    { id: 'pent', t: 'Las pentosas', tip: 'Anillo de 5 vértices (4 C + 1 O). Si el C2′ tiene –OH → <b>ribosa</b> (ARN). Si solo tiene H → <b>desoxirribosa</b> (ADN).' },
+    { id: 'bases', t: 'Bases nitrogenadas', tip: 'Dos anillos fusionados → <b>púrica</b> (A, G). Un anillo → <b>pirimidínica</b> (C, T, U). La T tiene un –CH₃; la U no.' },
+    { id: 'nucl', t: 'Nucleósidos y nucleótidos', tip: 'Nucleósido = pentosa + base. Nucleótido = nucleósido + fosfato(s) en el C5′.' },
+    { id: 'estr', t: 'Estructura del ADN y del ARN', tip: 'Los nucleótidos se unen por <b>enlaces fosfodiéster 3′→5′</b>. El ADN es una doble hélice de cadenas antiparalelas y complementarias.' }
+  ],
+  pro: [
+    { id: 'aa', t: 'Aminoácidos', tip: 'Un carbono α unido a cuatro grupos: <b>–NH₂</b>, <b>–COOH</b>, <b>–H</b> y una cadena lateral <b>R</b> que es diferente en cada aminoácido.' },
+    { id: 'pep', t: 'Enlace peptídico y péptidos', tip: 'Busca la secuencia repetida <b>–C(=O)–NH–</b>. Un extremo con –NH₂ libre (N-terminal) y otro con –COOH libre (C-terminal).' },
+    { id: 'mas', t: 'Para saber más', tip: 'Los 20 aminoácidos proteicos y los niveles de organización de las proteínas.' }
+  ],
+  glu: [
+    { id: 'tri', t: 'Monosacáridos · Triosas (3 C)', tip: '<b>Aldosa</b>: grupo –CHO en el C1. <b>Cetosa</b>: grupo C=O en el C2. Serie <b>D</b> si el –OH del último C asimétrico está a la derecha en Fischer.' },
+    { id: 'tetra', t: 'Monosacáridos · Tetrosas (4 C)', tip: 'Eritrosa y treosa son aldotetrosas que solo se diferencian en la posición del –OH del C2. La eritrulosa es una cetotetrosa.' },
+    { id: 'pento', t: 'Monosacáridos · Pentosas (5 C)', tip: 'En disolución se ciclan formando un anillo pentagonal (<b>furanosa</b>). Regla: lo que está a la derecha en Fischer queda <b>abajo</b> en Haworth.' },
+    { id: 'hexa', t: 'Monosacáridos · Hexosas (6 C)', tip: 'Glucosa y galactosa → anillo hexagonal (<b>piranosa</b>). Fructosa → pentagonal (<b>furanosa</b>) con dos –CH₂OH. α: –OH del C anomérico abajo; β: arriba.' },
+    { id: 'di', t: 'Disacáridos', tip: 'Dos anillos unidos por un O (<b>enlace O-glucosídico</b>). Identifica: qué monosacáridos, qué carbonos se unen y si el enlace es α o β.' },
+    { id: 'poli', t: 'Polisacáridos', tip: '<b>α(1→4)</b> → reserva (almidón, glucógeno). <b>β(1→4)</b> → estructurales (celulosa, quitina). Las ramas <b>α(1→6)</b> distinguen amilopectina y glucógeno.' }
+  ]
+};
+
+/* ---------- utilidades de render ---------- */
+function monoRender(key, capName) {
+  return st => {
+    const sp = FIS[key]; const L = st.serie === 'L'; const pre = key === 'dihidroxiacetona' ? '' : (L ? 'L-' : 'D-');
+    const fis = () => fischerMol(sp, L);
+    if (!sp.cyc || st.forma === 'lineal') return [{ fig: fis(), cap: `${pre}${capName} · proyección de Fischer` }];
+    const ringN = (key === 'glucosa' || key === 'galactosa') ? 'piranosa' : 'furanosa';
+    const cyc = `${st.anom}-${L ? 'L' : 'D'}-${capName.replace(/sa$/, '')}${ringN}`;
+    if (st.forma === 'ciclica') return [{ fig: haworthMono(key, st.anom, L), cap: cyc + ' · proyección de Haworth' }];
+    return [{ fig: hcat([fis(), { op: '⇌', label: 'ciclación' }, haworthMono(key, st.anom, L)], { align: 'center', gap: 16 }), cap: `${L ? 'L' : 'D'}-${capName} (Fischer) ⇌ ${cyc} (Haworth)` }];
+  };
+}
+const monoCtl = (cyc, chiral = true) => [
+  ...(cyc ? [{ k: 'forma', label: 'Forma', opts: FORMA }, { k: 'anom', label: 'Anómero', opts: ANOM, when: s => s.forma !== 'lineal' }] : []),
+  ...(chiral ? [{ k: 'serie', label: 'Serie', opts: SERIE }] : [])
+];
+const monoVar = [{ forma: 'lineal' }, { forma: 'ciclica', anom: 'α' }, { forma: 'ciclica', anom: 'β' }];
+
+/* ---------- FICHAS ---------- */
+const ITEMS = [
+  /* ===== LÍPIDOS ===== */
+  { id: 'agsat', tab: 'lip', sec: 'sat', name: 'Ácido graso saturado', sub: 'Fórmula general · ' + F('CH3–(CH2)n–COOH'),
+    render: () => [{ fig: faGenSat(), cap: 'Fórmula semidesarrollada' }, { fig: fattyAcidMol(10), cap: 'Fórmula esquelética (zigzag)' }],
+    desc: '<p>Ácido carboxílico de cadena larga <b>sin dobles enlaces</b>: todos los carbonos están «saturados» de hidrógeno. Las cadenas son rectas y se empaquetan muy bien entre sí (muchas fuerzas de Van der Waals) → son <b>sólidos a temperatura ambiente</b> (sebos, mantecas).</p>',
+    facts: [['Grupo funcional', 'carboxilo (–COOH)'], ['Carácter', 'anfipático'], ['Estado a 20 °C', 'sólido']],
+    quiz: { name: 'Ácido graso saturado (genérico)', cat: 'Ácido graso saturado', grp: 'ag' } },
+  { id: 'estearico', tab: 'lip', sec: 'sat', name: 'Ácido esteárico', sub: '18:0 · ' + F('C18H36O2'),
+    render: () => fattyAcidMol(18),
+    desc: '<p>Ácido graso saturado de <b>18 carbonos</b> (ácido octadecanoico). Abunda en el sebo animal y en la manteca de cacao. Su punto de fusión es alto porque las cadenas rectas se empaquetan muy bien.</p>',
+    facts: [['Nombre sistemático', 'ácido octadecanoico'], ['Punto de fusión', '≈ 69 °C'], ['Fórmula', F('CH3–(CH2)16–COOH')]],
+    quiz: { cat: 'Ácido graso saturado', grp: 'ag' } },
+  { id: 'palmitico', tab: 'lip', sec: 'sat', name: 'Ácido palmítico', sub: '16:0 · ' + F('C16H32O2'),
+    render: () => fattyAcidMol(16),
+    desc: '<p>Ácido graso saturado de <b>16 carbonos</b> (ácido hexadecanoico). Es el ácido graso saturado más abundante en animales y plantas; su nombre viene del aceite de palma.</p>',
+    facts: [['Nombre sistemático', 'ácido hexadecanoico'], ['Punto de fusión', '≈ 63 °C'], ['Fórmula', F('CH3–(CH2)14–COOH')]],
+    quiz: { cat: 'Ácido graso saturado', grp: 'ag' } },
+
+  { id: 'aginsat', tab: 'lip', sec: 'insat', name: 'Ácido graso insaturado', sub: 'Fórmula general · ' + F('CH3–(CH2)n–CH=CH–(CH2)m–COOH'),
+    render: () => [{ fig: faGenInsat(), cap: 'Fórmula semidesarrollada' }, { fig: fattyAcidMol(14, [7]), cap: 'Esquelética: el doble enlace cis dobla la cadena' }],
+    desc: '<p>Tiene uno (<b>monoinsaturado</b>) o varios (<b>poliinsaturado</b>) dobles enlaces C=C. Los dobles enlaces <i>cis</i> provocan codos que impiden que las cadenas se empaqueten → menor punto de fusión → <b>líquidos a temperatura ambiente</b> (aceites).</p>',
+    facts: [['Notación', '18:1 Δ9 = 18 C, 1 doble enlace en el C9'], ['Estado a 20 °C', 'líquido']],
+    quiz: { name: 'Ácido graso insaturado (genérico)', cat: 'Ácido graso insaturado', grp: 'ag' } },
+  { id: 'oleico', tab: 'lip', sec: 'insat', name: 'Ácido oleico', sub: '18:1 cis-Δ9 (ω-9) · ' + F('C18H34O2'),
+    render: () => fattyAcidMol(18, [9]),
+    desc: '<p>Monoinsaturado de <b>18 C</b> con un doble enlace <i>cis</i> entre los carbonos 9 y 10. Es el principal componente del <b>aceite de oliva</b> (55–83 %). Al ser ω-9, su doble enlace está a 9 C del extremo metilo (ω).</p>',
+    facts: [['Nombre sistemático', 'ácido cis-9-octadecenoico'], ['Punto de fusión', '≈ 13 °C'], ['Dónde', 'aceite de oliva, aguacate']],
+    quiz: { cat: 'Ácido graso insaturado', grp: 'ag' } },
+  { id: 'linolenico', tab: 'lip', sec: 'insat', name: 'Ácido α-linolénico', sub: '18:3 cis-Δ9,12,15 (ω-3) · ' + F('C18H30O2'),
+    render: () => fattyAcidMol(18, [9, 12, 15]),
+    desc: '<p>Poliinsaturado de <b>18 C con 3 dobles enlaces</b> <i>cis</i> (C9, C12 y C15). Es un ácido graso <b>esencial</b>: no lo podemos fabricar y debemos tomarlo en la dieta (semillas de lino, chía, nueces). Es el ω-3 de origen vegetal.</p>',
+    facts: [['Punto de fusión', '≈ −11 °C'], ['Tipo', 'esencial, ω-3'], ['Dónde', 'lino, chía, nueces, soja']],
+    quiz: { cat: 'Ácido graso insaturado', grp: 'ag' } },
+  { id: 'cistrans', tab: 'lip', sec: 'insat', name: 'Isomería cis / trans', sub: 'Geometría del doble enlace',
+    render: () => [{ fig: cisTransMol(true), cap: '<b>cis</b>: H al mismo lado → la cadena se dobla' }, { fig: cisTransMol(false), cap: '<b>trans</b>: H en lados opuestos → cadena recta' }],
+    desc: '<p>En los ácidos grasos naturales los dobles enlaces son casi siempre <i>cis</i>. La hidrogenación industrial (margarinas, bollería) puede producir <b>grasas trans</b>, que se empaquetan como las saturadas y se asocian a enfermedades cardiovasculares.</p>' },
+
+  { id: 'esterif', tab: 'lip', sec: 'reac', wide: 1, name: 'Esterificación', sub: 'ácido graso + alcohol → éster + agua',
+    render: () => esterificacion(),
+    desc: '<p>El –OH del grupo carboxilo del ácido graso reacciona con el –H del grupo hidroxilo de un alcohol. Se forma un <b>enlace éster</b> y se libera una molécula de <b>agua</b> (reacción de condensación). Así se forman los acilglicéridos y las ceras. La reacción inversa es una <b>hidrólisis</b>.</p><p class="eq">glicerina + 3 ácidos grasos → triacilglicérido + 3 H₂O</p>',
+    quiz: { cat: 'Reacción', grp: 'reac' } },
+  { id: 'saponif', tab: 'lip', sec: 'reac', wide: 1, name: 'Saponificación', sub: 'éster + base fuerte → jabón + alcohol',
+    render: () => saponificacion(),
+    desc: '<p>Hidrólisis de un éster en medio básico (NaOH o KOH). Se obtiene la <b>sal del ácido graso = jabón</b> y se libera el alcohol. Los jabones son anfipáticos: su cabeza –COO⁻ es polar y su cola es apolar, por eso atrapan la grasa en <b>micelas</b>.</p><p class="eq">triacilglicérido + 3 NaOH → glicerina + 3 R–COO⁻ Na⁺ (jabón)</p>',
+    quiz: { cat: 'Reacción', grp: 'reac' } },
+
+  { id: 'glicerina', tab: 'lip', sec: 'simp', name: 'Glicerina (glicerol)', sub: 'propano-1,2,3-triol · ' + F('C3H8O3'),
+    render: () => glycerolMol(),
+    desc: '<p>Alcohol de <b>3 carbonos con 3 grupos –OH</b>. No es un lípido, pero es el «esqueleto» al que se unen los ácidos grasos en los acilglicéridos y fosfoglicéridos. Es un líquido dulce, viscoso y soluble en agua.</p>',
+    facts: [['Grupos funcionales', '3 hidroxilos'], ['Se obtiene', 'al saponificar grasas']],
+    quiz: { cat: 'Componente de lípidos (alcohol)', grp: 'lipsimp' } },
+  { id: 'tag', tab: 'lip', sec: 'simp', wide: 1, name: 'Triacilglicérido', sub: 'Ej.: tripalmitina · ' + F('C51H98O6'),
+    render: () => tagMol(),
+    desc: '<p>Glicerina esterificada con <b>tres ácidos grasos</b> (grasa neutra o triglicérido). Son apolares e insolubles. Función principal: <b>reserva energética</b> (≈ 9 kcal/g, el doble que los glúcidos) en los adipocitos, además de aislante térmico y protector mecánico. Si predominan ácidos saturados son <b>sebos</b> (sólidos); si son insaturados, <b>aceites</b> (líquidos).</p>',
+    facts: [['Enlaces', '3 enlaces éster'], ['Función', 'reserva de energía'], ['Polaridad', 'apolar']],
+    quiz: { name: 'Triacilglicérido', cat: 'Lípido saponificable simple', grp: 'lipsimp' } },
+  { id: 'cera', tab: 'lip', sec: 'simp', wide: 1, name: 'Cera', sub: 'Ej.: palmitato de miricilo (cera de abeja) · ' + F('C46H92O2'),
+    render: () => waxMol(),
+    desc: '<p>Éster de un <b>ácido graso de cadena larga</b> y un <b>monoalcohol de cadena larga</b>. Son totalmente apolares → función <b>impermeabilizante y protectora</b>: cutícula de hojas y frutos, plumas, pelo (lanolina), cerumen del oído, panales de abeja.</p>',
+    facts: [['Ácido', 'palmítico (16 C)'], ['Alcohol', 'miricílico / triacontanol (30 C)']],
+    quiz: { name: 'Cera', cat: 'Lípido saponificable simple', grp: 'lipsimp' } },
+
+  { id: 'fosfogli', tab: 'lip', sec: 'comp', wide: 1, name: 'Fosfoglicérido', sub: 'Ej.: fosfatidilcolina (lecitina)', ctl: [{ k: 'v', label: 'Vista', opts: [['estructura', 'Estructura'], ['composicion', 'Composición'], ['ambas', 'Ambas']] }], def: { v: 'ambas' },
+    render: s => [s.v !== 'composicion' && { fig: pcMol(), cap: 'Fosfatidilcolina: palmítico en C1, oleico en C2, fosfato y colina en C3' }, s.v !== 'estructura' && { fig: compPG(), cap: 'Composición' }].filter(Boolean),
+    desc: '<p><b>Glicerina</b> + <b>2 ácidos grasos</b> (C1 y C2) + <b>ácido fosfórico</b> (C3) + un <b>alcohol</b> (colina, etanolamina, serina, inositol…). Sin alcohol se llama ácido fosfatídico. Son <b>anfipáticos</b>: forman la <b>bicapa lipídica</b> de todas las membranas celulares.</p>',
+    facts: [['Ejemplos', 'lecitina (colina), cefalina (etanolamina)'], ['Función', 'estructural (membranas)']],
+    quiz: { name: 'Fosfoglicérido', cat: 'Lípido saponificable complejo', grp: 'lipcomp', variants: [{ v: 'estructura' }] } },
+  { id: 'fosfoesf', tab: 'lip', sec: 'comp', wide: 1, name: 'Fosfoesfingolípido', sub: 'Composición · Ej.: esfingomielina',
+    render: () => [{ fig: compSphingo('fosfo') }],
+    desc: '<p><b>Ceramida</b> (esfingosina + ácido graso unidos por enlace amida) + <b>ácido fosfórico</b> + <b>alcohol aminado</b> (colina o etanolamina). No tienen glicerina. La <b>esfingomielina</b> es abundante en la <b>vaina de mielina</b> que aísla los axones de las neuronas.</p>',
+    facts: [['Esqueleto', 'esfingosina (no glicerina)'], ['Ejemplo', 'esfingomielina']],
+    quiz: { name: 'Fosfoesfingolípido', cat: 'Lípido saponificable complejo', grp: 'lipcomp' } },
+  { id: 'glucoesf', tab: 'lip', sec: 'comp', wide: 1, name: 'Glicoesfingolípido', sub: 'Composición · cerebrósidos y gangliósidos',
+    render: () => [{ fig: compSphingo('gluco') }],
+    desc: '<p><b>Ceramida + un glúcido</b>; no tienen fosfato. Si el glúcido es un monosacárido (glucosa o galactosa) → <b>cerebrósidos</b>; si es un oligosacárido ramificado con ácido siálico → <b>gangliósidos</b>. Están en la cara externa de la membrana y participan en el <b>reconocimiento celular</b>: los antígenos de los <b>grupos sanguíneos ABO</b> son glúcidos de este tipo de moléculas.</p>',
+    facts: [['Sin', 'fosfato ni glicerina'], ['Función', 'reconocimiento celular, receptores']],
+    quiz: { name: 'Glicoesfingolípido', cat: 'Lípido saponificable complejo', grp: 'lipcomp' } },
+  { id: 'bicapa', tab: 'lip', sec: 'comp', wide: 1, name: 'Comportamiento anfipático', sub: 'Bicapas y micelas en el agua',
+    render: () => [{ fig: bilayerSVG() }],
+    desc: '<p>En el agua, las moléculas anfipáticas orientan sus <b>cabezas polares hacia el agua</b> y esconden las <b>colas apolares</b> en el interior. Los fosfolípidos (dos colas) forman <b>bicapas</b>, que se cierran en liposomas y son la base de las membranas. Los jabones (una cola) forman <b>micelas</b>, que atrapan la grasa: así limpian.</p>' },
+
+  { id: 'isopreno', tab: 'lip', sec: 'insap', name: 'Isopreno', sub: '2-metil-1,3-butadieno · ' + F('C5H8'),
+    render: () => [{ fig: isoprenoSemi(), cap: 'Semidesarrollada' }, { fig: isoprenoSkel(), cap: 'Esquelética' }],
+    desc: '<p>Unidad básica de los <b>isoprenoides o terpenos</b>, que se forman uniendo varias unidades de isopreno (5 C).</p><ul class="mini"><li><b>Monoterpenos</b> (2 u.): mentol, limoneno, geraniol (esencias vegetales).</li><li><b>Diterpenos</b> (4 u.): fitol (clorofila), vitamina A.</li><li><b>Tetraterpenos</b> (8 u.): carotenos y xantofilas (pigmentos fotosintéticos).</li><li><b>Politerpenos</b>: caucho natural.</li></ul>',
+    quiz: { cat: 'Lípido insaponificable (terpeno)', grp: 'insap' } },
+  { id: 'esterano', tab: 'lip', sec: 'insap', name: 'Esterano', sub: 'ciclopentanoperhidrofenantreno · ' + F('C17H28'),
+    render: () => steroidMol('esterano'),
+    desc: '<p>Núcleo común de todos los <b>esteroides</b>: tres anillos de 6 C (<b>A, B, C</b>, el fenantreno) y uno de 5 C (<b>D</b>, el ciclopentano), todos saturados («perhidro»). Activa «Numeración» para ver los 17 carbonos.</p>',
+    facts: [['Anillos', '3 hexagonales + 1 pentagonal'], ['Carbonos', '17']],
+    quiz: { cat: 'Lípido insaponificable (esteroide)', grp: 'insap' } },
+  { id: 'colesterol', tab: 'lip', sec: 'insap', name: 'Colesterol', sub: F('C27H46O'),
+    render: () => steroidMol('colesterol'),
+    desc: '<p>Esteroide con un <b>–OH en el C3</b> (zona polar), un <b>doble enlace entre C5 y C6</b> y una cadena de 8 C en el C17. Es <b>anfipático</b>: se intercala entre los fosfolípidos de las <b>membranas animales</b> y regula su fluidez. Es precursor de las hormonas esteroideas (testosterona, estrógenos, cortisol), de los ácidos biliares y de la vitamina D.</p>',
+    facts: [['Grupo polar', '–OH en C3'], ['Dónde', 'membranas de células animales']],
+    quiz: { cat: 'Lípido insaponificable (esteroide)', grp: 'insap' } },
+  { id: 'vitd', tab: 'lip', sec: 'insap', name: 'Vitamina D₃', sub: 'colecalciferol · ' + F('C27H44O'),
+    render: () => vitDMol(),
+    desc: '<p>Se forma en la <b>piel</b> a partir de un derivado del colesterol (7-deshidrocolesterol) por acción de la <b>luz ultravioleta</b>, que <b>rompe el anillo B</b> (es un «secoesteroide»). Favorece la <b>absorción intestinal de calcio y fósforo</b> y la mineralización de los huesos; su déficit produce <b>raquitismo</b> en niños y osteomalacia en adultos.</p>',
+    facts: [['Rasgo clave', 'anillo B abierto'], ['Déficit', 'raquitismo']],
+    quiz: { name: 'Vitamina D', cat: 'Lípido insaponificable (esteroide)', grp: 'insap' } },
+
+  /* ===== GLÚCIDOS ===== */
+  { id: 'gliceraldehido', tab: 'glu', sec: 'tri', name: 'Gliceraldehído', sub: 'aldotriosa · ' + F('C3H6O3'), ctl: monoCtl(false), def: { serie: 'D' },
+    render: monoRender('gliceraldehido', 'gliceraldehído'),
+    desc: '<p>La aldosa más sencilla. Tiene <b>un solo carbono asimétrico</b> (C2), por eso existen dos enantiómeros: D y L. Sirve de <b>referencia</b> para clasificar todos los monosacáridos en series D y L. Su derivado fosforilado es un intermediario de la glucólisis.</p>',
+    facts: [['Grupo carbonilo', 'aldehído (C1)'], ['C asimétricos', '1']],
+    quiz: { cat: 'Monosacárido · aldosa', grp: 'mono' } },
+  { id: 'dha', tab: 'glu', sec: 'tri', name: 'Dihidroxiacetona', sub: 'cetotriosa · ' + F('C3H6O3'),
+    render: monoRender('dihidroxiacetona', 'dihidroxiacetona'),
+    desc: '<p>La cetosa más sencilla. <b>No tiene carbonos asimétricos</b>, así que no tiene isómeros D/L ni actividad óptica. Es isómero de función del gliceraldehído. Se usa en las cremas <b>autobronceadoras</b> porque reacciona con las proteínas de la piel y la oscurece.</p>',
+    facts: [['Grupo carbonilo', 'cetona (C2)'], ['C asimétricos', '0']],
+    quiz: { cat: 'Monosacárido · cetosa', grp: 'mono' } },
+  { id: 'eritrosa', tab: 'glu', sec: 'tetra', name: 'Eritrosa', sub: 'aldotetrosa · ' + F('C4H8O4'), ctl: monoCtl(false), def: { serie: 'D' },
+    render: monoRender('eritrosa', 'eritrosa'),
+    desc: '<p>Aldotetrosa con <b>2 C asimétricos</b>; en la D-eritrosa los dos –OH están a la derecha. La eritrosa-4-fosfato participa en el ciclo de Calvin de la fotosíntesis.</p>',
+    facts: [['C asimétricos', '2 (C2 y C3)'], ['Estereoisómeros', '2² = 4']],
+    quiz: { cat: 'Monosacárido · aldosa', grp: 'mono' } },
+  { id: 'treosa', tab: 'glu', sec: 'tetra', name: 'Treosa', sub: 'aldotetrosa · ' + F('C4H8O4'), ctl: monoCtl(false), def: { serie: 'D' },
+    render: monoRender('treosa', 'treosa'),
+    desc: '<p>Aldotetrosa que se diferencia de la eritrosa solo en la posición del –OH del C2 (a la izquierda). Por eso <b>eritrosa y treosa son epímeros</b> (diastereoisómeros que difieren en un solo C).</p>',
+    facts: [['Relación con la eritrosa', 'epímero en C2']],
+    quiz: { cat: 'Monosacárido · aldosa', grp: 'mono' } },
+  { id: 'eritrulosa', tab: 'glu', sec: 'tetra', name: 'Eritrulosa', sub: 'cetotetrosa · ' + F('C4H8O4'), ctl: monoCtl(false), def: { serie: 'D' },
+    render: monoRender('eritrulosa', 'eritrulosa'),
+    desc: '<p>Cetotetrosa con <b>1 C asimétrico</b> (C3). Igual que la dihidroxiacetona, se utiliza en productos autobronceadores.</p>',
+    facts: [['Grupo carbonilo', 'cetona (C2)'], ['C asimétricos', '1']],
+    quiz: { cat: 'Monosacárido · cetosa', grp: 'mono' } },
+  { id: 'ribosa', tab: 'glu', sec: 'pento', name: 'Ribosa', sub: 'aldopentosa · ' + F('C5H10O5'), ctl: monoCtl(true), def: { forma: 'ambas', anom: 'β', serie: 'D' },
+    render: monoRender('ribosa', 'ribosa'),
+    desc: '<p>Aldopentosa que, en disolución, se cicla entre el C1 y el –OH del C4 formando un anillo de furano: <b>β-D-ribofuranosa</b>. Forma parte del <b>ARN</b>, del <b>ATP</b> y de coenzimas como el NAD⁺ y el FAD.</p>',
+    facts: [['Anillo', 'furanosa (5 vértices)'], ['Se encuentra en', 'ARN, ATP, NAD⁺']],
+    quiz: { cat: 'Monosacárido · aldosa', grp: 'mono', variants: monoVar } },
+  { id: 'desoxirribosa', tab: 'glu', sec: 'pento', name: 'Desoxirribosa', sub: 'D-2-desoxirribosa · ' + F('C5H10O4'), ctl: monoCtl(true), def: { forma: 'ambas', anom: 'β', serie: 'D' },
+    render: monoRender('desoxirribosa', 'desoxirribosa'),
+    desc: '<p>Derivada de la ribosa por pérdida de un oxígeno en el <b>C2</b>, que solo tiene hidrógenos («2-desoxi»). Forma parte del <b>ADN</b>. Es la clave para distinguir un nucleótido de ADN de uno de ARN.</p>',
+    facts: [['Diferencia con la ribosa', 'C2 sin –OH'], ['Se encuentra en', 'ADN']],
+    quiz: { cat: 'Monosacárido · aldosa', grp: 'mono', variants: monoVar } },
+  { id: 'glucosa', tab: 'glu', sec: 'hexa', name: 'Glucosa', sub: 'aldohexosa · dextrosa · ' + F('C6H12O6'), ctl: monoCtl(true), def: { forma: 'ambas', anom: 'α', serie: 'D' },
+    render: monoRender('glucosa', 'glucosa'),
+    desc: '<p>El glúcido más importante: <b>principal fuente de energía</b> de las células (respiración celular). En sangre hay ≈ 0,7–1,1 g/L. Se cicla entre el C1 y el –OH del C5 formando un anillo de pirano. Al ciclarse el C1 se vuelve asimétrico (<b>C anomérico</b>): α (OH abajo) o β (OH arriba). Es el monómero del almidón, el glucógeno y la celulosa.</p>',
+    facts: [['Fischer (C2→C5)', 'OH: dcha, izda, dcha, dcha'], ['Anillo', 'piranosa (6 vértices)']],
+    quiz: { cat: 'Monosacárido · aldosa', grp: 'mono', variants: monoVar } },
+  { id: 'fructosa', tab: 'glu', sec: 'hexa', name: 'Fructosa', sub: 'cetohexosa · levulosa · ' + F('C6H12O6'), ctl: monoCtl(true), def: { forma: 'ambas', anom: 'β', serie: 'D' },
+    render: monoRender('fructosa', 'fructosa'),
+    desc: '<p>Cetohexosa presente en la fruta y la miel; es el azúcar natural <b>más dulce</b>. Se cicla entre el C2 y el –OH del C5 formando un anillo de <b>furano</b> (pentagonal) con dos grupos –CH₂OH (C1 y C6). Es la fuente de energía de los espermatozoides en el semen.</p>',
+    facts: [['Grupo carbonilo', 'cetona (C2)'], ['Anillo', 'furanosa (5 vértices)']],
+    quiz: { cat: 'Monosacárido · cetosa', grp: 'mono', variants: monoVar } },
+  { id: 'galactosa', tab: 'glu', sec: 'hexa', name: 'Galactosa', sub: 'aldohexosa · ' + F('C6H12O6'), ctl: monoCtl(true), def: { forma: 'ambas', anom: 'β', serie: 'D' },
+    render: monoRender('galactosa', 'galactosa'),
+    desc: '<p>Aldohexosa que solo se diferencia de la glucosa en el <b>–OH del C4</b> (a la izquierda en Fischer, arriba en Haworth): es su <b>epímero en C4</b>. Forma parte de la <b>lactosa</b> de la leche. La galactosemia es una enfermedad genética que impide metabolizarla.</p>',
+    facts: [['Diferencia con la glucosa', 'C4 (epímero)'], ['Anillo', 'piranosa']],
+    quiz: { cat: 'Monosacárido · aldosa', grp: 'mono', variants: monoVar } },
+
+  { id: 'sacarosa', tab: 'glu', sec: 'di', wide: 1, name: 'Sacarosa', sub: 'α-D-glucopiranosil-(1→2)-β-D-fructofuranósido',
+    render: () => [{ fig: disacMol('sacarosa'), cap: 'α-glucosa + β-fructosa · enlace α(1→2)β' }],
+    desc: '<p>El <b>azúcar de mesa</b>, extraído de la caña de azúcar y la remolacha. El enlace une los dos carbonos anoméricos (C1 de la glucosa y C2 de la fructosa) → enlace <b>dicarbonílico</b>: no queda ningún –OH anomérico libre y por eso <b>no es reductora</b> (da negativo con el reactivo de Fehling). La enzima sacarasa la hidroliza en «azúcar invertido».</p>',
+    facts: [['Monómeros', 'glucosa + fructosa'], ['Enlace', 'α(1→2)β'], ['¿Reductora?', 'No']],
+    quiz: { cat: 'Disacárido', grp: 'di' } },
+  { id: 'maltosa', tab: 'glu', sec: 'di', wide: 1, name: 'Maltosa', sub: 'azúcar de malta', ctl: [{ k: 'anom', label: 'Extremo reductor', opts: ANOM }], def: { anom: 'α' },
+    render: s => [{ fig: disacMol('maltosa', s.anom), cap: '2 α-D-glucosa · enlace α(1→4)' }],
+    desc: '<p>Dos moléculas de <b>α-D-glucosa</b> unidas por enlace <b>α(1→4)</b>. Se obtiene al hidrolizar el almidón (amilasa de la saliva) y en la germinación de la cebada (malta, cerveza). El C1 de la segunda glucosa queda libre → <b>reductora</b>.</p>',
+    facts: [['Monómeros', '2 glucosas'], ['Enlace', 'α(1→4)'], ['¿Reductora?', 'Sí']],
+    quiz: { cat: 'Disacárido', grp: 'di' } },
+  { id: 'celobiosa', tab: 'glu', sec: 'di', wide: 1, name: 'Celobiosa', sub: 'unidad de la celulosa', ctl: [{ k: 'anom', label: 'Extremo reductor', opts: ANOM }], def: { anom: 'β' },
+    render: s => [{ fig: disacMol('celobiosa', s.anom), cap: '2 β-D-glucosa · enlace β(1→4) (la 2.ª glucosa está girada)' }],
+    desc: '<p>Dos moléculas de <b>β-D-glucosa</b> unidas por enlace <b>β(1→4)</b>. Para que el enlace β sea posible, la segunda glucosa se dibuja <b>girada 180°</b>. No se encuentra libre en la naturaleza: aparece al hidrolizar la celulosa. Es <b>reductora</b>.</p>',
+    facts: [['Monómeros', '2 glucosas'], ['Enlace', 'β(1→4)'], ['¿Reductora?', 'Sí']],
+    quiz: { cat: 'Disacárido', grp: 'di' } },
+  { id: 'lactosa', tab: 'glu', sec: 'di', wide: 1, name: 'Lactosa', sub: 'azúcar de la leche', ctl: [{ k: 'anom', label: 'Extremo reductor', opts: ANOM }], def: { anom: 'β' },
+    render: s => [{ fig: disacMol('lactosa', s.anom), cap: 'β-D-galactosa + D-glucosa · enlace β(1→4)' }],
+    desc: '<p><b>β-D-galactosa + D-glucosa</b> con enlace <b>β(1→4)</b>. Es el azúcar de la leche de los mamíferos. La enzima <b>lactasa</b> la hidroliza; muchas personas adultas dejan de producirla → <b>intolerancia a la lactosa</b>. Es reductora. Fíjate en el –OH del C4 de la galactosa (arriba).</p>',
+    facts: [['Monómeros', 'galactosa + glucosa'], ['Enlace', 'β(1→4)'], ['¿Reductora?', 'Sí']],
+    quiz: { cat: 'Disacárido', grp: 'di' } },
+
+  { id: 'almidon', tab: 'glu', sec: 'poli', name: 'Almidón', sub: 'polisacárido de reserva vegetal',
+    render: () => [{ fig: donutSVG() }],
+    desc: '<p>Reserva energética de las plantas, almacenada en <b>amiloplastos</b> (patata, cereales, legumbres). Es una mezcla de <b>amilosa (≈30 %)</b> y <b>amilopectina (≈70 %)</b>. Con el <b>lugol</b> (yodo) da color azul-violeta, porque el yodo se aloja dentro de la hélice de la amilosa.</p>',
+    facts: [['Monómero', 'α-D-glucosa'], ['Prueba', 'lugol → azul-violeta']] },
+  { id: 'amilosa', tab: 'glu', sec: 'poli', wide: 1, name: 'Amilosa', sub: 'polímero lineal de maltosas · α(1→4)', ctl: [{ k: 'v', label: 'Vista', opts: VISTA }], def: { v: 'ambas' },
+    render: s => [s.v !== 'esquema' && { fig: polyChain('amilosa'), cap: 'Fragmento: α-glucosas unidas por enlaces α(1→4)' }, s.v !== 'detalle' && { fig: helixSVG(), cap: 'La cadena se enrolla en hélice' }].filter(Boolean),
+    desc: '<p>Cadena <b>sin ramificar</b> de miles de α-D-glucosas unidas por enlaces <b>α(1→4)</b> (podemos verla como un polímero de maltosas). La geometría del enlace α hace que la cadena se enrolle en una <b>hélice</b> de unas 6 glucosas por vuelta.</p>',
+    quiz: { cat: 'Polisacárido', grp: 'poli', variants: [{ v: 'detalle' }] } },
+  { id: 'amilopectina', tab: 'glu', sec: 'poli', wide: 1, name: 'Amilopectina', sub: 'α(1→4) + ramificaciones α(1→6)', ctl: [{ k: 'v', label: 'Vista', opts: VISTA }], def: { v: 'ambas' },
+    render: s => [s.v !== 'esquema' && { fig: branchMol(), cap: 'Punto de ramificación: enlace α(1→6) sobre el C6' }, s.v !== 'detalle' && { html: treeSVG({ len: 26, every: 8, off: 3, levels: 3, spread: 38, shrink: 0.62, seed: 11, label: 'Esquema de la amilopectina' }) + legendTree(1), cap: 'Ramas cada 15–30 glucosas' }].filter(Boolean),
+    desc: '<p>Cadena de α-glucosas con enlaces <b>α(1→4)</b> y <b>ramificaciones α(1→6)</b> aproximadamente cada <b>15–30 glucosas</b>. Es el componente mayoritario del almidón.</p>',
+    quiz: { cat: 'Polisacárido', grp: 'poli', variants: [{ v: 'esquema' }] } },
+  { id: 'glucogeno', tab: 'glu', sec: 'poli', wide: 1, name: 'Glucógeno', sub: 'reserva animal · α(1→4) + α(1→6)', ctl: [{ k: 'v', label: 'Vista', opts: VISTA }], def: { v: 'ambas' },
+    render: s => [s.v !== 'esquema' && { fig: branchMol(), cap: 'Misma química que la amilopectina: α(1→4) + α(1→6)' }, s.v !== 'detalle' && { html: treeSVG({ radial: 5, len: 10, every: 4, off: 2, levels: 3, spread: 40, shrink: 0.7, step: 10, seed: 5, label: 'Esquema del glucógeno' }) + legendTree(1), cap: 'Muy ramificado: ramas cada 8–12 glucosas' }].filter(Boolean),
+    desc: '<p>Polisacárido de reserva de los <b>animales</b> y los hongos, en el <b>hígado</b> y los <b>músculos</b>. Su estructura es como la de la amilopectina, pero <b>mucho más ramificada</b> (cada 8–12 glucosas) y compacta. Tener muchos extremos permite liberar glucosa muy rápido.</p>',
+    facts: [['Dónde', 'hígado y músculo'], ['Ramificaciones', 'cada 8–12 glucosas']],
+    quiz: { cat: 'Polisacárido', grp: 'poli', variants: [{ v: 'esquema' }] } },
+  { id: 'celulosa', tab: 'glu', sec: 'poli', wide: 1, name: 'Celulosa', sub: 'polímero de β-glucosas (o de celobiosas) · β(1→4)', ctl: [{ k: 'v', label: 'Vista', opts: VISTA }], def: { v: 'ambas' },
+    render: s => [s.v !== 'esquema' && { fig: polyChain('celulosa'), cap: 'β-glucosas β(1→4): cada glucosa girada 180° respecto a la anterior' }, s.v !== 'detalle' && { fig: fibrilSVG() }].filter(Boolean),
+    desc: '<p>Cadenas <b>lineales y no ramificadas</b> de β-D-glucosas con enlaces <b>β(1→4)</b>. Las cadenas se colocan paralelas y se unen por <b>puentes de hidrógeno</b> formando microfibrillas muy resistentes: forma la <b>pared celular vegetal</b>. Es la biomolécula orgánica más abundante del planeta. Los humanos no tenemos celulasa y no la digerimos (es la «fibra»); los rumiantes sí, gracias a microorganismos simbiontes.</p>',
+    quiz: { cat: 'Polisacárido', grp: 'poli', variants: [{ v: 'detalle' }] } },
+  { id: 'quitina', tab: 'glu', sec: 'poli', wide: 1, name: 'Quitina', sub: 'polímero de N-acetilglucosaminas (o de quitobiosas) · β(1→4)',
+    render: () => [{ fig: polyChain('quitina'), cap: 'N-acetil-β-D-glucosamina: en el C2 hay –NH–CO–CH₃ en lugar de –OH' }],
+    desc: '<p>Como la celulosa, pero el monómero es la <b>N-acetil-β-D-glucosamina</b> (en el C2 lleva un grupo –NH–CO–CH₃). Forma el <b>exoesqueleto de los artrópodos</b> y la <b>pared celular de los hongos</b>. Contiene nitrógeno.</p>',
+    quiz: { cat: 'Polisacárido', grp: 'poli' } },
+
+  /* ===== PROTEÍNAS ===== */
+  { id: 'aa', tab: 'pro', sec: 'aa', name: 'Aminoácido · forma general', sub: 'α-aminoácido', ctl: [{ k: 'st', label: 'Estado', opts: [['neutra', 'Sin ionizar'], ['zwit', 'Zwitterión (pH≈7)'], ['cat', 'pH ácido'], ['an', 'pH básico']] }], def: { st: 'neutra' },
+    render: s => [{ fig: aaMol(s.st), cap: { neutra: 'Forma sin ionizar', zwit: 'Ion dipolar o zwitterión (carga neta 0)', cat: 'Medio ácido: el aminoácido se comporta como base (carga +)', an: 'Medio básico: se comporta como ácido (carga −)' }[s.st] }],
+    desc: '<p>El <b>carbono α</b> está unido a un grupo <b>amino</b>, un grupo <b>carboxilo</b>, un <b>H</b> y una <b>cadena lateral R</b> distinta en cada uno de los 20 aminoácidos proteicos. Salvo en la glicina (R = H), el Cα es asimétrico: en las proteínas solo hay <b>L-aminoácidos</b>. Son <b>anfóteros</b>: pueden actuar como ácidos o como bases (cambia el botón «Estado»).</p>',
+    quiz: { name: 'Aminoácido', cat: 'Aminoácido / péptido', grp: 'pro', variants: [{ st: 'neutra' }, { st: 'zwit' }] } },
+  { id: 'pepbond', tab: 'pro', sec: 'pep', wide: 1, name: 'Formación del enlace peptídico', sub: 'aminoácido + aminoácido → dipéptido + agua',
+    render: () => { const [a, b] = peptideReaction(); return [{ fig: a }, { fig: b, cap: 'Dipéptido: el enlace peptídico (C–N) en rojo al activar «Grupos funcionales»' }]; },
+    desc: '<p>El grupo <b>–COOH de un aminoácido</b> reacciona con el <b>–NH₂ del siguiente</b> y se libera <b>H₂O</b>. Es un enlace <b>amida</b> covalente, muy estable. Tiene carácter parcial de doble enlace: es <b>rígido y plano</b> (no puede girar), lo que condiciona el plegamiento de las proteínas.</p>',
+    quiz: { name: 'Formación del enlace peptídico', cat: 'Reacción', grp: 'reac' } },
+  { id: 'polipep', tab: 'pro', sec: 'pep', wide: 1, name: 'Polipéptido', sub: 'pentapéptido Gly–Ala–Ser–Cys–Val', ctl: [{ k: 'r', label: 'Cadenas R', opts: [['real', 'Aminoácidos reales'], ['gen', 'Genéricas']] }], def: { r: 'real' },
+    render: s => peptideMol(s.r === 'gen'),
+    desc: '<p>Cadena de aminoácidos unidos por enlaces peptídicos. Se escribe siempre del extremo <b>N-terminal</b> (–NH₂ libre) al <b>C-terminal</b> (–COOH libre). El «esqueleto» –N–Cα–C– se repite y las cadenas R sobresalen alternando a un lado y otro. Oligopéptido: &lt; 10 aa; polipéptido: &gt; 10 aa; proteína: &gt; 50 aa (más de 5000 u de masa).</p>',
+    quiz: { name: 'Polipéptido', cat: 'Aminoácido / péptido', grp: 'pro' } },
+  { id: 'aa20', tab: 'pro', sec: 'mas', wide: 1, name: 'Los 20 aminoácidos proteicos', sub: 'clasificados según su cadena R · * esenciales',
+    render: () => [{ html: aaTable() }],
+    desc: '<p>Los <b>esenciales</b> (*) no los fabrica el cuerpo humano y hay que tomarlos en la dieta. La histidina es esencial en la infancia.</p>' },
+  { id: 'niveles', tab: 'pro', sec: 'mas', wide: 1, name: 'Niveles estructurales', sub: 'de la secuencia a la forma 3D',
+    render: () => [{ fig: levelsSVG() }],
+    desc: '<p><b>Primaria</b>: orden de los aminoácidos (la determina el ADN). <b>Secundaria</b>: α-hélice o lámina β plegada, por puentes de H entre grupos C=O y N–H del esqueleto. <b>Terciaria</b>: plegamiento tridimensional por interacciones entre las R (puentes disulfuro, iónicas, hidrofóbicas…). <b>Cuaternaria</b>: unión de varias cadenas (p. ej., la hemoglobina tiene 4). La <b>desnaturalización</b> (calor, pH) destruye todas menos la primaria.</p>' },
+
+  /* ===== ÁCIDOS NUCLEICOS ===== */
+  { id: 'nribosa', tab: 'nuc', sec: 'pent', name: 'Ribosa', sub: 'β-D-ribofuranosa · ARN',
+    render: () => pentosaNuc(false),
+    desc: '<p>Pentosa del <b>ARN</b>. En los nucleótidos sus carbonos se numeran con prima (1′–5′) para distinguirlos de los átomos de la base. La base se une al <b>C1′</b>, el fosfato al <b>C5′</b> y el siguiente nucleótido al –OH del <b>C3′</b>.</p>',
+    facts: [['C2′', 'con –OH'], ['Ácido nucleico', 'ARN']],
+    quiz: { name: 'Ribosa', cat: 'Pentosa', grp: 'pent' } },
+  { id: 'ndesoxi', tab: 'nuc', sec: 'pent', name: 'Desoxirribosa', sub: 'β-D-2-desoxirribofuranosa · ADN',
+    render: () => pentosaNuc(true),
+    desc: '<p>Pentosa del <b>ADN</b>: en el <b>C2′ no hay –OH</b>, solo H. Esta pequeña diferencia hace al ADN químicamente más estable que el ARN, ideal para guardar la información genética.</p>',
+    facts: [['C2′', 'sin –OH'], ['Ácido nucleico', 'ADN']],
+    quiz: { name: 'Desoxirribosa', cat: 'Pentosa', grp: 'pent' } },
+  { id: 'anillos', tab: 'nuc', sec: 'bases', name: 'Purina y pirimidina', sub: 'los dos anillos base',
+    render: () => [{ fig: baseMol('pur'), cap: 'Purina: 2 anillos (6 + 5)' }, { fig: baseMol('pyr'), cap: 'Pirimidina: 1 anillo (6)' }],
+    desc: '<p>Las bases nitrogenadas derivan de dos anillos heterocíclicos con nitrógeno. Truco: las <b>pu</b>rinas son las «<b>pu</b>ras» y grandes (A y G); las pirimidinas, pequeñas (C, T y U).</p>' },
+  { id: 'adenina', tab: 'nuc', sec: 'bases', name: 'Adenina (A)', sub: 'base púrica · ' + F('C5H5N5'), render: () => baseMol('A'),
+    desc: '<p>Púrica con un grupo <b>–NH₂ en el C6</b>. Está en ADN y ARN. Se empareja con la timina (ADN) o el uracilo (ARN) mediante <b>2 puentes de hidrógeno</b>. Forma parte del ATP, NAD⁺, FAD y AMPc.</p>',
+    quiz: { name: 'Adenina', cat: 'Base púrica', grp: 'base' } },
+  { id: 'guanina', tab: 'nuc', sec: 'bases', name: 'Guanina (G)', sub: 'base púrica · ' + F('C5H5N5O'), render: () => baseMol('G'),
+    desc: '<p>Púrica con un <b>=O en el C6</b> y un <b>–NH₂ en el C2</b>. Está en ADN y ARN. Se empareja con la citosina mediante <b>3 puentes de hidrógeno</b>.</p>',
+    quiz: { name: 'Guanina', cat: 'Base púrica', grp: 'base' } },
+  { id: 'citosina', tab: 'nuc', sec: 'bases', name: 'Citosina (C)', sub: 'base pirimidínica · ' + F('C4H5N3O'), render: () => baseMol('C'),
+    desc: '<p>Pirimidínica con un <b>=O en el C2</b> y un <b>–NH₂ en el C4</b>. Está en ADN y ARN. Se empareja con la guanina (3 puentes de H).</p>',
+    quiz: { name: 'Citosina', cat: 'Base pirimidínica', grp: 'base' } },
+  { id: 'timina', tab: 'nuc', sec: 'bases', name: 'Timina (T)', sub: 'base pirimidínica · ' + F('C5H6N2O2'), render: () => baseMol('T'),
+    desc: '<p>Pirimidínica con dos <b>=O (C2 y C4)</b> y un <b>–CH₃ en el C5</b>. Es exclusiva del <b>ADN</b>. Se empareja con la adenina (2 puentes de H).</p>',
+    quiz: { name: 'Timina', cat: 'Base pirimidínica', grp: 'base' } },
+  { id: 'uracilo', tab: 'nuc', sec: 'bases', name: 'Uracilo (U)', sub: 'base pirimidínica · ' + F('C4H4N2O2'), render: () => baseMol('U'),
+    desc: '<p>Como la timina pero <b>sin el grupo –CH₃</b>. Es exclusiva del <b>ARN</b>, donde sustituye a la timina y se empareja con la adenina.</p>',
+    quiz: { name: 'Uracilo', cat: 'Base pirimidínica', grp: 'base' } },
+  { id: 'nucbuilder', tab: 'nuc', sec: 'nucl', wide: 1, name: 'Constructor de nucleótidos', sub: 'elige pentosa, base y número de fosfatos',
+    ctl: [{ k: 'sug', label: 'Pentosa', opts: [['ribosa', 'Ribosa'], ['desoxirribosa', 'Desoxirribosa']] }, { k: 'base', label: 'Base', opts: [['A', 'A'], ['G', 'G'], ['C', 'C'], ['T', 'T'], ['U', 'U']] }, { k: 'np', label: 'Fosfatos', opts: [['0', '0 (nucleósido)'], ['1', '1'], ['2', '2'], ['3', '3']] }],
+    def: { sug: 'desoxirribosa', base: 'A', np: '1' },
+    render: s => { const n = nucName(s.sug, s.base, s.np); let warn = ''; if (s.base === 'T' && s.sug === 'ribosa') warn = ' · poco habitual: la T es propia del ADN'; if (s.base === 'U' && s.sug === 'desoxirribosa') warn = ' · no forma parte del ADN'; return [{ fig: nucleotideMol(s.sug, s.base, s.np), cap: `<b>${n.full}</b>${n.ab !== 'nucleósido' ? ' (' + n.ab + ')' : ' · nucleósido'}${warn}` }]; },
+    desc: '<p>La base se une al C1′ de la pentosa por un <b>enlace N-glucosídico</b> (con el N9 de las purinas o el N1 de las pirimidinas) → <b>nucleósido</b>. El fosfato se une al C5′ por un <b>enlace éster</b> → <b>nucleótido</b>. Con 3 fosfatos se obtiene, por ejemplo, el <b>ATP</b>, la «moneda energética» de la célula: sus enlaces entre fosfatos liberan mucha energía al romperse.</p>',
+    quiz: { cat: 'Nucleótido', grp: 'nucl', gen: true } },
+  { id: 'polinuc', tab: 'nuc', sec: 'estr', wide: 1, name: 'Polinucleótido', sub: 'fragmento de dos nucleótidos · ADN bicatenario / ARN monocatenario', ctl: [{ k: 't', label: 'Tipo', opts: [['ADN', 'ADN'], ['ARN', 'ARN']] }], def: { t: 'ADN' },
+    render: s => [{ fig: polyNucMol(s.t), cap: s.t === 'ADN' ? 'ADN: dos cadenas antiparalelas y complementarias unidas por puentes de H (desoxirribosa: C2′ sin OH)' : 'Fragmento de ARN: A–U (ribosa: C2′ con OH)' }],
+    desc: '<p>El –OH del <b>C3′</b> de un nucleótido se une al fosfato del <b>C5′</b> del siguiente: <b>enlace fosfodiéster</b>. Así se forma un esqueleto alterno <b>pentosa–fosfato</b> del que sobresalen las bases. Cada cadena tiene un extremo <b>5′</b> (fosfato libre) y otro <b>3′</b> (–OH libre), y se lee en sentido 5′→3′.</p>',
+    quiz: { name: 'Polinucleótido (ácido nucleico)', cat: 'Ácido nucleico', grp: 'nucl', variants: [{ t: 'ADN' }, { t: 'ARN' }] } },
+  { id: 'helice', tab: 'nuc', sec: 'estr', wide: 1, name: 'Doble hélice y complementariedad', sub: 'escribe una secuencia de ADN (máx. 14 bases)', ctl: [{ k: 'seq', label: 'Secuencia 5′→3′', type: 'text' }], def: { seq: 'ATGCGTACCTAG' },
+    render: s => { const r = ladderSVG(s.seq); const comp = r.seq.split('').map(b => COMP[b]).join(''); return [{ html: r.svg, cap: `Complementaria (3′→5′): <b>${comp}</b> · ARNm: <b>${r.seq.replace(/T/g, 'U')}</b> · %GC = ${Math.round(100 * (r.seq.match(/[GC]/g) || []).length / r.seq.length)} %` }]; },
+    desc: '<p>Modelo de <b>Watson y Crick (1953)</b>, a partir de las difracciones de rayos X de <b>Rosalind Franklin</b>. Dos cadenas <b>antiparalelas</b> (una 5′→3′ y la otra 3′→5′) enrolladas en una hélice dextrógira de 2 nm de diámetro, con 10 pares de bases por vuelta (3,4 nm). Las bases son <b>complementarias</b>: A=T (2 puentes de H) y G≡C (3 puentes de H). Por eso, según las reglas de Chargaff, A = T y G = C.</p>' },
+  { id: 'adnarn', tab: 'nuc', sec: 'estr', wide: 1, name: 'ADN frente a ARN', sub: 'comparación rápida',
+    render: () => [{ html: dnaRnaTable() }] }
+];
+
+function aaTable() {
+  const rows = [
+    ['Apolares (hidrófobos)', [['Glicina', 'Gly', 'G'], ['Alanina', 'Ala', 'A'], ['Valina*', 'Val', 'V'], ['Leucina*', 'Leu', 'L'], ['Isoleucina*', 'Ile', 'I'], ['Prolina', 'Pro', 'P'], ['Fenilalanina*', 'Phe', 'F'], ['Triptófano*', 'Trp', 'W'], ['Metionina*', 'Met', 'M']]],
+    ['Polares sin carga', [['Serina', 'Ser', 'S'], ['Treonina*', 'Thr', 'T'], ['Cisteína', 'Cys', 'C'], ['Tirosina', 'Tyr', 'Y'], ['Asparagina', 'Asn', 'N'], ['Glutamina', 'Gln', 'Q']]],
+    ['Ácidos (carga −)', [['Ácido aspártico', 'Asp', 'D'], ['Ácido glutámico', 'Glu', 'E']]],
+    ['Básicos (carga +)', [['Lisina*', 'Lys', 'K'], ['Arginina', 'Arg', 'R'], ['Histidina*', 'His', 'H']]]
+  ];
+  return `<div class="aagrid">${rows.map(([t, l], i) => `<div class="aacol k${i}"><h4>${t}</h4><ul>${l.map(([n, a, b]) => `<li><span class="one">${b}</span><span>${n}</span><span class="three">${a}</span></li>`).join('')}</ul></div>`).join('')}</div>`;
+}
+function dnaRnaTable() {
+  const r = [['Pentosa', 'Desoxirribosa', 'Ribosa'], ['Bases', 'A, G, C, T', 'A, G, C, U'], ['Cadenas', 'Dos (doble hélice)', 'Una (puede plegarse)'], ['Dónde (eucariotas)', 'Núcleo, mitocondrias, cloroplastos', 'Núcleo y citoplasma (ribosomas)'], ['Función', 'Almacena la información genética', 'Expresa la información: ARNm, ARNt, ARNr'], ['Estabilidad', 'Muy estable', 'Menos estable (C2′–OH reactivo)']];
+  return `<table class="cmp"><thead><tr><th></th><th>ADN</th><th>ARN</th></tr></thead><tbody>${r.map(x => `<tr><th>${x[0]}</th><td>${x[1]}</td><td>${x[2]}</td></tr>`).join('')}</tbody></table>`;
+}
+
+/* ---------- TEORÍA ---------- */
+const THEORY = {
+  lip: `<div class="th-grid">
+  <div class="th-card"><h3>¿Qué son?</h3><p>Biomoléculas orgánicas formadas por <b>C, H y O</b> (a veces P, N y S), muy diversas pero con dos propiedades comunes: son <b>insolubles en agua</b> y <b>solubles en disolventes orgánicos</b> (éter, cloroformo, benceno).</p><p><b>Funciones</b>: energética (reserva), estructural (membranas), reguladora (hormonas, vitaminas), protectora (ceras) y aislante.</p></div>
+  <div class="th-card"><h3>Clasificación</h3><ul class="tree"><li><b>Saponificables</b> (tienen ácidos grasos)<ul><li>Simples: acilglicéridos, ceras</li><li>Complejos: fosfoglicéridos, esfingolípidos</li></ul></li><li><b>Insaponificables</b> (sin ácidos grasos)<ul><li>Isoprenoides o terpenos</li><li>Esteroides</li><li>Eicosanoides (prostaglandinas)</li></ul></li></ul></div>
+  <div class="th-card"><h3>Ácidos grasos: propiedades</h3><ul class="mini"><li><b>Anfipáticos</b>: cabeza polar (–COOH) y cola apolar.</li><li><b>Punto de fusión</b>: aumenta con la longitud de la cadena y disminuye con el número de dobles enlaces.</li><li><b>Esterificación</b> con alcoholes y <b>saponificación</b> con bases.</li><li>En agua forman <b>micelas</b> o <b>bicapas</b>.</li></ul></div>
+  <div class="th-card tip"><h3>¿Sabías que…?</h3><p>Un gramo de grasa almacena unas <b>9 kcal</b>, más del doble que un gramo de glúcidos (4 kcal). Por eso los animales que hibernan o migran acumulan grasa y no glucógeno.</p></div></div>`,
+  glu: `<div class="th-grid">
+  <div class="th-card"><h3>¿Qué son?</h3><p>Polihidroxialdehídos o polihidroxicetonas (y sus polímeros) formados por <b>C, H y O</b>. Se les llamó «hidratos de carbono» por su fórmula C<sub>n</sub>(H<sub>2</sub>O)<sub>n</sub>, aunque no son carbono hidratado. Funciones: <b>energética</b> (glucosa, almidón, glucógeno) y <b>estructural</b> (celulosa, quitina).</p></div>
+  <div class="th-card"><h3>Monosacáridos</h3><ul class="mini"><li><b>Aldosas</b> (–CHO) y <b>cetosas</b> (C=O).</li><li>Por nº de C: triosas, tetrosas, pentosas, hexosas…</li><li>Sólidos blancos, cristalinos, dulces, solubles y <b>reductores</b> (Fehling +).</li><li>Con n C asimétricos hay 2<sup>n</sup> estereoisómeros.</li></ul></div>
+  <div class="th-card"><h3>Isomería y ciclación</h3><ul class="mini"><li><b>D / L</b>: posición del –OH del C asimétrico más alejado del carbonilo (derecha = D).</li><li><b>Enantiómeros</b>: imágenes especulares. <b>Epímeros</b>: difieren en un solo C.</li><li>Pentosas y hexosas se <b>ciclan</b> (hemiacetal/hemicetal): furanosas y piranosas.</li><li>El nuevo C asimétrico es el <b>anomérico</b>: <b>α</b> (–OH abajo) o <b>β</b> (–OH arriba).</li></ul></div>
+  <div class="th-card tip"><h3>Fischer → Haworth</h3><p>Todo lo que en Fischer está a la <b>derecha</b> queda <b>abajo</b> en Haworth; lo de la izquierda, arriba. En los azúcares D el –CH₂OH terminal queda arriba. Prueba el botón «Ambas» de la glucosa.</p></div></div>`,
+  pro: `<div class="th-grid">
+  <div class="th-card"><h3>¿Qué son?</h3><p>Polímeros de <b>aminoácidos</b> formados por <b>C, H, O y N</b> (casi siempre también S). Son las biomoléculas más abundantes en la célula después del agua y las más versátiles.</p></div>
+  <div class="th-card"><h3>Funciones</h3><ul class="mini"><li>Estructural: colágeno, queratina.</li><li>Enzimática: amilasa, ADN polimerasa.</li><li>Hormonal: insulina. Defensiva: anticuerpos.</li><li>Transporte: hemoglobina. Contráctil: actina y miosina. Reserva: ovoalbúmina.</li></ul></div>
+  <div class="th-card"><h3>Propiedades clave</h3><ul class="mini"><li><b>Especificidad</b>: cada especie (e incluso cada persona) tiene proteínas propias → rechazo de trasplantes.</li><li><b>Desnaturalización</b>: el calor, el pH o el alcohol rompen su forma 3D y pierden la función.</li><li><b>Solubilidad</b>: las globulares son solubles; las fibrosas, no.</li></ul></div>
+  <div class="th-card tip"><h3>¿Sabías que…?</h3><p>Con solo 20 aminoácidos, una cadena de 100 aminoácidos puede tener 20<sup>100</sup> secuencias diferentes: muchísimas más que átomos en el universo observable.</p></div></div>`,
+  nuc: `<div class="th-grid">
+  <div class="th-card"><h3>¿Qué son?</h3><p>Polímeros de <b>nucleótidos</b> formados por <b>C, H, O, N y P</b>. Cada nucleótido tiene tres partes: una <b>pentosa</b>, una <b>base nitrogenada</b> y un <b>ácido fosfórico</b>. Guardan (ADN) y expresan (ARN) la información genética.</p></div>
+  <div class="th-card"><h3>Enlaces que debes reconocer</h3><ul class="mini"><li><b>N-glucosídico</b>: base ↔ C1′ de la pentosa.</li><li><b>Éster (fosfoéster)</b>: fosfato ↔ C5′.</li><li><b>Fosfodiéster</b>: C3′ de un nucleótido ↔ fosfato ↔ C5′ del siguiente.</li><li><b>Puentes de H</b>: entre bases complementarias de las dos cadenas.</li></ul></div>
+  <div class="th-card"><h3>Tipos de ARN</h3><ul class="mini"><li><b>ARNm</b>: copia la información del ADN y la lleva a los ribosomas.</li><li><b>ARNt</b>: transporta los aminoácidos (forma de hoja de trébol).</li><li><b>ARNr</b>: forma parte de los ribosomas.</li></ul></div>
+  <div class="th-card tip helix-card"><h3>Doble hélice</h3><div id="helixAnim" aria-hidden="true"></div><p class="small">A=T: 2 puentes de H · G≡C: 3 puentes de H</p></div></div>`
+};
+
+/* ======================= INTERFAZ ======================= */
+const ST = {};
+ITEMS.forEach(it => { ST[it.id] = Object.assign({}, it.def || {}); });
+const byId = Object.fromEntries(ITEMS.map(i => [i.id, i]));
+
+function normFigs(r) {
+  const arr = Array.isArray(r) ? r : [r];
+  return arr.filter(Boolean).map(x => {
+    if (x instanceof Mol) return { svg: svgMol(x), m: x };
+    if (typeof x === 'string') return { svg: x };
+    if (x.html && !x.fig) return { svg: x.html, cap: x.cap };
+    const f = x.fig; return { svg: f instanceof Mol ? svgMol(f) : f, m: f instanceof Mol ? f : null, cap: x.cap };
+  });
+}
+function figsHTML(figs, noCap) { return figs.map(f => `<figure>${f.svg}${f.cap && !noCap ? `<figcaption>${f.cap}</figcaption>` : ''}</figure>`).join(''); }
+function legendHTML(figs) {
+  const gs = new Set(); figs.forEach(f => f.m && f.m.atoms.forEach(a => a.g && GROUPS[a.g] && gs.add(a.g)));
+  return [...gs].map(g => `<span class="chip"><i style="background:${GROUPS[g][1]}"></i>${GROUPS[g][0]}</span>`).join('');
+}
+function controlsHTML(it) {
+  if (!it.ctl) return '';
+  const st = ST[it.id];
+  return `<div class="ctls">${it.ctl.map(c => {
+    if (c.when && !c.when(st)) return '';
+    if (c.type === 'text') return `<label class="ctl-text"><span>${c.label}</span><input type="text" data-tin="${it.id}" data-k="${c.k}" value="${esc(st[c.k] || '')}" maxlength="20" autocomplete="off" spellcheck="false"></label>`;
+    return `<div class="seg" role="group" aria-label="${c.label}"><span class="seg-l">${c.label}</span>${c.opts.map(([v, l]) => `<button type="button" data-ctl data-id="${it.id}" data-k="${c.k}" data-v="${v}" aria-pressed="${st[c.k] === v}">${l}</button>`).join('')}</div>`;
+  }).join('')}</div>`;
+}
+function factsHTML(it) { return it.facts ? `<dl class="facts">${it.facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>` : ''; }
+function cardHTML(it, big) {
+  return `<article class="card${it.wide ? ' wide' : ''}${big ? ' big' : ''}" data-id="${it.id}" id="${big ? 'z' : 'c'}-${it.id}">
+  <header class="card-h"><div><h3>${it.name}</h3>${it.sub ? `<p class="sub">${it.sub}</p>` : ''}</div>
+  ${big ? `<button class="icon-btn" data-close aria-label="Cerrar"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>` : `<button class="icon-btn" data-zoom="${it.id}" aria-label="Ampliar ${it.name}"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button>`}</header>
+  <div data-ctlbox>${controlsHTML(it)}</div>
+  <div class="figs" data-figs></div>
+  <div class="legend" data-legend></div>
+  ${it.desc || it.facts ? `<div class="card-b">${it.desc || ''}${factsHTML(it)}</div>` : ''}
+  </article>`;
+}
+function updateCard(el, it) {
+  const figs = normFigs(it.render(ST[it.id]));
+  el.querySelector('[data-figs]').innerHTML = figsHTML(figs);
+  const lg = legendHTML(figs); const L = el.querySelector('[data-legend]'); L.innerHTML = lg; L.hidden = !lg;
+}
+function refresh(id, keepCtl) {
+  const it = byId[id];
+  document.querySelectorAll(`.card[data-id="${id}"]`).forEach(el => {
+    if (!keepCtl) el.querySelector('[data-ctlbox]').innerHTML = controlsHTML(it);
+    updateCard(el, it);
+  });
+}
+
+/* ---------- pestañas ---------- */
+function renderTab(tab) {
+  const host = document.getElementById('p-' + tab.id);
+  if (tab.id === 'pra') { host.innerHTML = quizShell(); return; }
+  const secs = SECTIONS[tab.id];
+  let h = `<section class="theory" aria-label="Teoría">${THEORY[tab.id]}</section>`;
+  h += `<nav class="subnav" aria-label="Secciones">${secs.map((s, i) => `<a href="#s-${s.id}" data-jump="s-${s.id}"><span>${String(i + 1).padStart(2, '0')}</span>${s.t}</a>`).join('')}</nav>`;
+  secs.forEach((s, i) => {
+    h += `<section class="sec" id="s-${s.id}"><div class="sec-h"><span class="sec-n">${String(i + 1).padStart(2, '0')}</span><h2>${s.t}</h2></div>
+    <p class="clue"><b>Pista para reconocerlo · </b>${s.tip}</p>
+    <div class="grid">${ITEMS.filter(it => it.tab === tab.id && it.sec === s.id).map(it => cardHTML(it)).join('')}</div></section>`;
+  });
+  host.innerHTML = h;
+  host.querySelectorAll('.card').forEach(el => updateCard(el, byId[el.dataset.id]));
+}
+let current = 'lip';
+function showTab(id, push = true) {
+  current = id;
+  TABS.forEach(t => {
+    const b = document.getElementById('t-' + t.id), p = document.getElementById('p-' + t.id);
+    b.setAttribute('aria-selected', t.id === id); b.tabIndex = t.id === id ? 0 : -1; p.hidden = t.id !== id;
+  });
+  document.body.dataset.tab = id;
+  if (push) { try { history.replaceState(null, '', '#' + TABS.find(t => t.id === id).hash); } catch (e) { } }
+  helix.active(id === 'nuc');
+}
+
+/* ---------- ampliar ---------- */
+const dlg = () => document.getElementById('zoom');
+function openZoom(id) {
+  const d = dlg(); d.innerHTML = cardHTML(byId[id], true); updateCard(d.querySelector('.card'), byId[id]);
+  if (d.showModal) d.showModal(); else d.setAttribute('open', '');
+}
+
+/* ---------- hélice animada ---------- */
+const helix = (() => {
+  let raf = null, on = false, t0 = 0;
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const pairs = 'ATGCGCATTAGCTA'.split('');
+  function draw(ph) {
+    const host = document.getElementById('helixAnim'); if (!host) return;
+    const W = 200, Hh = 250, n = pairs.length; let back = '', front = '', b1 = '', b2 = '';
+    for (let i = 0; i < n; i++) {
+      const y = 14 + i * 16, a = ph + i * 0.62, x1 = W / 2 + 62 * Math.sin(a), x2 = W / 2 + 62 * Math.sin(a + Math.PI), z = Math.cos(a);
+      const c1 = BCOL[pairs[i]], c2 = BCOL[COMP[pairs[i]]];
+      const rung = `<line x1="${r1(x1)}" y1="${y}" x2="${r1(W / 2 + (x1 + x2 - W) / 2)}" y2="${y}" stroke="${c1}" stroke-width="5" stroke-linecap="round" opacity="${r1(.55 + .4 * Math.abs(z))}"/><line x1="${r1(W / 2 + (x1 + x2 - W) / 2)}" y1="${y}" x2="${r1(x2)}" y2="${y}" stroke="${c2}" stroke-width="5" stroke-linecap="round" opacity="${r1(.55 + .4 * Math.abs(z))}"/>`;
+      if (z < 0) back += rung; else front += rung;
+      b1 += (i ? 'L' : 'M') + r1(x1) + ',' + y; b2 += (i ? 'L' : 'M') + r1(x2) + ',' + y;
+    }
+    host.innerHTML = `<svg viewBox="0 0 ${W} ${Hh}" class="helix"><path d="${b2}" class="hx2"/>${back}${front}<path d="${b1}" class="hx1"/></svg>`;
+  }
+  function loop(ts) { if (!on) return; draw(ts / 1400); raf = requestAnimationFrame(loop); }
+  return { active(v) { on = v && !reduce; if (on) raf = requestAnimationFrame(loop); else { cancelAnimationFrame(raf); draw(0.8); } } };
+})();
+
+/* ======================= PRÁCTICA ======================= */
+const QZ = { mode: 'name', tabs: { lip: true, nuc: true, pro: true, glu: true }, n: 10, qs: [], i: 0, score: 0, log: [], done: false, started: false };
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const qName = it => (it.quiz.name || it.name);
+function quizShell() {
+  return `<div class="quiz-wrap">
+  <aside class="qset"><h2>Practica el reconocimiento</h2><p class="small">Aparece una molécula sin su nombre. ¡Identifícala! Puedes responder con las teclas 1–4.</p>
+   <fieldset><legend>Tipo de pregunta</legend>
+    <label class="opt"><input type="radio" name="qm" value="name" checked> ¿Qué molécula es?</label>
+    <label class="opt"><input type="radio" name="qm" value="cat"> ¿A qué grupo pertenece?</label></fieldset>
+   <fieldset><legend>Biomoléculas</legend>${TABS.filter(t => t.id !== 'pra').map(t => `<label class="opt"><input type="checkbox" data-qt="${t.id}" checked> ${t.name}</label>`).join('')}</fieldset>
+   <fieldset><legend>Número de preguntas</legend><div class="seg">${[5, 10, 20].map(n => `<button type="button" data-qn="${n}" aria-pressed="${n === 10}">${n}</button>`).join('')}</div></fieldset>
+   <button class="btn primary" data-qstart>Empezar</button></aside>
+  <section class="qmain" id="qmain" aria-live="polite">${quizIntro()}</section></div>`;
+}
+function quizIntro() {
+  return `<div class="qintro"><svg viewBox="0 0 120 120" width="110" aria-hidden="true"><polygon points="${hexPts(60, 60, 40)}" class="qi-hex"/><text x="60" y="72" text-anchor="middle" class="qi-q">?</text></svg>
+  <h3>¿Preparado?</h3><p>Elige las opciones de la izquierda y pulsa <b>Empezar</b>. Al responder verás la explicación. Al final tendrás tu puntuación y un repaso de los fallos.</p></div>`;
+}
+function genNucQ() {
+  const combos = []; ['ribosa', 'desoxirribosa'].forEach(s => ['A', 'G', 'C', 'T', 'U'].forEach(b => { if ((s === 'ribosa' && b === 'T') || (s === 'desoxirribosa' && b === 'U')) return; ['0', '1', '2', '3'].forEach(p => combos.push([s, b, p])); }));
+  const c = pick(combos); const n = nucName(...c);
+  const label = x => { const nn = nucName(...x); return nn.full + (nn.ab !== 'nucleósido' ? ' (' + nn.ab + ')' : ''); };
+  const correct = QZ.mode === 'name' ? label(c) : n.kind;
+  let opts;
+  if (QZ.mode === 'name') { const others = shuffle(combos.filter(x => x !== c && (x[0] !== c[0] || x[1] !== c[1] || x[2] !== c[2]))); const set = new Set([correct]); const pref = others.filter(x => x[1] === c[1] || x[0] === c[0]); for (const x of pref.concat(others)) { if (set.size >= 4) break; set.add(label(x)); } opts = shuffle([...set]); }
+  else opts = shuffle(['Nucleótido', 'Nucleósido', 'Base púrica', 'Pentosa']);
+  return { figs: normFigs(nucleotideMol(...c)), correct, opts, title: label(c), expl: `${n.kind}: ${NUC[c[1]][0]} + ${c[0]}${+c[2] ? ' + ' + c[2] + ' fosfato' + (+c[2] > 1 ? 's' : '') : ' (sin fosfato)'}.` };
+}
+function makeQ(it) {
+  if (it.quiz.gen) return genNucQ();
+  const v = it.quiz.variants || [{}]; const st = Object.assign({}, it.def || {}, pick(v));
+  const figs = normFigs(it.render(st));
+  const correct = QZ.mode === 'name' ? qName(it) : it.quiz.cat; let opts;
+  const all = ITEMS.filter(o => o.quiz && !o.quiz.gen);
+  if (QZ.mode === 'name') {
+    const set = new Set([correct]);
+    const tiers = [shuffle(all.filter(o => o !== it && o.quiz.grp === it.quiz.grp)), shuffle(all.filter(o => o.tab === it.tab && o.quiz.grp !== it.quiz.grp)), shuffle(all)];
+    for (const t of tiers) for (const o of t) { if (set.size >= 4) break; set.add(qName(o)); }
+    opts = shuffle([...set]);
+  } else {
+    const set = new Set([correct]);
+    for (const t of [shuffle(all.filter(o => o.tab === it.tab).map(o => o.quiz.cat)), shuffle(all.map(o => o.quiz.cat))]) for (const c of t) { if (set.size >= 4) break; set.add(c); }
+    opts = shuffle([...set]);
+  }
+  const tmp = document.createElement('div'); tmp.innerHTML = it.desc || '';
+  const expl = (tmp.textContent || '').trim().split(/(?<=\.)\s/).slice(0, 2).join(' ');
+  return { figs, correct, opts, title: it.name + (it.sub ? ' · ' + it.sub.replace(/<[^>]+>/g, '') : ''), expl };
+}
+function quizStart() {
+  const pool = ITEMS.filter(i => i.quiz && QZ.tabs[i.tab]);
+  const main = document.getElementById('qmain');
+  if (!pool.length) { main.innerHTML = `<div class="qintro"><h3>Elige al menos un tipo de biomolécula.</h3></div>`; return; }
+  let list = []; while (list.length < QZ.n) list = list.concat(shuffle(pool)); list = list.slice(0, QZ.n);
+  QZ.qs = list.map(makeQ); QZ.i = 0; QZ.score = 0; QZ.log = []; QZ.answered = false; renderQ();
+}
+function renderQ() {
+  const q = QZ.qs[QZ.i], n = QZ.qs.length;
+  document.getElementById('qmain').innerHTML = `<div class="qhead"><span>Pregunta ${QZ.i + 1} de ${n}</span><span class="score">${QZ.score} aciertos</span></div>
+  <div class="progress" aria-hidden="true"><span style="width:${100 * QZ.i / n}%"></span></div>
+  <h3 class="qtitle">${QZ.mode === 'name' ? '¿Qué molécula es?' : '¿A qué grupo pertenece esta molécula?'}</h3>
+  <div class="figs quiz-fig">${figsHTML(q.figs, true)}</div>
+  <div class="qopts">${q.opts.map((o, i) => `<button type="button" class="qopt" data-qa="${i}"><kbd>${i + 1}</kbd><span>${o}</span></button>`).join('')}</div>
+  <div class="qfb" id="qfb"></div>`;
+  QZ.answered = false;
+}
+function answer(i) {
+  if (QZ.answered) return; QZ.answered = true;
+  const q = QZ.qs[QZ.i], chosen = q.opts[i], ok = chosen === q.correct;
+  if (ok) QZ.score++; QZ.log.push({ q, chosen, ok });
+  document.querySelectorAll('.qopt').forEach((b, k) => { b.disabled = true; if (q.opts[k] === q.correct) b.classList.add('ok'); else if (k === i) b.classList.add('bad'); });
+  document.querySelector('.score').textContent = QZ.score + ' aciertos';
+  document.getElementById('qfb').innerHTML = `<div class="fb ${ok ? 'ok' : 'bad'}"><p class="fb-t">${ok ? '¡Correcto!' : 'No es correcto. La respuesta es: ' + q.correct}</p><p><b>${q.title}.</b> ${q.expl}</p></div>
+  <button class="btn primary" data-qnext>${QZ.i < QZ.qs.length - 1 ? 'Siguiente →' : 'Ver resultado'}</button>`;
+  document.querySelector('[data-qnext]').focus();
+}
+function quizNext() {
+  if (QZ.i < QZ.qs.length - 1) { QZ.i++; renderQ(); return; }
+  const n = QZ.qs.length, p = Math.round(100 * QZ.score / n);
+  const msg = p === 100 ? '¡Perfecto! Dominas el reconocimiento.' : p >= 80 ? '¡Muy bien! Solo algún detalle.' : p >= 50 ? 'Vas por buen camino. Repasa los fallos.' : 'Vuelve a mirar las fichas y sus pistas, y repite.';
+  const wrong = QZ.log.filter(l => !l.ok);
+  document.getElementById('qmain').innerHTML = `<div class="qend"><div class="ring" style="--p:${p}"><span>${p}%</span></div><h3>${QZ.score} de ${n} aciertos</h3><p>${msg}</p>
+  ${wrong.length ? `<h4>Repasa</h4><ul class="wrong">${wrong.map(l => `<li><b>${l.q.correct}</b><span>respondiste: ${l.chosen}</span></li>`).join('')}</ul>` : ''}
+  <button class="btn primary" data-qstart>Otra ronda</button></div>`;
+}
+
+/* ---------- eventos ---------- */
+document.addEventListener('click', e => {
+  const t = e.target;
+  const c = t.closest('[data-ctl]'); if (c) { ST[c.dataset.id][c.dataset.k] = c.dataset.v; refresh(c.dataset.id); return; }
+  const z = t.closest('[data-zoom]'); if (z) { openZoom(z.dataset.zoom); return; }
+  if (t.closest('[data-close]')) { dlg().close(); return; }
+  if (t === dlg()) { dlg().close(); return; }
+  const tb = t.closest('.tab'); if (tb) { showTab(tb.dataset.tab); window.scrollTo({ top: 0 }); return; }
+  const tg = t.closest('[data-toggle]'); if (tg) { const cl = tg.dataset.toggle; const on = !document.body.classList.contains(cl); document.body.classList.toggle(cl, on); document.querySelectorAll(`[data-toggle="${cl}"]`).forEach(b => b.setAttribute('aria-pressed', on)); return; }
+  const j = t.closest('[data-jump]'); if (j) { e.preventDefault(); document.getElementById(j.dataset.jump).scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  const qn = t.closest('[data-qn]'); if (qn) { QZ.n = +qn.dataset.qn; document.querySelectorAll('[data-qn]').forEach(b => b.setAttribute('aria-pressed', b === qn)); return; }
+  if (t.closest('[data-qstart]')) { quizStart(); return; }
+  const qa = t.closest('[data-qa]'); if (qa) { answer(+qa.dataset.qa); return; }
+  if (t.closest('[data-qnext]')) { quizNext(); return; }
+  if (t.closest('#themeBtn')) { const r = document.documentElement; const dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; r.dataset.theme = dark ? 'light' : 'dark'; return; }
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.name === 'qm') QZ.mode = t.value;
+  if (t.dataset.qt) QZ.tabs[t.dataset.qt] = t.checked;
+});
+document.addEventListener('input', e => { const t = e.target; if (t.dataset.tin) { ST[t.dataset.tin][t.dataset.k] = t.value; refresh(t.dataset.tin, true); } });
+document.addEventListener('keydown', e => {
+  if (current === 'pra' && QZ.qs.length && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) {
+    if (!QZ.answered && /^[1-4]$/.test(e.key) && document.querySelector('.qopt')) answer(+e.key - 1);
+    else if (QZ.answered && e.key === 'Enter' && document.activeElement.dataset.qnext === undefined) quizNext();
+  }
+  const tb = e.target.closest && e.target.closest('.tab');
+  if (tb && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) { const i = TABS.findIndex(x => x.id === tb.dataset.tab); const n = TABS[(i + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length]; showTab(n.id); document.getElementById('t-' + n.id).focus(); }
+});
+
+/* ---------- inicio ---------- */
+(function init() {
+  document.getElementById('tabs').innerHTML = TABS.map(t => `<button class="tab" role="tab" id="t-${t.id}" data-tab="${t.id}" aria-controls="p-${t.id}" style="--c:var(--${t.id})"><span class="dot"></span>${t.name}</button>`).join('');
+  document.getElementById('main').innerHTML = TABS.map(t => `<div class="panel" role="tabpanel" id="p-${t.id}" aria-labelledby="t-${t.id}" hidden></div>`).join('');
+  TABS.forEach(renderTab);
+  const h = (location.hash || '').slice(1); const t = TABS.find(x => x.hash === h);
+  showTab(t ? t.id : 'lip', false);
+})();
+window.addEventListener('hashchange', () => { const t = TABS.find(x => x.hash === location.hash.slice(1)); if (t && t.id !== current) showTab(t.id, false); });
+
+</script>
+</body>
+</html>

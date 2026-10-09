@@ -1,0 +1,1126 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anabolismo · simulador 3D</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&amp;family=Instrument+Serif:ital@0;1&amp;display=swap">
+<style>
+body{margin:0;background:#06090d}
+a{color:#9fd36b}a:hover{color:#c3eaa0}
+.mt-app{height:100vh;min-height:640px;display:flex;flex-direction:column;overflow:hidden}
+.mt-body{flex:1;min-height:0;display:flex}
+.mt-nav{flex:0 0 214px;display:flex;flex-direction:column;gap:2px;padding:14px 10px;overflow-y:auto;border-right:1px solid rgba(255,255,255,.07);background:#080c11}
+.mt-stage{flex:1 1 auto;min-width:0;position:relative;overflow:hidden;background:#05080c}
+.mt-side{flex:0 0 372px;overflow-y:auto;border-left:1px solid rgba(255,255,255,.07);background:#0a0e13}
+.mt-scn{display:flex;gap:10px;align-items:center;text-align:left;background:transparent;border:0;color:#a9b4bf;padding:8px 10px;border-radius:8px;font:500 13.5px/1.25 'IBM Plex Sans',system-ui,sans-serif;cursor:pointer;min-height:44px;flex:none}
+.mt-scn:hover{background:rgba(255,255,255,.05);color:#fff}
+.mt-scn.on{background:rgba(159,211,107,.11);color:#fff;box-shadow:inset 0 0 0 1px rgba(159,211,107,.38)}
+.mt-scn .n{font:500 11px/1 'IBM Plex Mono',monospace;color:#7f8a96;min-width:18px}
+.mt-scn.on .n{color:#9fd36b}
+.mt-btn{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 13px;border-radius:19px;background:rgba(9,13,19,.78);border:1px solid rgba(255,255,255,.15);color:#e6ebf0;font:500 12.5px/1 'IBM Plex Sans',system-ui,sans-serif;cursor:pointer;backdrop-filter:blur(6px);pointer-events:auto}
+.mt-btn:hover{border-color:rgba(255,255,255,.35)}
+.mt-btn.on{border-color:rgba(159,211,107,.7);color:#c3eaa0}
+.mt-btn.sm{padding:0 10px;font-family:'IBM Plex Mono',monospace}
+.mt-stg{display:grid;grid-template-columns:24px 1fr;gap:10px;padding:8px 10px;border-radius:8px;color:#8f9aa6}
+.mt-stg .k{font:500 11px/20px 'IBM Plex Mono',monospace;text-align:center;border-radius:6px;background:rgba(255,255,255,.06);height:20px}
+.mt-stg.on{background:rgba(255,255,255,.05);color:#f1f4f7}
+.mt-stg.on .k{background:#9fd36b;color:#0f1a08}
+.mt-tg{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px 12px;color:#c9d2db;cursor:pointer;font:400 13px/1.35 'IBM Plex Sans',system-ui,sans-serif;min-height:44px}
+.mt-tg:hover{border-color:rgba(255,255,255,.22)}
+.mt-tg .sw{flex:none;width:32px;height:18px;border-radius:9px;background:#2a323c;position:relative;margin-top:1px;transition:background .2s}
+.mt-tg .sw::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:7px;background:#c9d2db;transition:left .2s}
+.mt-tg.on{border-color:rgba(255,120,90,.55);background:rgba(255,120,90,.07)}
+.mt-tg.on .sw{background:#e2674a}
+.mt-tg.on .sw::after{left:16px;background:#fff}
+.mt-chip{height:36px;padding:0 14px;border-radius:18px;border:1px solid rgba(255,255,255,.16);background:transparent;color:#c9d2db;font:500 12.5px/1 'IBM Plex Sans',system-ui,sans-serif;cursor:pointer}
+.mt-chip:hover{border-color:rgba(255,255,255,.35)}
+.mt-chip.on{background:#9fd36b;border-color:#9fd36b;color:#0f1a08}
+.mt-row{display:grid;grid-template-columns:1fr auto;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07);font:400 13px/1.4 'IBM Plex Sans',system-ui,sans-serif;color:#c3ccd5}
+.mt-row span:last-child{font-family:'IBM Plex Mono',monospace;color:#f1f4f7;text-align:right}
+.mt-row.tot{border-bottom:0;color:#fff;font-weight:600}
+.mt-row.tot span:last-child{color:#9fd36b}
+.mt-range{width:100%;accent-color:#9fd36b}
+.mt-h{margin:0;font:500 11px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#7f8a96}
+.mt-hint{pointer-events:none}
+@media (max-width:1100px){.mt-side{flex-basis:320px}.mt-nav{flex-basis:186px}}
+@media (max-width:820px){.mt-app{height:auto;overflow:visible}.mt-body{flex-direction:column}.mt-nav{flex:none;flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid rgba(255,255,255,.07)}.mt-stage{height:64vh;min-height:400px;flex:none}.mt-side{flex:none;border-left:0}.mt-hint{display:none}}
+</style>
+
+</head>
+<body>
+<div id="app"></div>
+<template id="dc-tpl">
+<div class="mt-app" style="background:#06090d;color:#e6ebf0;font-family:'IBM Plex Sans',system-ui,sans-serif">
+  <header style="display:flex;align-items:center;gap:18px;padding:12px 20px;border-bottom:1px solid rgba(255,255,255,.08);flex-wrap:wrap">
+    <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+      <span style="font-family:'Instrument Serif',serif;font-size:30px;line-height:1;color:#f4f1ea">Metabolismo celular</span>
+      <span style="font:500 11px/1 'IBM Plex Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#9fd36b">Simulador 3D · Anabolismo</span>
+    </div>
+    <nav style="margin-left:auto;display:flex;gap:8px;align-items:center" aria-label="Simuladores">
+      <a href="catabolismo.html" class="mt-btn" style="text-decoration:none">← Catabolismo</a>
+      <span class="mt-btn on" style="cursor:default">Anabolismo</span>
+    </nav>
+  </header>
+  <div class="mt-body">
+    <nav class="mt-nav" aria-label="Escenas">
+      <sc-for list="{{scenes}}" as="s" hint-placeholder-count="8">
+        <button class="{{s.cls}}" onClick="{{s.go}}"><span class="n">{{s.num}}</span><span>{{s.name}}</span></button>
+      </sc-for>
+    </nav>
+    <main class="mt-stage">
+      <canvas data-mt="gl" ref="{{glRef}}" style="position:absolute;inset:0;width:100%;height:100%;display:block"></canvas>
+      <canvas data-mt="ov" ref="{{ovRef}}" style="position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab"></canvas>
+      <div style="position:absolute;top:14px;left:14px;right:14px;display:flex;gap:10px;align-items:flex-start;pointer-events:none;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 14px 8px 8px;border-radius:20px;background:rgba(9,13,19,.78);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(6px);max-width:520px">
+          <span style="font:600 11px/22px 'IBM Plex Mono',monospace;background:#9fd36b;color:#0f1a08;border-radius:11px;min-width:22px;text-align:center">{{stageNum}}</span>
+          <span style="font-size:13.5px;color:#f1f4f7">{{stageNow}}</span>
+        </div>
+        <sc-if value="{{hasSub}}" hint-placeholder-val="{{false}}">
+          <div style="padding:9px 14px;border-radius:12px;background:rgba(80,20,14,.82);border:1px solid rgba(255,120,90,.5);font-size:13px;line-height:1.4;color:#ffd9cf;max-width:460px">{{sub}}</div>
+        </sc-if>
+      </div>
+      <sc-if value="{{hasSel}}" hint-placeholder-val="{{false}}">
+        <div style="position:absolute;top:64px;right:14px;width:300px;max-width:calc(100% - 28px);padding:14px 16px;border-radius:12px;background:rgba(9,13,19,.9);border:1px solid rgba(159,211,107,.4);backdrop-filter:blur(8px);display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;gap:8px;align-items:flex-start">
+            <span style="flex:1;font:400 22px/1.1 'Instrument Serif',serif;color:#f4f1ea">{{selTitle}}</span>
+            <button class="mt-btn" style="height:32px;width:32px;padding:0;justify-content:center" onClick="{{closeSel}}" aria-label="Cerrar">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 1l10 10M11 1L1 11"></path></svg>
+            </button>
+          </div>
+          <p style="margin:0;font-size:13px;line-height:1.5;color:#c9d2db">{{selText}}</p>
+          <sc-if value="{{hasSelGo}}" hint-placeholder-val="{{false}}">
+            <button class="mt-btn on" style="align-self:flex-start" onClick="{{selGo}}">{{selGoLabel}}</button>
+          </sc-if>
+        </div>
+      </sc-if>
+      <sc-if value="{{noGL}}" hint-placeholder-val="{{false}}">
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;color:#c9d2db">Este navegador no admite WebGL 2, necesario para el simulador 3D.</div>
+      </sc-if>
+      <div style="position:absolute;left:14px;right:14px;bottom:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;pointer-events:none">
+        <button class="mt-btn" onClick="{{togglePlay}}" aria-label="Reproducir o pausar">
+          <sc-if value="{{playing}}" hint-placeholder-val="{{true}}"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><rect x="1.5" y="1" width="3" height="10" rx="1"></rect><rect x="7.5" y="1" width="3" height="10" rx="1"></rect></svg><span>Pausa</span></sc-if>
+          <sc-if value="{{paused}}" hint-placeholder-val="{{false}}"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M2 1l9 5-9 5z"></path></svg><span>Reproducir</span></sc-if>
+        </button>
+        <button class="mt-btn" onClick="{{step}}">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M1 1l7 5-7 5z"></path><rect x="9" y="1" width="2" height="10" rx="1"></rect></svg><span>Siguiente fase</span>
+        </button>
+        <div style="display:flex;gap:4px;pointer-events:auto">
+          <sc-for list="{{speeds}}" as="v" hint-placeholder-count="3">
+            <button class="{{v.cls}}" onClick="{{v.pick}}">{{v.label}}</button>
+          </sc-for>
+        </div>
+        <button class="{{labelsCls}}" onClick="{{toggleLabels}}">Etiquetas</button>
+        <button class="mt-btn" onClick="{{recenter}}">Recentrar</button>
+        <span class="mt-hint" style="margin-left:auto;font:400 12px/1.4 'IBM Plex Sans',system-ui,sans-serif;color:#8e99a5;text-align:right">Arrastra para girar · rueda o pellizco para acercar · Mayús + arrastrar para desplazar · clic en una estructura para ver qué es</span>
+      </div>
+    </main>
+    <aside class="mt-side" style="padding:22px 22px 32px;display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span class="mt-h" style="color:#9fd36b">{{kicker}}</span>
+        <h1 style="margin:0;font:400 34px/1.05 'Instrument Serif',serif;color:#f4f1ea">{{title}}</h1>
+        <p style="margin:0;font-size:14px;line-height:1.55;color:#b9c3cd;text-wrap:pretty">{{lead}}</p>
+      </div>
+      <sc-if value="{{hasEq}}" hint-placeholder-val="{{true}}">
+        <div style="font:500 12.5px/1.6 'IBM Plex Mono',monospace;color:#efe7d6;padding:11px 13px;border-radius:10px;background:rgba(159,211,107,.07);border:1px solid rgba(159,211,107,.28);white-space:pre-line">{{eq}}</div>
+      </sc-if>
+      <sc-if value="{{hasCounters}}" hint-placeholder-val="{{false}}">
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+          <sc-for list="{{counters}}" as="c" hint-placeholder-count="4">
+            <div style="padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;gap:6px">
+              <span style="display:flex;align-items:center;gap:7px;font-size:11.5px;color:#9aa5b1"><span style="width:8px;height:8px;border-radius:4px;flex:none;{{c.dot}}"></span>{{c.label}}</span>
+              <span style="font:500 20px/1 'IBM Plex Mono',monospace;color:#f4f6f8">{{c.value}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{hasChips}}" hint-placeholder-val="{{false}}">
+        <sc-for list="{{chips}}" as="cg" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <p class="mt-h">{{cg.label}}</p>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <sc-for list="{{cg.opts}}" as="op" hint-placeholder-count="3">
+                <button class="{{op.cls}}" onClick="{{op.pick}}">{{op.label}}</button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </sc-if>
+      <sc-if value="{{hasToggles}}" hint-placeholder-val="{{false}}">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <p class="mt-h">Experimenta</p>
+          <sc-for list="{{toggles}}" as="t" hint-placeholder-count="3">
+            <button class="{{t.cls}}" onClick="{{t.toggle}}" aria-pressed="{{t.on}}"><span class="sw"></span><span style="display:flex;flex-direction:column;gap:2px"><b style="font-weight:600;color:#f1f4f7">{{t.label}}</b><span style="font-size:12px;color:#9aa5b1">{{t.desc}}</span></span></button>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{hasRanges}}" hint-placeholder-val="{{false}}">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <p class="mt-h">Condiciones</p>
+          <sc-for list="{{ranges}}" as="rg" hint-placeholder-count="2">
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:#c9d2db">
+              <span style="display:flex;justify-content:space-between;gap:10px"><span>{{rg.label}}</span><span style="font-family:'IBM Plex Mono',monospace;color:#f1f4f7">{{rg.disp}}</span></span>
+              <input class="mt-range" type="range" min="{{rg.min}}" max="{{rg.max}}" step="{{rg.step}}" value="{{rg.value}}" onChange="{{rg.onChange}}">
+            </label>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{hasCharts}}" hint-placeholder-val="{{false}}">
+        <sc-for list="{{charts}}" as="ch" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <p class="mt-h">{{ch.title}}</p>
+            <div style="position:relative">
+              <svg viewBox="0 0 300 170" width="100%" style="display:block;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px" role="img" aria-label="{{ch.title}}">
+                <path d="M24 150 L292 150 M24 150 L24 10" stroke="rgba(255,255,255,.35)" stroke-width="1" fill="none"></path>
+                <path d="{{ch.p1.d}}" stroke="{{ch.p1.c}}" stroke-width="{{ch.p1.w}}" stroke-dasharray="{{ch.p1.dash}}" fill="none" stroke-linejoin="round"></path>
+                <path d="{{ch.p2.d}}" stroke="{{ch.p2.c}}" stroke-width="{{ch.p2.w}}" stroke-dasharray="{{ch.p2.dash}}" fill="none" stroke-linejoin="round"></path>
+                <path d="{{ch.p3.d}}" stroke="{{ch.p3.c}}" stroke-width="{{ch.p3.w}}" stroke-dasharray="{{ch.p3.dash}}" fill="none" stroke-linejoin="round"></path>
+                <path d="{{ch.p4.d}}" stroke="{{ch.p4.c}}" stroke-width="{{ch.p4.w}}" stroke-dasharray="{{ch.p4.dash}}" fill="none" stroke-linejoin="round"></path>
+                <path d="{{ch.p5.d}}" stroke="{{ch.p5.c}}" stroke-width="{{ch.p5.w}}" stroke-dasharray="{{ch.p5.dash}}" fill="none" stroke-linejoin="round"></path>
+                <circle cx="{{ch.d1.x}}" cy="{{ch.d1.y}}" r="{{ch.d1.r}}" fill="{{ch.d1.c}}" stroke="#0a0e13" stroke-width="2"></circle>
+                <circle cx="{{ch.d2.x}}" cy="{{ch.d2.y}}" r="{{ch.d2.r}}" fill="{{ch.d2.c}}" stroke="#0a0e13" stroke-width="2"></circle>
+                <circle cx="{{ch.d3.x}}" cy="{{ch.d3.y}}" r="{{ch.d3.r}}" fill="{{ch.d3.c}}" stroke="#0a0e13" stroke-width="2"></circle>
+                <text x="292" y="164" text-anchor="end" fill="#9aa5b1" font-size="10" font-family="IBM Plex Sans, sans-serif">{{ch.xl}}</text>
+                <text x="28" y="9" fill="#9aa5b1" font-size="10" font-family="IBM Plex Sans, sans-serif">{{ch.yl}}</text>
+              </svg>
+              <sc-for list="{{ch.labels}}" as="lb" hint-placeholder-count="0">
+                <span style="position:absolute;font:500 10px/1.1 'IBM Plex Sans',system-ui,sans-serif;white-space:nowrap;pointer-events:none;{{lb.st}}">{{lb.t}}</span>
+              </sc-for>
+            </div>
+            <sc-if value="{{ch.hasLegend}}" hint-placeholder-val="{{false}}">
+              <div style="display:flex;gap:12px;flex-wrap:wrap">
+                <sc-for list="{{ch.legend}}" as="lg" hint-placeholder-count="2">
+                  <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#c9d2db"><span style="width:14px;height:3px;border-radius:2px;{{lg.dot}}"></span>{{lg.t}}</span>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </sc-if>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <p class="mt-h" style="margin-bottom:6px">Fases</p>
+        <sc-for list="{{stages}}" as="st" hint-placeholder-count="5">
+          <div class="{{st.cls}}">
+            <span class="k">{{st.n}}</span>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <span style="font-size:13.5px;font-weight:500">{{st.t}}</span>
+              <sc-if value="{{st.on}}" hint-placeholder-val="{{false}}"><span style="font-size:12.5px;line-height:1.5;color:#b9c3cd">{{st.d}}</span></sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <sc-if value="{{hasRows}}" hint-placeholder-val="{{false}}">
+        <div style="display:flex;flex-direction:column">
+          <p class="mt-h" style="margin-bottom:6px">{{rowsTitle}}</p>
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+            <div class="{{r.cls}}"><span>{{r.a}}</span><span>{{r.b}}</span></div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{hasNotes}}" hint-placeholder-val="{{false}}">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <sc-for list="{{notes}}" as="nt" hint-placeholder-count="2">
+            <div style="display:flex;flex-direction:column;gap:4px;padding-top:12px;border-top:1px solid rgba(255,255,255,.07)">
+              <span style="font:400 19px/1.2 'Instrument Serif',serif;color:#f4f1ea">{{nt.t}}</span>
+              <span style="font-size:13px;line-height:1.55;color:#aeb8c3">{{nt.d}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+    </aside>
+  </div>
+</div>
+</template>
+<script>
+class DCLogic{constructor(p){this.props=p||{};this.state={};}setState(s){Object.assign(this.state,typeof s==='function'?s(this.state):s);__dcSchedule();}}
+var __dcComp=null,__dcSched=false;
+function __dcSchedule(){if(!__dcSched&&__dcComp){__dcSched=true;Promise.resolve().then(__dcRender);}}
+var __dcRX=/\{\{\s*([^}]+?)\s*\}\}/g;
+function __dcLook(p,sc){p=p.trim();if(p==='true')return true;if(p==='false')return false;if(/^-?\d+(\.\d+)?$/.test(p))return +p;var v=sc;var ks=p.split('.');for(var i=0;i<ks.length;i++){if(v==null)return undefined;v=v[ks[i]];}return v;}
+function __dcInterp(s,sc){var m=/^\{\{\s*([^}]+?)\s*\}\}$/.exec(s);if(m)return __dcLook(m[1],sc);return s.replace(__dcRX,function(_,p){var v=__dcLook(p,sc);return v==null?'':String(v);});}
+var __dcEV={onclick:'click',onchange:'input',oninput:'input'};
+function __dcMk(t,sc,parent){
+  if(t.nodeType===3){var d=t.data;if(d.indexOf('{{')>=0){var v=__dcInterp(d,sc);d=v==null?'':String(v);}parent.appendChild(document.createTextNode(d));return;}
+  if(t.nodeType!==1)return;var tag=t.localName;
+  if(tag==='sc-for'){var list=__dcInterp(t.getAttribute('list'),sc)||[];var as=t.getAttribute('as')||'item';list.forEach(function(it,i){var s2=Object.create(sc);s2[as]=it;s2.$index=i;t.childNodes.forEach(function(c){__dcMk(c,s2,parent);});});return;}
+  if(tag==='sc-if'){if(__dcInterp(t.getAttribute('value'),sc))t.childNodes.forEach(function(c){__dcMk(c,sc,parent);});return;}
+  var el=t.namespaceURI==='http://www.w3.org/1999/xhtml'?document.createElement(tag):document.createElementNS(t.namespaceURI,tag);el.__h={};
+  for(var i=0;i<t.attributes.length;i++){var a=t.attributes[i],n=a.name;if(n.indexOf('hint-')===0||n==='ref')continue;if(__dcEV[n]){var f=__dcInterp(a.value,sc);if(typeof f==='function')el.__h[__dcEV[n]]=f;continue;}var v=a.value.indexOf('{{')>=0?__dcInterp(a.value,sc):a.value;if(v===false||v==null)continue;el.setAttribute(n,v===true?'true':String(v));}
+  ['click','input'].forEach(function(ev){el.addEventListener(ev,function(e){var f=el.__h&&el.__h[ev];if(f)f(e);});});
+  t.childNodes.forEach(function(c){__dcMk(c,sc,el);});
+  if(tag==='input'&&el.hasAttribute('value'))el.value=el.getAttribute('value');
+  parent.appendChild(el);}
+function __dcPatch(o,n){
+  if(o.nodeType!==n.nodeType||o.nodeName!==n.nodeName){o.replaceWith(n);return;}
+  if(o.nodeType===3){if(o.data!==n.data)o.data=n.data;return;}
+  if(o.nodeType!==1)return;if(o.hasAttribute('data-mt'))return;
+  Array.from(o.attributes).forEach(function(a){if(!n.hasAttribute(a.name))o.removeAttribute(a.name);});
+  Array.from(n.attributes).forEach(function(a){if(o.getAttribute(a.name)!==a.value)o.setAttribute(a.name,a.value);});
+  if(o.localName==='input'&&document.activeElement!==o&&n.hasAttribute('value'))o.value=n.getAttribute('value');
+  o.__h=n.__h;__dcKids(o,n);}
+function __dcKids(o,n){var on=Array.from(o.childNodes),nn=Array.from(n.childNodes);for(var i=0;i<nn.length;i++){if(i<on.length)__dcPatch(on[i],nn[i]);else o.appendChild(nn[i]);}for(var j=nn.length;j<on.length;j++)on[j].remove();}
+function __dcRender(){__dcSched=false;var vals=__dcComp.renderVals();var tmp=document.createElement('div');document.getElementById('dc-tpl').content.childNodes.forEach(function(c){__dcMk(c,vals,tmp);});var root=document.getElementById('app');if(!root.firstChild){while(tmp.firstChild)root.appendChild(tmp.firstChild);}else __dcKids(root,tmp);}
+
+
+const MTB_ANA=(function(){
+'use strict';
+/* =========================================================
+   Motor 3D mínimo (WebGL 2): instancias, recorte, brillo,
+   etiquetas en superposición, cámara orbital y selección.
+   ========================================================= */
+const TAU=Math.PI*2;
+function H(h,a){const n=parseInt(h.slice(1),16);return [((n>>16)&255)/255,((n>>8)&255)/255,(n&255)/255,a==null?1:a];}
+function rng(seed){let s=seed>>>0;return function(){s=(s+0x6D2B79F5)>>>0;let t=s;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296;};}
+const v3={add:(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],sub:(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],mul:(a,s)=>[a[0]*s,a[1]*s,a[2]*s],dot:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],cross:(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],len:a=>Math.hypot(a[0],a[1],a[2]),norm:a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return [a[0]/l,a[1]/l,a[2]/l];},lerp:(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t],dist:(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2])};
+function clamp(x,a,b){return x<a?a:x>b?b:x;}
+function ease(t){t=clamp(t,0,1);return t*t*(3-2*t);}
+function qAxis(ax,a){const n=v3.norm(ax),s=Math.sin(a/2);return [n[0]*s,n[1]*s,n[2]*s,Math.cos(a/2)];}
+function qMul(a,b){return [a[3]*b[0]+a[0]*b[3]+a[1]*b[2]-a[2]*b[1],a[3]*b[1]-a[0]*b[2]+a[1]*b[3]+a[2]*b[0],a[3]*b[2]+a[0]*b[1]-a[1]*b[0]+a[2]*b[3],a[3]*b[3]-a[0]*b[0]-a[1]*b[1]-a[2]*b[2]];}
+function perp(d){const a=Math.abs(d[0])<.9?[1,0,0]:[0,1,0];return v3.norm(v3.cross(d,a));}
+function qFromTo(u,v){u=v3.norm(u);v=v3.norm(v);const d=v3.dot(u,v);if(d<-.99999)return qAxis(perp(u),Math.PI);const c=v3.cross(u,v);const q=[c[0],c[1],c[2],1+d];const l=Math.hypot(q[0],q[1],q[2],q[3]);return [q[0]/l,q[1]/l,q[2]/l,q[3]/l];}
+function nlerp(a,b,t){const s=(a[0]*b[0]+a[1]*b[1]+a[2]*b[2]+a[3]*b[3])<0?-1:1;const q=[a[0]+(b[0]*s-a[0])*t,a[1]+(b[1]*s-a[1])*t,a[2]+(b[2]*s-a[2])*t,a[3]+(b[3]*s-a[3])*t];const l=Math.hypot(q[0],q[1],q[2],q[3])||1;return [q[0]/l,q[1]/l,q[2]/l,q[3]/l];}
+function rotAxis(v,k,a){const c=Math.cos(a),s=Math.sin(a);const kv=v3.cross(k,v),kd=v3.dot(k,v);return [v[0]*c+kv[0]*s+k[0]*kd*(1-c),v[1]*c+kv[1]*s+k[1]*kd*(1-c),v[2]*c+kv[2]*s+k[2]*kd*(1-c)];}
+const TMP=new Float32Array(16);
+const IDENT=new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]);
+function compose(o,p,q,s){const x=q[0],y=q[1],z=q[2],w=q[3],x2=x+x,y2=y+y,z2=z+z,xx=x*x2,xy=x*y2,xz=x*z2,yy=y*y2,yz=y*z2,zz=z*z2,wx=w*x2,wy=w*y2,wz=w*z2;o[0]=(1-(yy+zz))*s[0];o[1]=(xy+wz)*s[0];o[2]=(xz-wy)*s[0];o[3]=0;o[4]=(xy-wz)*s[1];o[5]=(1-(xx+zz))*s[1];o[6]=(yz+wx)*s[1];o[7]=0;o[8]=(xz+wy)*s[2];o[9]=(yz-wx)*s[2];o[10]=(1-(xx+yy))*s[2];o[11]=0;o[12]=p[0];o[13]=p[1];o[14]=p[2];o[15]=1;return o;}
+function mmul(o,a,b){const r=TMP;for(let i=0;i<4;i++)for(let j=0;j<4;j++){r[i*4+j]=a[j]*b[i*4]+a[4+j]*b[i*4+1]+a[8+j]*b[i*4+2]+a[12+j]*b[i*4+3];}o.set(r);return o;}
+function persp(o,f,asp,n,fa){const t=1/Math.tan(f/2),nf=1/(n-fa);o.fill(0);o[0]=t/asp;o[5]=t;o[10]=(fa+n)*nf;o[11]=-1;o[14]=2*fa*n*nf;return o;}
+function lookAt(o,e,c,up){const z=v3.norm(v3.sub(e,c));const x=v3.norm(v3.cross(up,z));const y=v3.cross(z,x);o[0]=x[0];o[1]=y[0];o[2]=z[0];o[3]=0;o[4]=x[1];o[5]=y[1];o[6]=z[1];o[7]=0;o[8]=x[2];o[9]=y[2];o[10]=z[2];o[11]=0;o[12]=-v3.dot(x,e);o[13]=-v3.dot(y,e);o[14]=-v3.dot(z,e);o[15]=1;return o;}
+function scaleOf(W){return Math.max(Math.hypot(W[0],W[1],W[2]),Math.hypot(W[4],W[5],W[6]),Math.hypot(W[8],W[9],W[10]));}
+
+class N3{
+  constructor(o){o=o||{};this.p=o.p?o.p.slice():[0,0,0];this.q=o.q?o.q.slice():[0,0,0,1];const s=o.s;this.s=s==null?[1,1,1]:(typeof s==='number'?[s,s,s]:s.slice());this.geo=o.geo||null;this.col=typeof o.col==='string'?H(o.col):(o.col||[1,1,1,1]);this.emit=o.emit||0;this.rim=o.rim==null?.4:o.rim;this.clip=o.clip?1:0;this.tex=o.tex==null?.2:o.tex;this.glow=o.glow||null;this.label=o.label||null;this.pick=o.pick||null;this.pickR=o.pickR||1;this.pickClip=!!o.pickClip;this.frozen=!!o.frozen;this.visible=o.visible!==false;this.children=[];this.parent=null;this.W=new Float32Array(16);this.L=new Float32Array(16);this._ok=false;}
+  add(c){c.parent=this;this.children.push(c);return c;}
+  remove(c){const i=this.children.indexOf(c);if(i>=0){this.children.splice(i,1);c.parent=null;}}
+}
+function kill(n){if(n&&n.parent)n.parent.remove(n);}
+
+const VS=`#version 300 es
+layout(location=0) in vec3 aP;layout(location=1) in vec3 aN;
+layout(location=2) in vec4 m0;layout(location=3) in vec4 m1;layout(location=4) in vec4 m2;layout(location=5) in vec4 m3;
+layout(location=6) in vec4 aC;layout(location=7) in vec4 aX;
+uniform mat4 uVP;
+out vec3 vN;out vec3 vW;out vec3 vL;out vec4 vC;out vec4 vX;
+void main(){mat4 M=mat4(m0,m1,m2,m3);vec4 w=M*vec4(aP,1.0);vW=w.xyz;vL=aP;vN=normalize(transpose(inverse(mat3(M)))*aN);vC=aC;vX=aX;gl_Position=uVP*w;}`;
+const FS=`#version 300 es
+precision highp float;
+in vec3 vN;in vec3 vW;in vec3 vL;in vec4 vC;in vec4 vX;
+uniform vec3 uEye;uniform vec4 uClip;uniform vec3 uFogC;uniform vec2 uFog;uniform vec3 uKey;
+out vec4 o;
+float h3(vec3 p){p=fract(p*0.3183099+0.1);p*=17.0;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}
+float vn(vec3 x){vec3 i=floor(x);vec3 f=fract(x);f=f*f*(3.0-2.0*f);
+return mix(mix(mix(h3(i),h3(i+vec3(1,0,0)),f.x),mix(h3(i+vec3(0,1,0)),h3(i+vec3(1,1,0)),f.x),f.y),mix(mix(h3(i+vec3(0,0,1)),h3(i+vec3(1,0,1)),f.x),mix(h3(i+vec3(0,1,1)),h3(i+vec3(1,1,1)),f.x),f.y),f.z);}
+void main(){
+ if(vX.z>0.5&&dot(vW,uClip.xyz)+uClip.w>0.0)discard;
+ vec3 V=normalize(uEye-vW);vec3 N=normalize(vN);bool ins=dot(N,V)<0.0;if(ins)N=-N;
+ float n1=vn(vL*6.0),n2=vn(vL*17.0+3.1),n3=vn(vL*11.0+7.3);
+ N=normalize(N+(vec3(n1,n2,n3)-0.5)*vX.w*1.3);
+ vec3 base=vC.rgb*(1.0+(n1*0.6+n2*0.4-0.5)*vX.w*1.1);
+ vec3 L=normalize(uKey);float wr=0.4;float df=max((dot(N,L)+wr)/(1.0+wr),0.0);
+ vec3 L2=normalize(vec3(-0.7,-0.3,-0.4));float df2=max(dot(N,L2),0.0);
+ vec3 Hh=normalize(L+V);float sp=pow(max(dot(N,Hh),0.0),42.0)*0.32;
+ float hemi=0.5+0.5*N.y;vec3 amb=mix(vec3(0.07,0.08,0.11),vec3(0.24,0.24,0.26),hemi);
+ float fr=pow(1.0-max(dot(N,V),0.0),2.5);
+ vec3 col=base*(amb+df*vec3(1.0,0.96,0.9)*0.92+df2*vec3(0.22,0.32,0.5))+sp+fr*vX.y*mix(base,vec3(1.0),0.35);
+ if(ins&&vX.z>0.5)col=base*(0.32+0.28*df);
+ col+=vC.rgb*vX.x;
+ float d=length(uEye-vW);col=mix(col,uFogC,smoothstep(uFog.x,uFog.y,d));
+ float a=vC.a;if(a<0.999)a=clamp(a+fr*0.45,0.0,1.0);
+ col=col/(1.0+col*0.12)*1.06;
+ o=vec4(col*a,a);}`;
+const GVS=`#version 300 es
+layout(location=0) in vec2 aQ;layout(location=1) in vec4 aP;layout(location=2) in vec4 aC;
+uniform mat4 uV;uniform mat4 uP;out vec2 vQ;out vec4 vC;
+void main(){vec4 c=uV*vec4(aP.xyz,1.0);c.xy+=aQ*aP.w;gl_Position=uP*c;vQ=aQ;vC=aC;}`;
+const GFS=`#version 300 es
+precision highp float;in vec2 vQ;in vec4 vC;out vec4 o;
+void main(){float r=length(vQ);if(r>1.0)discard;float g=exp(-r*r*5.0)*0.85+smoothstep(0.32,0.0,r)*0.9;o=vec4(vC.rgb*g*vC.a,0.0);}`;
+const BVS=`#version 300 es
+out vec2 vU;
+void main(){vec2 p=vec2(gl_VertexID==1?3.0:-1.0,gl_VertexID==2?3.0:-1.0);vU=p;gl_Position=vec4(p,0.0,1.0);}`;
+const BFS=`#version 300 es
+precision highp float;in vec2 vU;uniform vec3 uB0;uniform vec3 uB1;uniform float uT;out vec4 o;
+float hh(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}
+void main(){float r=length(vU*vec2(1.0,0.85));vec3 c=mix(uB0,uB1,smoothstep(0.0,1.35,r));c+=(hh(gl_FragCoord.xy+fract(uT)*91.0)-0.5)*0.016;o=vec4(c,1.0);}`;
+
+class Engine{
+  constructor(cv,ov){
+    this.cv=cv;this.ov=ov;this.ok=false;let gl=null;
+    try{gl=cv.getContext('webgl2',{antialias:true,alpha:false,premultipliedAlpha:true,powerPreference:'high-performance'});}catch(e){gl=null;}
+    if(!gl)return;this.gl=gl;this.ctx=ov.getContext('2d');this.ok=true;
+    this.gid=0;this.temp=[];this.cache={};
+    this.ibuf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,this.ibuf);gl.bufferData(gl.ARRAY_BUFFER,96,gl.DYNAMIC_DRAW);this.idata=new Float32Array(24*8192);
+    this.P=this.prog(VS,FS,['uVP','uEye','uClip','uFogC','uFog','uKey']);
+    this.G=this.prog(GVS,GFS,['uV','uP']);
+    this.B=this.prog(BVS,BFS,['uB0','uB1','uT']);
+    this.bvao=gl.createVertexArray();
+    this.gbuf=gl.createBuffer();this.gdata=new Float32Array(8*2048);
+    this.gvao=gl.createVertexArray();gl.bindVertexArray(this.gvao);
+    const qb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,qb);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,1,1,-1,-1,1,1,-1,1]),gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
+    gl.bindBuffer(gl.ARRAY_BUFFER,this.gbuf);gl.bufferData(gl.ARRAY_BUFFER,32,gl.DYNAMIC_DRAW);
+    gl.enableVertexAttribArray(1);gl.vertexAttribPointer(1,4,gl.FLOAT,false,32,0);gl.vertexAttribDivisor(1,1);
+    gl.enableVertexAttribArray(2);gl.vertexAttribPointer(2,4,gl.FLOAT,false,32,16);gl.vertexAttribDivisor(2,1);
+    gl.bindVertexArray(null);
+    this.g={sphere:this.mk(this.rawSphere(36,24)),ball:this.mk(this.rawSphere(16,11)),cyl:this.mk(this.rawCyl(24,true)),stick:this.mk(this.rawCyl(8,false)),cylLo:this.mk(this.rawCyl(6,false))};
+    this.cam={yaw:0,pitch:.3,dist:20,t:[0,0,0]};this.goal={yaw:0,pitch:.3,dist:20,t:[0,0,0]};
+    this.minD=3;this.maxD=120;this.clip=[0,0,0,-1];this.fog=[40,120];this.bg=[H('#16202b'),H('#04070a')];this.fogC=[.08,.1,.13];
+    this.showLabels=true;this.pops=[];this.sel=null;this.picks=[];this.lbls=[];this.lrects=[];this.time=0;
+    this.W=0;this.Ht=0;this.dpr=1;this.VP=new Float32Array(16);this.V=new Float32Array(16);this.Pm=new Float32Array(16);this.eye=[0,0,20];
+    this.onPick=null;this.userMoved=false;this.drag=false;this.input();
+  }
+  prog(vs,fs,un){const gl=this.gl;const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(o));return o;};const p=gl.createProgram();gl.attachShader(p,sh(gl.VERTEX_SHADER,vs));gl.attachShader(p,sh(gl.FRAGMENT_SHADER,fs));gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(p));const u={};for(const n of un)u[n]=gl.getUniformLocation(p,n);return {p,u};}
+  mk(r,temp){const gl=this.gl;const vao=gl.createVertexArray();gl.bindVertexArray(vao);
+    const pb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,pb);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(r.pos),gl.STATIC_DRAW);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.FLOAT,false,0,0);
+    const nb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,nb);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(r.nor),gl.STATIC_DRAW);gl.enableVertexAttribArray(1);gl.vertexAttribPointer(1,3,gl.FLOAT,false,0,0);
+    gl.bindBuffer(gl.ARRAY_BUFFER,this.ibuf);for(let k=0;k<6;k++){gl.enableVertexAttribArray(2+k);gl.vertexAttribPointer(2+k,4,gl.FLOAT,false,96,k*16);gl.vertexAttribDivisor(2+k,1);}
+    const big=r.pos.length/3>65535;const ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,big?new Uint32Array(r.idx):new Uint16Array(r.idx),gl.STATIC_DRAW);
+    gl.bindVertexArray(null);
+    const g={vao,n:r.idx.length,type:big?gl.UNSIGNED_INT:gl.UNSIGNED_SHORT,id:this.gid++,bufs:[pb,nb,ib]};if(temp)this.temp.push(g);return g;}
+  beginScene(){const gl=this.gl;for(const g of this.temp){gl.deleteVertexArray(g.vao);for(const b of g.bufs)gl.deleteBuffer(b);}this.temp=[];}
+  rawFn(fn,nu,nv,o){o=o||{};const pos=[],nor=[],idx=[],e=1e-3,c=o.c||[0,0,0];const ev=(u,v)=>{const r=fn(u,v);return Array.isArray(r)?{p:r}:r;};
+    for(let j=0;j<=nv;j++)for(let i=0;i<=nu;i++){const u=i/nu,v=j/nv;const r=ev(u,v);const p=r.p;pos.push(p[0],p[1],p[2]);let n=r.n;
+      if(!n){const du=v3.sub(ev(Math.min(1,u+e),v).p,ev(Math.max(0,u-e),v).p),dv=v3.sub(ev(u,Math.min(1,v+e)).p,ev(u,Math.max(0,v-e)).p);n=v3.cross(du,dv);if(v3.len(n)<1e-10)n=v3.sub(p,c);n=v3.norm(n);if(o.out&&v3.dot(n,v3.sub(p,c))<0)n=v3.mul(n,-1);}
+      nor.push(n[0],n[1],n[2]);}
+    for(let j=0;j<nv;j++)for(let i=0;i<nu;i++){const a=j*(nu+1)+i,b=a+1,cc=a+nu+1,d=cc+1;idx.push(a,b,d,a,d,cc);}
+    return {pos,nor,idx};}
+  merge(list){const pos=[],nor=[],idx=[];for(const r of list){const off=pos.length/3;for(const x of r.pos)pos.push(x);for(const x of r.nor)nor.push(x);for(const x of r.idx)idx.push(x+off);}return {pos,nor,idx};}
+  rawSphere(nu,nv){return this.rawFn((u,v)=>{const th=u*TAU,ph=v*Math.PI;const p=[Math.sin(ph)*Math.cos(th),Math.cos(ph),Math.sin(ph)*Math.sin(th)];return {p,n:p};},nu,nv);}
+  rawCyl(seg,caps){const side=this.rawFn((u,v)=>{const th=u*TAU;return {p:[Math.cos(th),v-.5,Math.sin(th)],n:[Math.cos(th),0,Math.sin(th)]};},seg,1);if(!caps)return side;const cap=y=>this.rawFn((u,v)=>{const th=u*TAU;return {p:[v*Math.cos(th),y,v*Math.sin(th)],n:[0,Math.sign(y),0]};},seg,1);return this.merge([side,cap(.5),cap(-.5)]);}
+  capsule(L,r){const k='cap'+L+'_'+r;if(this.cache[k])return this.cache[k];const tot=Math.PI*r+L;const g=this.mk(this.rawFn((u,v)=>{const th=u*TAU,s=v*tot;let y,rad,ny,nr;if(s<Math.PI*r/2){const a=-Math.PI/2+s/r;y=-L/2+r*Math.sin(a);rad=r*Math.cos(a);ny=Math.sin(a);nr=Math.cos(a);}else if(s<Math.PI*r/2+L){y=-L/2+(s-Math.PI*r/2);rad=r;ny=0;nr=1;}else{const a=(s-Math.PI*r/2-L)/r;y=L/2+r*Math.sin(a);rad=r*Math.cos(a);ny=Math.sin(a);nr=Math.cos(a);}return {p:[rad*Math.cos(th),y,rad*Math.sin(th)],n:[nr*Math.cos(th),ny,nr*Math.sin(th)]};},32,40));this.cache[k]=g;return g;}
+  torus(R,r){const k='tor'+R+'_'+r;if(this.cache[k])return this.cache[k];const g=this.mk(this.rawFn((u,v)=>{const th=u*TAU,ph=v*TAU;const n=[Math.cos(ph)*Math.cos(th),Math.sin(ph),Math.cos(ph)*Math.sin(th)];return {p:[(R+r*Math.cos(ph))*Math.cos(th),r*Math.sin(ph),(R+r*Math.cos(ph))*Math.sin(th)],n};},64,12));this.cache[k]=g;return g;}
+  tube(pts,r,sides){const n=pts.length;const T=[];for(let i=0;i<n;i++){const a=pts[Math.max(0,i-1)],b=pts[Math.min(n-1,i+1)];T.push(v3.norm(v3.sub(b,a)));}
+    let nr=perp(T[0]);const Ns=[],Bs=[];for(let i=0;i<n;i++){if(i>0){const b=v3.cross(T[i-1],T[i]);if(v3.len(b)>1e-6){const an=Math.acos(clamp(v3.dot(T[i-1],T[i]),-1,1));nr=rotAxis(nr,v3.norm(b),an);}}nr=v3.norm(v3.sub(nr,v3.mul(T[i],v3.dot(nr,T[i]))));Ns.push(nr);Bs.push(v3.cross(T[i],nr));}
+    return this.mk(this.rawFn((u,v)=>{const i=Math.round(v*(n-1));const th=u*TAU;const d=v3.add(v3.mul(Ns[i],Math.cos(th)),v3.mul(Bs[i],Math.sin(th)));return {p:v3.add(pts[i],v3.mul(d,r)),n:d};},sides||8,n-1),true);}
+  setScene(c){this.goal={yaw:c.cam.yaw,pitch:c.cam.pitch,dist:c.cam.dist,t:c.cam.t.slice()};this.cam={yaw:c.cam.yaw-.4,pitch:c.cam.pitch+.12,dist:c.cam.dist*1.3,t:c.cam.t.slice()};this.clip=c.clip||[0,0,0,-1];this.fog=c.fog||[30,90];this.bg=[H(c.bg?c.bg[0]:'#16202b'),H(c.bg?c.bg[1]:'#04070a')];this.fogC=v3.mul(this.bg[0],.92);this.minD=c.minD||3;this.maxD=c.maxD||120;this.sel=null;this.pops=[];this.userMoved=false;}
+  pop(p,text,c){this.pops.push({p:p.slice(),text,c:c||'#f3b765',t:0,life:1.9});if(this.pops.length>30)this.pops.shift();}
+  walk(n,PW){if(!n.visible)return;if(!(n.frozen&&n._ok)){compose(n.L,n.p,n.q,n.s);mmul(n.W,PW,n.L);}
+    if(n.geo)(n.col[3]<.999?this.trn:this.opq).push(n);if(n.glow&&n.glow.s>0)this.glw.push(n);if(n.label&&this.showLabels)this.lbls.push(n);if(n.pick)this.picks.push(n);
+    const fr=n.frozen;for(const c of n.children){if(fr)c.frozen=true;this.walk(c,n.W);}if(fr)n._ok=true;}
+  render(root,dt){
+    const gl=this.gl;this.time+=dt;const dpr=Math.min(window.devicePixelRatio||1,2);const w=this.cv.clientWidth|0,h=this.cv.clientHeight|0;if(w<2||h<2)return;
+    if(w!==this.W||h!==this.Ht||dpr!==this.dpr){this.W=w;this.Ht=h;this.dpr=dpr;this.cv.width=Math.round(w*dpr);this.cv.height=Math.round(h*dpr);this.ov.width=Math.round(w*dpr);this.ov.height=Math.round(h*dpr);}
+    const c=this.cam,g=this.goal,k=1-Math.exp(-dt*3.2);
+    if(!this.drag){c.yaw+=(g.yaw-c.yaw)*k;c.pitch+=(g.pitch-c.pitch)*k;c.dist+=(g.dist-c.dist)*k;c.t=v3.lerp(c.t,g.t,k);}
+    const cp=Math.cos(c.pitch);const eye=[c.t[0]+c.dist*cp*Math.sin(c.yaw),c.t[1]+c.dist*Math.sin(c.pitch),c.t[2]+c.dist*cp*Math.cos(c.yaw)];this.eye=eye;
+    lookAt(this.V,eye,c.t,[0,1,0]);persp(this.Pm,.75,w/h,.1,500);mmul(this.VP,this.Pm,this.V);
+    this.opq=[];this.trn=[];this.glw=[];this.lbls=[];this.picks=[];this.walk(root,IDENT);
+    gl.viewport(0,0,this.cv.width,this.cv.height);gl.disable(gl.DEPTH_TEST);gl.depthMask(true);gl.clearColor(0,0,0,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+    gl.useProgram(this.B.p);gl.uniform3fv(this.B.u.uB0,this.bg[0].slice(0,3));gl.uniform3fv(this.B.u.uB1,this.bg[1].slice(0,3));gl.uniform1f(this.B.u.uT,this.time);gl.bindVertexArray(this.bvao);gl.drawArrays(gl.TRIANGLES,0,3);
+    gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);gl.disable(gl.CULL_FACE);
+    const total=this.opq.length+this.trn.length;if(this.idata.length<total*24)this.idata=new Float32Array(total*24+24*2048);
+    this.opq.sort((a,b)=>a.geo.id-b.geo.id);for(const n of this.trn){const dx=n.W[12]-eye[0],dy=n.W[13]-eye[1],dz=n.W[14]-eye[2];n._d=dx*dx+dy*dy+dz*dz;}this.trn.sort((a,b)=>b._d-a._d);
+    const runs=[];let o=0;const D=this.idata;
+    const put=(list,tr)=>{let cur=null;for(const n of list){if(!cur||cur.g!==n.geo){cur={g:n.geo,s:o,c:0,tr};runs.push(cur);}D.set(n.W,o*24);const b=o*24+16,cl=n.col;D[b]=cl[0];D[b+1]=cl[1];D[b+2]=cl[2];D[b+3]=cl[3];D[b+4]=n.emit;D[b+5]=n.rim;D[b+6]=n.clip;D[b+7]=n.tex;cur.c++;o++;}};
+    put(this.opq,false);put(this.trn,true);
+    gl.bindBuffer(gl.ARRAY_BUFFER,this.ibuf);gl.bufferData(gl.ARRAY_BUFFER,D.subarray(0,Math.max(24,o*24)),gl.DYNAMIC_DRAW);
+    gl.useProgram(this.P.p);const U=this.P.u;gl.uniformMatrix4fv(U.uVP,false,this.VP);gl.uniform3fv(U.uEye,eye);gl.uniform4fv(U.uClip,this.clip);gl.uniform3fv(U.uFogC,this.fogC);gl.uniform2fv(U.uFog,this.fog);gl.uniform3fv(U.uKey,[.45,.8,.55]);
+    for(const r of runs){gl.depthMask(!r.tr);gl.bindVertexArray(r.g.vao);gl.bindBuffer(gl.ARRAY_BUFFER,this.ibuf);for(let k2=0;k2<6;k2++)gl.vertexAttribPointer(2+k2,4,gl.FLOAT,false,96,r.s*96+k2*16);gl.drawElementsInstanced(gl.TRIANGLES,r.g.n,r.g.type,0,r.c);}
+    const G=this.glw;if(G.length){if(this.gdata.length<G.length*8)this.gdata=new Float32Array(G.length*8+800);const gd=this.gdata;let i=0;for(const n of G){const s=n.glow.s*scaleOf(n.W),cl=n.glow.c;gd[i]=n.W[12];gd[i+1]=n.W[13];gd[i+2]=n.W[14];gd[i+3]=s;gd[i+4]=cl[0];gd[i+5]=cl[1];gd[i+6]=cl[2];gd[i+7]=cl[3];i+=8;}
+      gl.useProgram(this.G.p);gl.uniformMatrix4fv(this.G.u.uV,false,this.V);gl.uniformMatrix4fv(this.G.u.uP,false,this.Pm);gl.bindBuffer(gl.ARRAY_BUFFER,this.gbuf);gl.bufferData(gl.ARRAY_BUFFER,gd.subarray(0,i),gl.DYNAMIC_DRAW);gl.blendFunc(gl.ONE,gl.ONE);gl.depthMask(false);gl.bindVertexArray(this.gvao);gl.drawArraysInstanced(gl.TRIANGLES,0,6,G.length);}
+    gl.depthMask(true);gl.bindVertexArray(null);
+  }
+  proj(p){const m=this.VP;const X=m[0]*p[0]+m[4]*p[1]+m[8]*p[2]+m[12],Y=m[1]*p[0]+m[5]*p[1]+m[9]*p[2]+m[13],Z=m[2]*p[0]+m[6]*p[1]+m[10]*p[2]+m[14],Wc=m[3]*p[0]+m[7]*p[1]+m[11]*p[2]+m[15];if(Wc<=.1)return null;return {x:(X/Wc*.5+.5)*this.W,y:(1-(Y/Wc*.5+.5))*this.Ht,z:Z/Wc,w:Wc};}
+  overlay(dt){
+    const x=this.ctx,d=this.dpr;if(!this.W)return;x.setTransform(d,0,0,d,0,0);x.clearRect(0,0,this.W,this.Ht);this.lrects=[];
+    if(this.sel&&this.sel.parent){const n=this.sel;const s=this.proj([n.W[12],n.W[13],n.W[14]]);if(s){const r=clamp(n.pickR*scaleOf(n.W)*this.Pm[5]*this.Ht/2/s.w,14,260);x.save();x.strokeStyle='rgba(243,183,101,.9)';x.lineWidth=1.5;x.setLineDash([5,5]);x.lineDashOffset=-this.time*20;x.beginPath();x.arc(s.x,s.y,r+6,0,TAU);x.stroke();x.restore();}}
+    x.font='500 12px "IBM Plex Sans",system-ui,sans-serif';x.textBaseline='middle';
+    const items=[];for(const n of this.lbls){const s=this.proj([n.W[12],n.W[13],n.W[14]]);if(!s||s.z>1||s.x<-40||s.x>this.W+40||s.y<-40||s.y>this.Ht+40)continue;items.push({n,s});}
+    items.sort((a,b)=>a.s.w-b.s.w);const placed=[];
+    for(const it of items){const L=it.n.label;const tw=x.measureText(L.t).width;const bw=tw+18,bh=24;let ok=null;const dys=L.dy!=null?[L.dy,L.dy-26,L.dy+26,-34,34]:[-34,-60,34,60,-86];
+      for(const dy of dys){const rx=clamp(it.s.x+(L.dx||0)-bw/2,6,this.W-bw-6),ry=it.s.y+dy-bh/2;if(ry<52||ry>this.Ht-bh-60)continue;const r=[rx,ry,bw,bh];if(!placed.some(q=>q[0]<r[0]+r[2]+4&&r[0]<q[0]+q[2]+4&&q[1]<r[1]+r[3]+3&&r[1]<q[1]+q[3]+3)){ok=r;break;}}
+      if(!ok)continue;placed.push(ok);
+      x.strokeStyle='rgba(225,232,240,.45)';x.lineWidth=1;x.beginPath();x.moveTo(it.s.x,it.s.y);x.lineTo(ok[0]+ok[2]/2,ok[1]+(ok[1]>it.s.y?0:ok[3]));x.stroke();
+      x.fillStyle=L.c||'#f3b765';x.beginPath();x.arc(it.s.x,it.s.y,2.6,0,TAU);x.fill();
+      x.fillStyle='rgba(8,12,18,.82)';x.strokeStyle=it.n===this.sel?'rgba(243,183,101,.9)':'rgba(255,255,255,.18)';x.beginPath();if(x.roundRect)x.roundRect(ok[0],ok[1],ok[2],ok[3],7);else x.rect(ok[0],ok[1],ok[2],ok[3]);x.fill();x.stroke();
+      x.fillStyle='#eef2f6';x.fillText(L.t,ok[0]+9,ok[1]+bh/2+.5);if(it.n.pick)this.lrects.push({r:ok,n:it.n});}
+    x.font='600 13px "IBM Plex Mono",monospace';x.textAlign='center';
+    for(let i=this.pops.length-1;i>=0;i--){const q=this.pops[i];q.t+=dt;if(q.t>q.life){this.pops.splice(i,1);continue;}const s=this.proj(q.p);if(!s)continue;const a=1-q.t/q.life;x.globalAlpha=Math.min(1,a*1.7);const yy=s.y-24-q.t*20;const tw=x.measureText(q.text).width;x.fillStyle='rgba(6,9,13,.7)';x.fillRect(s.x-tw/2-6,yy-10,tw+12,20);x.fillStyle=q.c;x.fillText(q.text,s.x,yy+.5);x.globalAlpha=1;}
+    x.textAlign='left';
+  }
+  input(){const el=this.ov;this.ptrs=new Map();let moved=0,btn=0;
+    this.h={
+      down:e=>{try{el.setPointerCapture(e.pointerId);}catch(_){}this.ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});if(this.ptrs.size===1){moved=0;btn=(e.button===2||e.shiftKey)?1:0;}this.drag=true;el.style.cursor='grabbing';},
+      move:e=>{const p=this.ptrs.get(e.pointerId);if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;moved+=Math.abs(dx)+Math.abs(dy);if(moved<4)return;this.userMoved=true;const c=this.cam;
+        if(this.ptrs.size>=2){const a=[...this.ptrs.values()];const dd=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);if(this._pd)c.dist=clamp(c.dist*this._pd/dd,this.minD,this.maxD);this._pd=dd;}
+        else if(btn===1)this.pan(dx,dy);else{c.yaw-=dx*.006;c.pitch=clamp(c.pitch+dy*.006,-1.45,1.45);}this.syncGoal();},
+      up:e=>{if(!this.ptrs.has(e.pointerId))return;this.ptrs.delete(e.pointerId);this._pd=0;if(this.ptrs.size===0){this.drag=false;el.style.cursor='grab';if(moved<6&&e.type==='pointerup')this.click(e);}},
+      wheel:e=>{e.preventDefault();const c=this.cam;c.dist=clamp(c.dist*Math.exp(e.deltaY*.0012),this.minD,this.maxD);this.userMoved=true;this.syncGoal();},
+      ctx:e=>e.preventDefault()};
+    el.addEventListener('pointerdown',this.h.down);el.addEventListener('pointermove',this.h.move);el.addEventListener('pointerup',this.h.up);el.addEventListener('pointercancel',this.h.up);el.addEventListener('wheel',this.h.wheel,{passive:false});el.addEventListener('contextmenu',this.h.ctx);}
+  syncGoal(){const c=this.cam,g=this.goal;g.yaw=c.yaw;g.pitch=c.pitch;g.dist=c.dist;g.t=c.t.slice();}
+  pan(dx,dy){const c=this.cam;const f=v3.norm(v3.sub(c.t,this.eye));const r=v3.norm(v3.cross(f,[0,1,0]));const u=v3.cross(r,f);const s=c.dist*.0016;c.t=v3.add(c.t,v3.add(v3.mul(r,-dx*s),v3.mul(u,dy*s)));}
+  click(e){const rc=this.ov.getBoundingClientRect();const mx=e.clientX-rc.left,my=e.clientY-rc.top;for(const L of this.lrects){const r=L.r;if(mx>=r[0]&&mx<=r[0]+r[2]&&my>=r[1]&&my<=r[1]+r[3]){this.select(L.n);return;}}this.select(this.rayPick(mx,my));}
+  select(n){this.sel=n;if(this.onPick)this.onPick(n);}
+  rayPick(mx,my){const c=this.cam;const f=v3.norm(v3.sub(c.t,this.eye));const r=v3.norm(v3.cross(f,[0,1,0]));const u=v3.cross(r,f);const th=Math.tan(.375);const nx=(mx/this.W)*2-1,ny=1-(my/this.Ht)*2;const d=v3.norm(v3.add(f,v3.add(v3.mul(r,nx*th*this.W/this.Ht),v3.mul(u,ny*th))));let best=null,bt=1e9;
+    for(const n of this.picks){const cp=[n.W[12],n.W[13],n.W[14]];const R=n.pickR*scaleOf(n.W);const oc=v3.sub(this.eye,cp);const b=v3.dot(oc,d);const cc=v3.dot(oc,oc)-R*R;const disc=b*b-cc;if(disc<0)continue;const sq=Math.sqrt(disc);for(const t of [-b-sq,-b+sq]){if(t<=0)continue;const p=v3.add(this.eye,v3.mul(d,t));if(n.pickClip&&v3.dot(p,[this.clip[0],this.clip[1],this.clip[2]])+this.clip[3]>0)continue;if(t<bt){bt=t;best=n;}break;}}
+    return best;}
+  dispose(){const el=this.ov;if(this.h){el.removeEventListener('pointerdown',this.h.down);el.removeEventListener('pointermove',this.h.move);el.removeEventListener('pointerup',this.h.up);el.removeEventListener('pointercancel',this.h.up);el.removeEventListener('wheel',this.h.wheel);el.removeEventListener('contextmenu',this.h.ctx);}const ext=this.gl&&this.gl.getExtension('WEBGL_lose_context');if(ext)ext.loseContext();}
+}
+
+/* ---------- animación ---------- */
+function mkPath(pts){const cum=[0];for(let i=1;i<pts.length;i++)cum.push(cum[i-1]+v3.dist(pts[i-1],pts[i]));return {pts,cum,L:cum[cum.length-1]||1e-6};}
+function pathAt(P,u){const d=clamp(u,0,1)*P.L;let i=1;while(i<P.cum.length-1&&P.cum[i]<d)i++;const a=P.cum[i-1],b=P.cum[i];const t=b>a?(d-a)/(b-a):0;return v3.lerp(P.pts[i-1],P.pts[i],t);}
+function smooth(pts,k){const out=[];const n=pts.length;for(let i=0;i<n-1;i++){const p0=pts[Math.max(0,i-1)],p1=pts[i],p2=pts[i+1],p3=pts[Math.min(n-1,i+2)];for(let j=0;j<k;j++){const t=j/k,t2=t*t,t3=t2*t;out.push([0,1,2].map(c=>.5*(2*p1[c]+(-p0[c]+p2[c])*t+(2*p0[c]-5*p1[c]+4*p2[c]-p3[c])*t2+(-p0[c]+3*p1[c]-3*p2[c]+p3[c])*t3)));}}out.push(pts[n-1].slice());return out;}
+class Anim{constructor(){this.l=[];}
+  move(n,b,dur,o){this.l.push({n,a:null,b,t:0,dur,o:o||{}});return n;}
+  path(n,pts,dur,o){this.l.push({n,P:mkPath(pts),t:0,dur,o:o||{}});return n;}
+  update(dt){for(let i=this.l.length-1;i>=0;i--){const m=this.l[i];if(!m)continue;const o=m.o;if(o.delay>0){o.delay-=dt;continue;}if(!m.P&&!m.a)m.a=m.n.p.slice();if(o.q&&!m.q0)m.q0=m.n.q.slice();m.t+=dt;const u=Math.min(1,m.t/m.dur);const e=o.lin?u:ease(u);
+    if(m.P)m.n.p=pathAt(m.P,e);else{const p=v3.lerp(m.a,m.b,e);if(o.arc)p[1]+=Math.sin(Math.PI*e)*o.arc;m.n.p=p;}
+    if(o.q)m.n.q=nlerp(m.q0,o.q,e);if(o.grow){const s=o.grow[0]+(o.grow[1]-o.grow[0])*e;m.n.s=[s,s,s];}
+    if(u>=1){const k=this.l.indexOf(m);if(k>=0)this.l.splice(k,1);if(o.kill)kill(m.n);if(o.end)o.end();}}}}
+class Proc{constructor(g){this.g=g;this.w=0;this.c=null;this.done=false;}
+  update(dt){if(this.done)return;if(this.c){if(!this.c())return;this.c=null;}this.w-=dt;let guard=0;while(this.w<=0&&!this.c&&guard++<60){const r=this.g.next();if(r.done){this.done=true;return;}const v=r.value;if(typeof v==='function'){if(!v()){this.c=v;return;}}else this.w+=(v||0);}}}
+class Procs{constructor(){this.l=[];}add(g){const p=new Proc(g);this.l.push(p);return p;}update(dt){const l=this.l.slice();for(const p of l)p.update(dt);this.l=this.l.filter(p=>!p.done);}}
+function later(P,t,f){P.add((function*(){yield t;f();})());}
+class FX{constructor(){this.l=[];this.f=[];}
+  pulse(g,amt,life){const ns=[];const w=n=>{if(n.geo)ns.push(n);for(const c of n.children)w(c);};w(g);for(const n of ns)if(n._e0==null)n._e0=n.emit;this.l.push({ns,amt,t:0,life:life||1.5});}
+  flash(root,p,c,s,life){const n=new N3({p,glow:{s:s||1,c:c||[1,.8,.4,1]}});root.add(n);this.f.push({n,s0:s||1,t:0,life:life||.8});}
+  update(dt){for(let i=this.l.length-1;i>=0;i--){const f=this.l[i];f.t+=dt;const k=Math.sin(Math.PI*clamp(f.t/f.life,0,1));for(const n of f.ns)n.emit=n._e0+f.amt*k;if(f.t>=f.life){for(const n of f.ns)n.emit=n._e0;this.l.splice(i,1);}}
+    for(let i=this.f.length-1;i>=0;i--){const f=this.f[i];f.t+=dt;const u=f.t/f.life;f.n.glow.s=f.s0*(u<.25?u/.25:1-(u-.25)/.75);if(u>=1){kill(f.n);this.f.splice(i,1);}}}}
+
+/* ---------- constructores de objetos ---------- */
+function ball(E,p,r,col,o){return new N3(Object.assign({geo:E.g.sphere,p,s:r,col},o||{}));}
+function tag(p,t,pick,o){return new N3({p,label:{t,dy:o&&o.dy,c:o&&o.c},pick:pick||null,pickR:(o&&o.r)||.8});}
+function blob(E,o){const R=rng(o.seed||7);const a=o.size[0],b=o.size[1],c=o.size[2];const g=new N3({p:o.p||[0,0,0],q:o.q,pick:o.pick||null,pickR:o.pickR||Math.max(a,b,c)*1.05,label:o.label||null});const N=o.n||Math.round(16+a*b*c*7);const base=H(o.col);const rr=o.r||(.3*Math.min(a,b,c)+.16);
+  for(let i=0;i<N;i++){let x,y,z;do{x=R()*2-1;y=R()*2-1;z=R()*2-1;}while(x*x+y*y+z*z>1);const r=rr*(.7+R()*.6);const f=.84+R()*.3;const col=[clamp(base[0]*f+(R()-.5)*.05,0,1),clamp(base[1]*f+(R()-.5)*.05,0,1),clamp(base[2]*f+(R()-.5)*.05,0,1),base[3]];
+    g.add(new N3({geo:E.g.ball,p:[x*Math.max(.05,a-r*.75),y*Math.max(.05,b-r*.75),z*Math.max(.05,c-r*.75)],s:r,col,rim:o.rim==null?.5:o.rim,tex:o.tex==null?.35:o.tex,emit:o.emit||0}));}
+  return g;}
+function bilayer(E,o){const g=new N3({frozen:true});const sp=o.sp||.62;const R=rng(o.seed||3);const hc=H(o.head||'#d9b98c'),tc=H(o.tail||'#b8935e');
+  for(let x=o.x0;x<=o.x1;x+=sp)for(let z=o.z0;z<=o.z1;z+=sp){const jx=x+(R()-.5)*.18,jz=z+(R()-.5)*.18;if(o.excl&&o.excl.some(e=>Math.hypot(jx-e[0],jz-e[1])<e[2]))continue;
+    for(const s of [1,-1]){const y=s*(.95+(R()-.5)*.08);const f=.88+R()*.22;g.add(new N3({geo:E.g.ball,p:[jx,y,jz],s:.27,col:[hc[0]*f,hc[1]*f,hc[2]*f,1],rim:.35,tex:.12}));
+      for(const t of [-.09,.09])g.add(new N3({geo:E.g.cylLo,p:[jx+t,s*.5,jz+(R()-.5)*.1],s:[.055,.8,.055],col:tc,rim:.1,tex:0}));}}
+  return g;}
+function proton(E,p){const h=new N3({geo:E.g.ball,p,s:.17,col:'#ff5aa8',emit:.55,rim:.6,tex:0});h.add(new N3({glow:{s:3.2,c:[1,.32,.68,.45]}}));return h;}
+function electron(p){return new N3({p,glow:{s:.75,c:[.45,1,1,1]}});}
+
+/* ---------- moléculas (modelo de bolas y varillas) ---------- */
+const CPK={C:'#43484f',O:'#e2402c',H:'#e9edf1',P:'#f39a2b',N:'#3f6fe8',S:'#e9d040'};
+const RAD={C:.34,O:.32,H:.2,P:.42,N:.33,S:.42};
+function MB(){return {at:[],bd:[],glow:null,anchor:null,a(e,p,b){this.at.push({e,p});const i=this.at.length-1;if(b!=null&&b>=0)this.bd.push([b,i]);return i;},b(i,j){this.bd.push([i,j]);}};}
+function addOH(m,c,d){const C=m.at[c].p;const o=m.a('O',v3.add(C,v3.mul(d,1.25)),c);m.a('H',v3.add(m.at[o].p,v3.mul(v3.norm(v3.add(d,[.5,.2,.6])),.8)),o);return o;}
+function addO(m,c,d){return m.a('O',v3.add(m.at[c].p,v3.mul(v3.norm(d),1.18)),c);}
+function addH(m,c,d,k){const C=m.at[c].p;d=v3.norm(d);const b=perp(d),c2=v3.cross(d,b);for(let i=0;i<k;i++){const a=i*TAU/k+.5;const dir=v3.norm(v3.add(v3.mul(d,.6),v3.add(v3.mul(b,Math.cos(a)),v3.mul(c2,Math.sin(a)))));m.a('H',v3.add(C,v3.mul(dir,.95)),c);}}
+function addPhos(m,c,d){d=v3.norm(d);const C=m.at[c].p;const ob=m.a('O',v3.add(C,v3.mul(d,1.2)),c);const dd=v3.norm(v3.add(d,[.3,.25,.3]));const p=m.a('P',v3.add(m.at[ob].p,v3.mul(dd,1.3)),ob);const P=m.at[p].p;const b=perp(dd),c2=v3.cross(dd,b);
+  for(const an of [0,2.09,4.19]){const dir=v3.norm(v3.add(v3.mul(dd,.45),v3.add(v3.mul(b,Math.cos(an)),v3.mul(c2,Math.sin(an)))));m.a('O',v3.add(P,v3.mul(dir,1.2)),p);}return p;}
+function carboxyl(m,c,u,sy){addO(m,c,v3.add(v3.mul(u,.6),[0,sy,0]));addO(m,c,v3.add(u,[0,-sy*.55,.3]));}
+function coaTail(m,s,u){const seq='CCNCCNCCOCCCOPOPOCC';let prev=s;const base=m.at[s].p;const idx=[];
+  for(let k=0;k<seq.length;k++){const t=k+1;const p=v3.add(base,[u[0]*t*.42,1.5*Math.sin(t*.72)+u[1]*t*.42,1.5*Math.cos(t*.72)-1.5]);const i=m.a(seq[k],p,prev);idx.push(i);prev=i;}
+  for(let k=0;k<seq.length;k++){if(seq[k]==='P'){addO(m,idx[k],[0,0,1]);addO(m,idx[k],[0,-1,-.4]);}if(k===3||k===6)addO(m,idx[k],[0,1,.5]);}
+  const end=m.at[prev].p;addPurine(m,prev,v3.add(end,[u[0]*1.4,0,0]));}
+function addRing(m,ctr,n,r,els,ax,ay,a0){const ids=[];for(let k=0;k<n;k++){const a=(a0||0)+k*TAU/n;ids.push(m.a(els[k],v3.add(ctr,v3.add(v3.mul(ax,r*Math.cos(a)),v3.mul(ay,r*Math.sin(a)))),k?ids[k-1]:null));}m.b(ids[n-1],ids[0]);return ids;}
+function addPurine(m,att,c){const h=[];for(let k=0;k<6;k++){const a=Math.PI/6+k*Math.PI/3;h.push(v3.add(c,[.8*Math.cos(a)+1.24,.8*Math.sin(a),0]));}
+  const he=['C','N','C','C','C','N'];const hi=h.map((p,k)=>m.a(he[k],p,null));for(let k=0;k<6;k++)m.b(hi[k],hi[(k+1)%6]);
+  const pe=[];for(const a of [108,180,252]){const r=a*Math.PI/180;pe.push(v3.add(c,[.68*Math.cos(r),.68*Math.sin(r),0]));}
+  const p0=m.a('N',pe[0],hi[2]);const p1=m.a('C',pe[1],p0);const p2=m.a('N',pe[2],p1);m.b(p2,hi[3]);m.a('N',v3.add(h[0],[.9,.6,0]),hi[0]);if(att!=null)m.b(att,p2);return p2;}
+function chainMol(n,o){o=o||{};const m=MB();const cs=[];for(let i=0;i<n;i++){cs.push(m.a('C',[i*1.26,i%2?.42:-.42,0],i?cs[i-1]:null));}
+  const sy=i=>m.at[cs[i]].p[1]>0?1:-1;const sub=new Array(n).fill(0);const isEnd=i=>i===0||i===n-1;
+  const dirI=i=>[0,sy(i),.15];const endD=i=>i===0?v3.norm([-1,sy(0)*.35,0]):v3.norm([1,sy(n-1)*.35,0]);const D=i=>isEnd(i)?endD(i):dirI(i);
+  if(o.s==='acid'){carboxyl(m,cs[0],[-1,0,0],sy(0));sub[0]=3;}
+  else if(o.s==='ald'){addO(m,cs[0],v3.add([-1,0,0],[0,sy(0),0]));addH(m,cs[0],[-1,-sy(0),0],1);sub[0]=3;}
+  else if(o.s==='acylP'){addO(m,cs[0],[-.5,sy(0),0]);addPhos(m,cs[0],[-1,-sy(0)*.4,0]);sub[0]=3;}
+  else if(o.s==='coa'){addO(m,cs[0],[-.3,sy(0),0]);const S=m.a('S',v3.add(m.at[cs[0]].p,[-1.5,-sy(0)*.3,0]),cs[0]);coaTail(m,S,[-1,0,0]);sub[0]=3;}
+  else if(o.s==='carn'){addO(m,cs[0],[-.3,sy(0),0]);const ob=m.a('O',v3.add(m.at[cs[0]].p,[-1.25,-sy(0)*.3,0]),cs[0]);const c1=m.a('C',v3.add(m.at[ob].p,[-1.1,.5,0]),ob);const c2=m.a('C',v3.add(m.at[c1].p,[-1.1,-.4,.2]),c1);const nn=m.a('N',v3.add(m.at[c2].p,[-1.1,.4,0]),c2);for(const d of [[-.6,.9,0],[-.6,-.6,.8],[-.6,-.5,-.8]])m.a('C',v3.add(m.at[nn].p,v3.mul(v3.norm(d),1.3)),nn);const c3=m.a('C',v3.add(m.at[c1].p,[0,1.2,.5]),c1);carboxyl(m,c3,[0,1,0],1);sub[0]=3;}
+  if(o.e==='acid'&&n>1){carboxyl(m,cs[n-1],[1,0,0],sy(n-1));sub[n-1]=3;}
+  for(const i of o.oh||[]){addOH(m,cs[i],D(i));sub[i]++;}
+  for(const i of o.ox||[]){addO(m,cs[i],D(i));sub[i]+=2;}
+  for(const i of o.P||[]){addPhos(m,cs[i],D(i));sub[i]++;}
+  for(const i of o.ac||[]){const c=m.a('C',v3.add(m.at[cs[i]].p,[0,0,1.3]),cs[i]);carboxyl(m,c,[0,0,1],1);sub[i]++;}
+  if(o.H!==false)for(let i=0;i<n;i++){const need=(isEnd(i)?3:2)-sub[i];if(need>0)addH(m,cs[i],D(i),need);}
+  return m;}
+function pyran(ph){const m=MB();const r=1.45;const els=['O','C','C','C','C','C'];const ids=[];for(let k=0;k<6;k++){const a=Math.PI/2+k*TAU/6;ids.push(m.a(els[k],[r*Math.cos(a),r*Math.sin(a),k%2?.25:-.25],k?ids[k-1]:null));}m.b(ids[5],ids[0]);
+  const rad=k=>{const p=m.at[ids[k]].p;return v3.norm([p[0],p[1],0]);};for(const k of [1,2,3,4])addOH(m,ids[k],v3.add(rad(k),[0,0,k%2?.8:-.8]));for(const k of [1,2,3,4,5])addH(m,ids[k],v3.add(rad(k),[0,0,k%2?-1.4:1.4]),1);
+  const c6=m.a('C',v3.add(m.at[ids[5]].p,v3.mul(v3.norm(v3.add(rad(5),[0,0,.6])),1.5)),ids[5]);if(ph)addPhos(m,c6,v3.add(rad(5),[0,.3,.5]));else addOH(m,c6,v3.add(rad(5),[.3,0,.5]));addH(m,c6,[0,0,-1],2);return m;}
+function furan(p1,p6){const m=MB();const r=1.25;const els=['O','C','C','C','C'];const ids=[];for(let k=0;k<5;k++){const a=Math.PI/2+k*TAU/5;ids.push(m.a(els[k],[r*Math.cos(a),r*Math.sin(a),k%2?.2:-.2],k?ids[k-1]:null));}m.b(ids[4],ids[0]);
+  const rad=k=>{const p=m.at[ids[k]].p;return v3.norm([p[0],p[1],0]);};
+  const c1=m.a('C',v3.add(m.at[ids[1]].p,v3.mul(v3.norm(v3.add(rad(1),[0,.4,.6])),1.5)),ids[1]);if(p1)addPhos(m,c1,[-.6,.6,.4]);else addOH(m,c1,[-.6,.6,.4]);addH(m,c1,[0,0,-1],2);
+  for(const k of [1,2,3])addOH(m,ids[k],v3.add(rad(k),[0,0,k%2?-.9:.9]));for(const k of [2,3,4])addH(m,ids[k],v3.add(rad(k),[0,0,k%2?.9:-.9]),1);
+  const c6=m.a('C',v3.add(m.at[ids[4]].p,v3.mul(v3.norm(v3.add(rad(4),[0,.4,.5])),1.5)),ids[4]);if(p6)addPhos(m,c6,[.6,.6,.4]);else addOH(m,c6,[.6,.6,.4]);addH(m,c6,[0,0,-1],2);return m;}
+function nuc(nP){const m=MB();const rib=addRing(m,[0,0,0],5,.85,['O','C','C','C','C'],[1,0,0],[0,1,0],Math.PI/2);
+  addPurine(m,rib[1],[.9,1.4,.2]);addOH(m,rib[2],[.2,-1,.4]);addOH(m,rib[3],[-.2,-1,.4]);
+  const c5=m.a('C',v3.add(m.at[rib[4]].p,[-1.1,.6,.3]),rib[4]);let prev=c5;let pos=m.at[c5].p;
+  for(let k=0;k<nP;k++){const o=m.a('O',v3.add(pos,[-1.1,k%2?.5:-.5,0]),prev);const P=m.a('P',v3.add(m.at[o].p,[-1.2,k%2?-.4:.4,0]),o);addO(m,P,[0,1,.3]);addO(m,P,[0,-.6,1.1]);prev=P;pos=m.at[P].p;}
+  addO(m,prev,[-1,0,0]);return m;}
+function nadMol(red){const m=MB();const nic=addRing(m,[-5.2,0,0],6,.8,['N','C','C','C','C','C'],[1,0,0],[0,1,0],0);const cc=m.a('C',v3.add(m.at[nic[3]].p,[-1.2,0,0]),nic[3]);addO(m,cc,[0,1,.2]);m.a('N',v3.add(m.at[cc].p,[-.7,-1,0]),cc);
+  const rA=addRing(m,[-3,.2,.2],5,.8,['O','C','C','C','C'],[1,0,0],[0,1,0],Math.PI/2);m.b(nic[0],rA[2]);
+  const o1=m.a('O',[-1.6,-.6,.2],rA[4]);const p1=m.a('P',[-.6,-1.2,.2],o1);addO(m,p1,[0,-1,.6]);const o2=m.a('O',[.5,-.8,.2],p1);const p2=m.a('P',[1.5,-1.2,.2],o2);addO(m,p2,[0,-1,.6]);
+  const rB=addRing(m,[3,-.2,.2],5,.8,['O','C','C','C','C'],[1,0,0],[0,1,0],Math.PI/2);m.b(p2,rB[4]);addPurine(m,rB[1],[4,1.1,.2]);
+  if(red)m.glow=[[-5.2,0,0]];return m;}
+function fadMol(red){const m=MB();const cs=[[-6.2,0,0],[-4.82,0,0],[-3.44,0,0]];const map=new Map();const ids=[];
+  const elsFor=(ci,k)=>{if(ci===1&&(k===1||k===4))return 'N';if(ci===2&&(k===1||k===3))return 'N';return 'C';};
+  for(let ci=0;ci<3;ci++){const ring=[];for(let k=0;k<6;k++){const a=Math.PI/6+k*Math.PI/3;const p=v3.add(cs[ci],[.8*Math.cos(a),.8*Math.sin(a),0]);const key=p.map(v=>Math.round(v*10)).join(',');let i=map.get(key);if(i==null){i=m.a(elsFor(ci,k),p,null);map.set(key,i);}ring.push(i);}for(let k=0;k<6;k++){const a=ring[k],b=ring[(k+1)%6];if(!m.bd.some(x=>(x[0]===a&&x[1]===b)||(x[0]===b&&x[1]===a)))m.b(a,b);}ids.push(ring);}
+  addO(m,ids[2][0],[1,.6,0]);addO(m,ids[2][4],[.3,-1,0]);
+  let prev=ids[1][4];let pos=m.at[prev].p;for(let k=0;k<4;k++){pos=v3.add(pos,[.9,k%2?.5:-.5,.2]);const c=m.a('C',v3.add(pos,[0,-1,0]),prev);if(k<3)addOH(m,c,[0,-1,.5]);prev=c;pos=m.at[c].p;}
+  const o1=m.a('O',v3.add(pos,[1.1,.3,0]),prev);const p1=m.a('P',v3.add(m.at[o1].p,[1.1,-.4,0]),o1);addO(m,p1,[0,-1,.5]);const o2=m.a('O',v3.add(m.at[p1].p,[1.1,.4,0]),p1);const p2=m.a('P',v3.add(m.at[o2].p,[1.1,-.4,0]),o2);addO(m,p2,[0,-1,.5]);
+  const rB=addRing(m,v3.add(m.at[p2].p,[1.8,.4,0]),5,.8,['O','C','C','C','C'],[1,0,0],[0,1,0],Math.PI/2);m.b(p2,rB[4]);addPurine(m,rB[1],v3.add(m.at[p2].p,[2.9,1.6,0]));
+  if(red)m.glow=[[-4.82,0,0]];return m;}
+const MDEF={
+  glucosa:()=>pyran(false),g6p:()=>pyran(true),f6p:()=>furan(false,true),f16bp:()=>furan(true,true),
+  g3p:()=>chainMol(3,{s:'ald',oh:[1],P:[2]}),dhap:()=>chainMol(3,{oh:[0],ox:[1],P:[2]}),'13bpg':()=>chainMol(3,{s:'acylP',oh:[1],P:[2]}),'3pg':()=>chainMol(3,{s:'acid',oh:[1],P:[2]}),'2pg':()=>chainMol(3,{s:'acid',P:[1],oh:[2]}),pep:()=>chainMol(3,{s:'acid',P:[1]}),
+  piruvato:()=>chainMol(3,{s:'acid',ox:[1]}),lactato:()=>chainMol(3,{s:'acid',oh:[1]}),acetaldehido:()=>chainMol(2,{s:'ald'}),etanol:()=>chainMol(2,{oh:[1]}),acetato:()=>chainMol(2,{s:'acid'}),propionato:()=>chainMol(3,{s:'acid'}),butirato:()=>chainMol(4,{s:'acid'}),
+  acetilcoa:()=>chainMol(2,{s:'coa'}),oxa:()=>chainMol(4,{s:'acid',e:'acid',ox:[1]}),cit:()=>chainMol(5,{s:'acid',e:'acid',oh:[2],ac:[2]}),icit:()=>chainMol(5,{s:'acid',e:'acid',oh:[1],ac:[2]}),akg:()=>chainMol(5,{s:'acid',e:'acid',ox:[1]}),succoa:()=>chainMol(4,{s:'coa',e:'acid'}),succ:()=>chainMol(4,{s:'acid',e:'acid'}),fum:()=>chainMol(4,{s:'acid',e:'acid'}),mal:()=>chainMol(4,{s:'acid',e:'acid',oh:[1]}),
+  co2:()=>{const m=MB();const c=m.a('C',[0,0,0]);m.a('O',[1.16,0,0],c);m.a('O',[-1.16,0,0],c);return m;},
+  h2o:()=>{const m=MB();const o=m.a('O',[0,0,0]);m.a('H',[.76,.58,0],o);m.a('H',[-.76,.58,0],o);return m;},
+  o2:()=>{const m=MB();const o=m.a('O',[-.6,0,0]);m.a('O',[.6,0,0],o);return m;},
+  h2:()=>{const m=MB();const o=m.a('H',[-.37,0,0]);m.a('H',[.37,0,0],o);return m;},
+  pi:()=>{const m=MB();const p=m.a('P',[0,0,0]);for(const d of [[1,1,1],[-1,-1,1],[-1,1,-1],[1,-1,-1]])m.a('O',v3.mul(v3.norm(d),1.2),p);return m;},
+  atp:()=>nuc(3),adp:()=>nuc(2),amp:()=>nuc(1),gtp:()=>nuc(3),gdp:()=>nuc(2),nad:()=>nadMol(false),nadh:()=>nadMol(true),fad:()=>fadMol(false),fadh2:()=>fadMol(true),
+  coa:()=>{const m=MB();const s=m.a('S',[0,0,0]);m.a('H',[-.3,.9,0],s);coaTail(m,s,[1,0,0]);return m;},
+  carnitina:()=>{const m=MB();const c1=m.a('C',[0,0,0]);addOH(m,c1,[0,1,.3]);const c2=m.a('C',[1.2,-.5,0],c1);const nn=m.a('N',[2.4,0,0],c2);for(const d of [[.6,.9,0],[.6,-.6,.8],[.6,-.5,-.8]])m.a('C',v3.add([2.4,0,0],v3.mul(v3.norm(d),1.3)),nn);const c3=m.a('C',[-1.2,-.5,0],c1);const c4=m.a('C',[-2.4,0,0],c3);carboxyl(m,c4,[-1,0,0],1);return m;}
+};
+const MSPEC={};
+function spec(k){if(MSPEC[k])return MSPEC[k];let m=null;let r;
+  if(MDEF[k])m=MDEF[k]();else if((r=/^fa(\d+)$/.exec(k))){m=chainMol(+r[1],{s:'acid'});m.anchor=0;}else if((r=/^acyl(\d+)$/.exec(k))){m=chainMol(+r[1],{s:'coa'});m.anchor=0;}else if((r=/^carn(\d+)$/.exec(k))){m=chainMol(+r[1],{s:'carn'});m.anchor=0;}else m=MDEF.co2();
+  let c=[0,0,0];if(m.anchor!=null)c=m.at[m.anchor].p;else{for(const a of m.at)c=v3.add(c,a.p);c=v3.mul(c,1/m.at.length);}
+  m.at=m.at.map(a=>({e:a.e,p:v3.sub(a.p,c)}));if(m.glow)m.glow=m.glow.map(g=>v3.sub(g,c));MSPEC[k]=m;return m;}
+const BOND=H('#8e979f');
+function M(E,k,sc){const m=spec(k);const n=new N3({s:sc||.3});for(const a of m.at)n.add(new N3({geo:E.g.ball,p:a.p,s:RAD[a.e],col:CPK[a.e],rim:.25,tex:0}));
+  for(const b of m.bd){const A=m.at[b[0]].p,B=m.at[b[1]].p,d=v3.sub(B,A),L=v3.len(d);if(L<.01)continue;n.add(new N3({geo:E.g.stick,p:v3.lerp(A,B,.5),q:qFromTo([0,1,0],d),s:[.11,L,.11],col:BOND,rim:.1,tex:0}));}
+  if(m.glow)for(const g of m.glow)n.add(new N3({p:g,glow:{s:3.4,c:[.45,.95,1,.95]}}));return n;}
+
+/* =========================================================
+   ESCENAS · ANABOLISMO (fotosíntesis)
+   ========================================================= */
+MDEF.rubp=()=>chainMol(5,{P:[0,4],ox:[1],oh:[2,3]});
+MDEF.pglicolato=()=>chainMol(2,{s:'acid',P:[1]});
+MDEF.nadp=()=>nadMol(false);MDEF.nadph=()=>nadMol(true);
+const C_ATP='#f3b765',C_NADPH='#62b8ff',C_H='#ff5aa8',C_O2='#ff8a6a',C_CO2='#cfd6dd';
+function photon(root,A,from,to,dur,end){const n=new N3({p:from,glow:{s:.95,c:photon.def?[photon.def[0],photon.def[1],photon.def[2],1]:[1,.92,.5,1]}});root.add(n);const pts=[];for(let k=0;k<=30;k++){const t=k/30;const p=v3.lerp(from,to,t);const w=Math.sin(t*TAU*5)*.35*(1-t*.6);pts.push([p[0]+w,p[1],p[2]+w*.6]);}A.path(n,pts,dur,{kill:true,lin:true,end});return n;}
+function mol(E,root,k,p,sc,lab){const m=M(E,k,sc||.3);m.p=p.slice();if(lab)m.label={t:lab};root.add(m);return m;}
+function swapM(E,root,n,k,lab,sc){const m=M(E,k,sc||.3);m.p=n.p.slice();m.q=n.q.slice();if(lab)m.label={t:lab};kill(n);root.add(m);return m;}
+
+/* ---- 1. El cloroplasto ---- */
+function sChloro(E,O){photon.def=null;
+  const root=new N3(),A=new Anim(),P=new Procs(),F=new FX(),R=rng(7),S={stage:0};
+  const I={om:{t:'Membrana externa',d:'Membrana muy permeable que forma, con la interna, la envoltura del cloroplasto.'},
+    im:{t:'Membrana interna',d:'Regula el intercambio entre el citosol y el estroma. Tiene transportadores que exportan triosas fosfato hacia el citosol, donde se fabrica la sacarosa.'},
+    st:{t:'Estroma',d:'Medio interno del cloroplasto. Contiene la RuBisCO y el resto de enzimas del ciclo de Calvin, ADN circular, ribosomas 70S y gránulos de almidón.',go:2},
+    gr:{t:'Granum',d:'Pila de tilacoides. En sus membranas están los pigmentos, los fotosistemas, la cadena de transporte de electrones y la ATP sintasa: aquí sucede la fase luminosa.',go:1},
+    lu:{t:'Lumen tilacoidal',d:'Espacio interior de los tilacoides. Aquí se libera el O₂ de la fotólisis del agua y se acumulan los H⁺.',go:1},
+    la:{t:'Lamelas estromales',d:'Tilacoides no apilados que conectan unos grana con otros. Son ricos en fotosistema I y ATP sintasa.'},
+    al:{t:'Gránulo de almidón',d:'Reserva temporal de glúcidos fabricada a partir del gliceraldehído-3-fosfato del ciclo de Calvin.'},
+    pg:{t:'Plastoglóbulo',d:'Gotita de lípidos y carotenoides unida a los tilacoides.'},
+    dna:{t:'ADN plastidial',d:'ADN circular propio, como el de las cianobacterias: es una prueba de la teoría endosimbiótica.'},
+    rib:{t:'Ribosomas 70S',d:'Fabrican algunas proteínas del cloroplasto, como la subunidad grande de la RuBisCO.'}};
+  root.add(new N3({geo:E.g.sphere,s:[9,3.4,5],col:'#5d9a3c',clip:1,rim:.6,tex:.35,pick:I.om,pickR:1,pickClip:true}));
+  root.add(new N3({geo:E.g.sphere,s:[8.75,3.18,4.78],col:'#a8cf78',clip:1,rim:.3,tex:.3,pick:I.im,pickR:1,pickClip:true}));
+  const GR=[[-6,-.2,-1.6],[-3.6,.3,-2.6],[-3.4,-.4,-.2],[-.8,0,-1.6],[1.6,.4,-2.8],[1.8,-.3,.1],[4.2,.1,-1.6],[6.1,-.2,-.6],[-6.1,.2,.4]];
+  const grana=[];for(const g of GR){const gg=new N3({p:g,pick:I.gr,pickR:1.3});const n=7+((R()*4)|0);for(let k=0;k<n;k++){gg.add(new N3({geo:E.g.cyl,p:[0,(k-(n-1)/2)*.25,0],s:[1.0,.15,1.0],col:k%2?'#2e7a30':'#2a722c',clip:1,rim:.5,tex:.3}));}root.add(gg);grana.push(gg);}
+  for(let i=0;i<GR.length-1;i++){const a=v3.add(GR[i],[0,(R()-.5)*.8,0]),b=v3.add(GR[i+1],[0,(R()-.5)*.8,0]);root.add(new N3({geo:E.g.cyl,p:v3.lerp(a,b,.5),q:qFromTo([0,1,0],v3.sub(b,a)),s:[.45,v3.dist(a,b),.06],col:'#3d8a3a',clip:1,rim:.4,tex:.2,pick:I.la,pickR:.6}));}
+  for(const p of [[2.9,-1.7,-1.2],[-1.9,1.75,-2.0]])root.add(new N3({geo:E.g.sphere,p,s:[1.1,.6,.75],col:'#ece4cc',clip:1,rim:.5,tex:.15,pick:I.al,pickR:1.1}));
+  for(let k=0;k<10;k++)root.add(ball(E,[(R()-.5)*13,(R()-.5)*3.6,-R()*3.6],.2,'#e3c24a',{clip:1,rim:.6,tex:0,pick:k?null:I.pg,pickR:1.5}));
+  const fr=new N3({frozen:true});for(let k=0;k<160;k++){const p=[(R()*2-1)*8,(R()*2-1)*2.8,-R()*4.4];if((p[0]/8.5)**2+(p[1]/3)**2+(p[2]/4.6)**2>1)continue;fr.add(ball(E,p,.06,'#7d5a7d',{geo:E.g.ball,clip:1,tex:0}));}root.add(fr);
+  const dnas=[[-1.4,1.7,-.6],[3.6,-1.8,-2.2]];for(const p of dnas)root.add(new N3({geo:E.torus(.45,.04),p,q:qAxis([R(),R(),R()],R()*3),col:'#6fb0e6',emit:.25,rim:.4,tex:0,pick:I.dna,pickR:.7}));
+  root.add(tag([3,3.36,0],'Membrana externa',I.om));root.add(tag([-4,-3.08,0],'Membrana interna',I.im,{dy:40}));root.add(tag([4.6,-1.4,-2.6],'Estroma',I.st,{dy:40}));
+  root.add(tag(v3.add(GR[3],[0,1.1,0]),'Granum (tilacoides)',I.gr));root.add(tag(GR[5],'Lumen tilacoidal',I.lu,{dy:44}));root.add(tag(v3.lerp(GR[1],GR[2],.5),'Lamela estromal',I.la,{dy:-50}));
+  root.add(tag([2.9,-1.7,-1.2],'Almidón',I.al,{dy:44}));root.add(tag(dnas[0],'ADN plastidial',I.dna));
+  P.add((function*(){while(true){
+    S.stage=0;for(let k=0;k<7;k++){const g=GR[(R()*GR.length)|0];later(P,k*.18,()=>photon(root,A,v3.add(g,[(R()-.5)*3,12,3]),v3.add(g,[0,.8,.4]),1.2,()=>F.flash(root,v3.add(g,[0,.6,.4]),[.6,1,.4,1],2.2,.8)));}yield 2.4;
+    S.stage=1;for(let k=0;k<2;k++){const g=GR[(R()*GR.length)|0];const o=mol(E,root,'o2',v3.add(g,[0,.5,.6]),.3,k?null:'O₂');A.move(o,v3.add(g,[(R()-.5)*4,9,4]),2.6,{kill:true,delay:k*.4});}E.pop(v3.add(GR[3],[0,1.4,.4]),'H₂O → O₂ + H⁺ + e⁻',C_O2);yield 2.4;
+    S.stage=2;for(let k=0;k<4;k++){const g=GR[(R()*GR.length)|0];const t=mol(E,root,k%2?'nadph':'atp',v3.add(g,[0,.9,.4]),.2,k===0?'ATP':k===1?'NADPH':null);A.move(t,[(R()-.5)*5,-1.6+R()*1.2,-1.2],2.2,{kill:true,delay:k*.25});}yield 2.6;
+    S.stage=3;for(let k=0;k<3;k++){const c=mol(E,root,'co2',[12,1+k*.6,1],.3,k?null:'CO₂');A.move(c,[3.0,-1.5,-1.2],2.4,{kill:true,delay:k*.3});}yield 2.6;F.pulse(root.children[0],0,.1);E.pop([2.9,-1.2,-1.2],'CO₂ → azúcares → almidón','#ece4cc');yield 1.4;}})());
+  P.add((function*(){while(true){yield .5;const g=GR[(R()*GR.length)|0];photon(root,A,v3.add(g,[(R()-.5)*6,13,4]),v3.add(g,[0,.8,.3]),1.4);}})());
+  return {root,cam:{yaw:.25,pitch:.38,dist:21,t:[0,0,-.6]},clip:[0,0,1,0],fog:[22,60],bg:['#17241a','#040805'],minD:6,maxD:50,
+    update(dt){P.update(dt);A.update(dt);F.update(dt);},stage:()=>S.stage,counters:()=>[]};}
+
+/* ---- 2. Fase luminosa ---- */
+function sLight(E,O){const leff=w=>LEFF[O.color||'blanca'][w||0];photon.def=LCOL[O.color||'blanca'];
+  const root=new N3(),A=new Anim(),P=new Procs(),F=new FX(),R=rng(13);
+  const S={stage:0,G:20,Gmax:170,atp:0,nadph:0,o2:0,w:0,ph:0,acc:0,ring:0,ringT:0,hc:0,made:0,heroOn:false,active:0};
+  const I={ps2:{t:'Fotosistema II (P680)',d:'Complejo antena (LHCII) más un centro de reacción con el par de clorofilas P680. La luz excita el P680, que cede un electrón a la plastoquinona. El hueco se rellena con electrones del agua.'},
+    oec:{t:'Complejo de fotólisis del agua',d:'Grupo Mn₄CaO₅ del fotosistema II: rompe el agua (2 H₂O → O₂ + 4 H⁺ + 4 e⁻). Es el origen de todo el O₂ de la atmósfera.'},
+    pq:{t:'Plastoquinona (PQ)',d:'Transportador liposoluble, parecido a la ubiquinona. Toma 2 e⁻ del PSII y 2 H⁺ del estroma y los lleva al citocromo b₆f. Su sitio de unión lo bloquea el herbicida DCMU.'},
+    b6f:{t:'Complejo citocromo b₆f',d:'Pasa los electrones de la plastoquinona a la plastocianina y bombea H⁺ hacia el lumen. Es el equivalente al complejo III mitocondrial.'},
+    pc:{t:'Plastocianina (PC)',d:'Pequeña proteína con cobre que viaja por el lumen y lleva electrones del citocromo b₆f al fotosistema I.'},
+    ps1:{t:'Fotosistema I (P700)',d:'Su centro de reacción, el P700, se excita con luz de onda algo más larga y cede el electrón a la ferredoxina, en el lado del estroma.'},
+    fd:{t:'Ferredoxina (Fd)',d:'Proteína con un centro Fe–S. En el transporte acíclico lleva los electrones a la NADP⁺ reductasa; en el cíclico los devuelve al citocromo b₆f.'},
+    fnr:{t:'Ferredoxina-NADP⁺ reductasa',d:'Usa 2 e⁻ y un H⁺ para reducir el NADP⁺ a NADPH, el poder reductor que necesita el ciclo de Calvin.'},
+    as:{t:'ATP sintasa (CF₀CF₁)',d:'Los H⁺ salen del lumen hacia el estroma a través de CF₀; el giro produce ATP en la cabeza CF₁, que mira al estroma. Es la fotofosforilación.'},
+    lu:{t:'Lumen tilacoidal',d:'Recibe H⁺ de la fotólisis del agua y del citocromo b₆f. Su pH puede bajar hasta 5, frente a un pH de 8 en el estroma.'},
+    st:{t:'Estroma',d:'Lado de la membrana donde se forman el ATP y el NADPH, justo donde los necesita el ciclo de Calvin.'},
+    mem:{t:'Membrana tilacoidal',d:'Rica en galactolípidos y en pigmentos fotosintéticos: clorofilas a y b y carotenoides.'}};
+  root.add(bilayer(E,{x0:-19,x1:19,z0:-5.5,z1:5.5,head:'#c9d79a',tail:'#a3b768',excl:[[-12,0,2.2],[-14.6,1.2,1.2],[-9.4,1.2,1.2],[-14.6,-1.2,1.2],[-9.4,-1.2,1.2],[-3,0,1.9],[5,0,2.3],[2.5,1.2,1.1],[7.5,1.2,1.1],[14,0,1.8],[15.9,0,1.0]]}));
+  root.add(tag([-17.5,4.6,-2.5],'Estroma (pH 8)',I.st,{c:'#9ad6ff'}));root.add(tag([-17.5,-4.6,-2.5],'Lumen tilacoidal (pH ≈ 5)',I.lu,{c:C_H}));root.add(tag([-17,0,4.5],'Membrana del tilacoide',I.mem,{dy:44}));
+  const P2=[-12,0,0],P1=[5,0,0];
+  const ps2=new N3({p:P2,pick:I.ps2,pickR:3,label:{t:'Fotosistema II',dy:-150}});ps2.add(blob(E,{size:[2.0,1.35,1.7],col:'#3f8f4a',seed:101,n:70}));
+  const ant2=[[-2.6,0,1.2],[2.6,0,1.2],[-2.6,0,-1.2],[2.6,0,-1.2]];for(const a of ant2){ps2.add(blob(E,{p:a,size:[.9,1.1,.9],col:'#62b04c',seed:102+ant2.indexOf(a),n:18}));for(let k=0;k<4;k++)ps2.add(new N3({geo:E.g.ball,p:v3.add(a,[(R()-.5)*1.2,(R()-.5)*1.2,.75]),s:.12,col:'#9dff6a',emit:.6,tex:0}));}
+  const oec=new N3({p:[0,-1.9,.7]});for(let k=0;k<4;k++)oec.add(new N3({geo:E.g.ball,p:[Math.cos(k*1.6)*.25,Math.sin(k*1.6)*.25,0],s:.16,col:'#8e5fd0',emit:.3,tex:0}));oec.add(new N3({geo:E.g.ball,p:[0,0,.25],s:.14,col:'#6bd06b',tex:0}));ps2.add(oec);
+  const p680=ps2.add(new N3({p:[0,.2,.95],glow:{s:0,c:[1,.3,.25,1]}}));root.add(ps2);
+  root.add(tag(v3.add(P2,[0,-1.9,.7]),'Fotólisis del agua (Mn₄CaO₅)',I.oec,{dy:70}));
+  const b6f=new N3({p:[-3,0,0],pick:I.b6f,pickR:2.4,label:{t:'Citocromo b₆f',dy:-150}});b6f.add(blob(E,{size:[1.6,1.3,1.4],col:'#b3742e',seed:110,n:50}));b6f.add(blob(E,{p:[0,1.8,0],size:[1.2,.7,1.0],col:'#c2843a',seed:111,n:20}));b6f.add(blob(E,{p:[0,-1.9,0],size:[1.2,.8,1.0],col:'#a6682a',seed:112,n:20}));
+  b6f.add(new N3({geo:E.g.ball,p:[-.3,.5,.9],s:.17,col:'#ff4a3a',emit:.8,tex:0}));b6f.add(new N3({geo:E.g.ball,p:[.3,-.6,.9],s:.17,col:'#ff4a3a',emit:.8,tex:0}));root.add(b6f);
+  const ps1=new N3({p:P1,pick:I.ps1,pickR:3,label:{t:'Fotosistema I',dy:-150}});ps1.add(blob(E,{size:[2.2,1.4,1.8],col:'#2f7a5a',seed:120,n:80}));ps1.add(blob(E,{p:[0,1.8,0],size:[1.2,.6,1.0],col:'#3a8a66',seed:121,n:16}));
+  const ant1=[[-2.5,0,1.2],[2.5,0,1.2]];for(const a of ant1){ps1.add(blob(E,{p:a,size:[.8,1.0,.8],col:'#58a35a',seed:122+ant1.indexOf(a),n:16}));for(let k=0;k<4;k++)ps1.add(new N3({geo:E.g.ball,p:v3.add(a,[(R()-.5)*1.1,(R()-.5)*1.1,.7]),s:.12,col:'#9dff6a',emit:.6,tex:0}));}
+  const p700=ps1.add(new N3({p:[0,-.3,.95],glow:{s:0,c:[1,.3,.25,1]}}));root.add(ps1);
+  const Fd=new N3({p:[6.6,2.4,1.2],pick:I.fd,pickR:.7,label:{t:'Ferredoxina',dy:-60}});Fd.add(blob(E,{size:[.42,.42,.42],col:'#a5552f',seed:130,n:10}));Fd.e=Fd.add(new N3({glow:{s:0,c:[.45,1,1,1]}}));Fd.home=Fd.p.slice();Fd.busy=false;root.add(Fd);
+  const FN=[9.2,2.7,0];root.add(blob(E,{p:FN,size:[.85,.7,.85],col:'#c9a24b',seed:131,n:24,pick:I.fnr,label:{t:'NADP⁺ reductasa',dy:-70}}));
+  const PQs=[];for(let k=0;k<5;k++){const q=new N3({p:[-9.5+k*1.2,0,k%2?1.8:-1.6]});q.add(new N3({geo:E.g.ball,s:[.42,.24,.3],col:'#f2d04b',rim:.5,tex:.1}));q.add(new N3({geo:E.g.cylLo,p:[-.75,0,0],q:qAxis([0,0,1],Math.PI/2),s:[.07,1.1,.07],col:'#c9a83d'}));q.e=q.add(new N3({glow:{s:0,c:[.45,1,1,1]}}));q.busy=false;q.v=[0,0,0];if(k===2){q.pick=I.pq;q.pickR=1.2;q.label={t:'Plastoquinona',dy:90};}root.add(q);PQs.push(q);}
+  const PCs=[];for(const h of [[-1.4,-2.5,1.4],[1.2,-2.6,-1.2]]){const c=new N3({p:h,pick:I.pc,pickR:.8});c.add(blob(E,{size:[.5,.5,.5],col:'#3d7fd6',seed:140+PCs.length,n:12}));c.e=c.add(new N3({glow:{s:0,c:[.45,1,1,1]}}));c.home=h;c.busy=false;if(!PCs.length)c.label={t:'Plastocianina',dy:60};root.add(c);PCs.push(c);}
+  const AS=[14,0,0];const ring=new N3({p:AS});for(let k=0;k<14;k++){const a=k*TAU/14;ring.add(new N3({geo:E.g.cyl,p:[1.25*Math.cos(a),0,1.25*Math.sin(a)],s:[.26,2.1,.26],col:k%2?'#e2a03e':'#d48f30',rim:.5,tex:.25}));}
+  ring.add(new N3({geo:E.g.cyl,p:[0,2.7,0],s:[.32,4.6,.32],col:'#cf7f2a',rim:.4,tex:.2}));root.add(ring);
+  root.add(blob(E,{p:[15.95,0,0],size:[.75,1.25,.85],col:'#c0763a',seed:150,n:26}));const bA=[16.2,.6,0],bB=[15.2,6.9,0];root.add(new N3({geo:E.g.cyl,p:v3.lerp(bA,bB,.5),q:qFromTo([0,1,0],v3.sub(bB,bA)),s:[.16,v3.dist(bA,bB),.16],col:'#c4843f',rim:.4}));
+  const head=new N3({p:[14,5.7,0],pick:I.as,pickR:1.9});for(let k=0;k<6;k++){const a=k*TAU/6;head.add(blob(E,{p:[1.0*Math.cos(a),0,1.0*Math.sin(a)],size:[.8,1.05,.8],col:k%2?'#c9984a':'#e9c37a',seed:151+k,n:24}));}root.add(head);
+  root.add(tag([14,-.2,0],'ATP sintasa · CF₀',I.as,{dy:120}));root.add(tag([14,5.7,0],'CF₁',I.as,{dy:-70}));
+  const pool=[];const strm=[];const rL=()=>[-18+R()*36,-2.6-R()*3.6,-5+R()*10];
+  function addPool(h){h.v=[(R()-.5),(R()-.5)*.6,(R()-.5)];pool.push(h);}
+  for(let k=0;k<S.G;k++){const h=proton(E,rL());root.add(h);addPool(h);}pool[0].label={t:'H⁺',dy:30,c:C_H};
+  for(let k=0;k<26;k++){const h=proton(E,[-18+R()*36,2.6+R()*3.6,-5+R()*10]);h.v=[(R()-.5),(R()-.5)*.6,(R()-.5)];h.s=[.13,.13,.13];root.add(h);strm.push(h);}
+  function toLumen(xs,z,dur){xs.forEach((x,k)=>later(P,k*dur/xs.length,()=>{const h=proton(E,[x+(R()-.5)*.4,3.6,z+(R()-.5)*.6]);root.add(h);A.path(h,[h.p,[x,1.3,z],[x,-1.3,z],[x+(R()-.5)*2,-3.2-R(),z+(R()-.5)*2]],1.0,{end:()=>{S.G++;if(pool.length<150)addPool(h);else kill(h);}});}));}
+  function takePool(){let h=pool.pop();if(!h){h=proton(E,rL());root.add(h);}return h;}
+  function useProton(){const h=takePool();S.G--;A.path(h,[h.p,[15.1,-2.4,.9],[15.15,-.9,1.25],[15.1,.8,1.25],[14.8,2.5,.9]],1.3,{kill:true});later(P,.75,()=>{S.ringT+=TAU/14;S.hc++;const n=Math.floor(S.hc*3/14);if(n>S.made){S.made=n;makeATP();}});}
+  function makeATP(){const k=S.made%3;const a=(2*k+1)*TAU/6;const at=[14+1.05*Math.cos(a),5.7,1.05*Math.sin(a)+.4];const ad=M(E,'adp',.22);ad.p=[18,10,3];root.add(ad);A.move(ad,at,.7,{end:()=>{kill(ad);const t=M(E,'atp',.24);t.p=at;root.add(t);A.move(t,[17+R()*3,10,2+R()*2],1.8,{kill:true});E.pop(at,'+ATP',C_ATP);S.atp++;}});}
+  function elec(p){const e=electron(p);root.add(e);return e;}
+  function* excite(c,ants,rc,hero,w){yield ()=>O.luz>0&&leff(w)>.05;yield (.15+2.0*(1-O.luz/100))/leff(w);const a=v3.add(c,ants[(R()*ants.length)|0]);let hit=false;photon(root,A,v3.add(a,[(R()-.5)*3,12,3]),v3.add(a,[0,.6,.8]),1.0,()=>{hit=true;F.flash(root,v3.add(a,[0,.4,.9]),[.6,1,.4,1],2.0,.6);});yield ()=>hit;
+    const h=new N3({p:v3.add(a,[0,.3,.9]),glow:{s:.7,c:[.7,1,.5,1]}});root.add(h);A.move(h,v3.add(c,rc),.45,{kill:true});yield .45;F.flash(root,v3.add(c,rc),[1,.35,.3,1],2.6,.6);}
+  function water(){const w=mol(E,root,'h2o',[-14,-6.2,2.2],.3);A.move(w,[-12,-2.2,1.2],.8,{kill:true,end:()=>{for(let k=0;k<2;k++){const h=proton(E,[-12+(k-.5)*.6,-2.4,1.2]);root.add(h);A.move(h,[-12+(R()-.5)*4,-3.6-R()*2,1+(R()-.5)*3],.8,{end:()=>{S.G++;if(pool.length<150)addPool(h);else kill(h);}});}
+    S.w++;if(S.w%2===0){const o=mol(E,root,'o2',[-12,-2.4,1.3],.3,'O₂');A.move(o,[-15,-8,4],2.6,{kill:true});S.o2++;E.pop([-12,-2.2,1.2],'2 H₂O → O₂ + 4 H⁺ + 4 e⁻',C_O2);}}});}
+  function* toPC(e,hero){let pc=null;yield ()=>{pc=PCs.find(x=>!x.busy);return !!pc;};pc.busy=true;A.move(pc,[-2.0,-2.5,1.3],.7);yield .75;kill(e);pc.e.glow.s=1.1;if(hero)S.stage=4;
+    A.move(pc,[3.9,-2.5,1.2],1.8,{arc:-.4});yield 1.85;return pc;}
+  function* linear(hero){S.active++;
+    if(hero)S.stage=0;yield* excite(P2,ant2,[0,.2,.95],hero,0);
+    yield ()=>!O.dcmu;if(hero)S.stage=1;water();const e=elec([-12,.2,.95]);yield .5;
+    if(hero)S.stage=2;
+    let q=null;yield ()=>{q=PQs.find(x=>!x.busy);return !!q;};q.busy=true;A.move(q,[-10.3,0,.9],.9);yield .9;kill(e);q.e.glow.s=1.1;
+    for(let k=0;k<2;k++){const h=proton(E,[-10.3+(k-.5),3.6,.9]);root.add(h);A.move(h,[-10.3,.3,.9],.8,{kill:true});}yield .8;
+    A.move(q,[-4.3,0,.9],1.8);yield 1.85;
+    if(hero)S.stage=3;q.e.glow.s=0;q.busy=false;toLumen([-3.6,-3.1,-2.7,-2.3],.2,1.0);
+    const e2=elec([-3,0,.9]);A.path(e2,[[-3,0,.9],[-3,-1.2,.9],[-2.2,-2.3,1.3]],1.0);yield 1.05;
+    const pc=yield* toPC(e2,hero);
+    if(hero)S.stage=5;yield* excite(P1,ant1,[0,-.3,.95],hero,1);pc.e.glow.s=0;A.move(pc,pc.home,1.5,{end:()=>{pc.busy=false;}});
+    const e3=elec([5,-.3,.95]);A.path(e3,[[5,-.3,.95],[5.4,.9,.9],[6.3,2.2,1.2]],.9);yield .95;
+    if(hero)S.stage=6;yield ()=>!Fd.busy;Fd.busy=true;kill(e3);Fd.e.glow.s=1.1;A.move(Fd,[8.5,2.6,1.0],1.0);yield 1.05;Fd.e.glow.s=0;A.move(Fd,Fd.home,1.0,{end:()=>{Fd.busy=false;}});
+    const np=mol(E,root,'nadp',[13,7,3],.26);A.move(np,[9.4,3.7,.9],.8);yield .85;kill(np);const nh=mol(E,root,'nadph',[9.4,3.7,.9],.26,hero?'NADPH → ciclo de Calvin':null);A.move(nh,[12,9.5,3],2.2,{kill:true});E.pop([9.4,3.9,.9],'NADP⁺ + 2e⁻ + H⁺ → NADPH',C_NADPH);S.nadph++;
+    S.active--;if(hero){S.stage=7;yield 2.6;S.heroOn=false;}}
+  function* cyclic(hero){S.active++;
+    let pc=null;yield ()=>{pc=PCs.find(x=>!x.busy);return !!pc;};pc.busy=true;A.move(pc,[3.9,-2.5,1.2],1.2);yield 1.25;
+    if(hero)S.stage=5;yield* excite(P1,ant1,[0,-.3,.95],hero,1);A.move(pc,pc.home,1.5,{end:()=>{pc.busy=false;}});
+    const e3=elec([5,-.3,.95]);A.path(e3,[[5,-.3,.95],[5.4,.9,.9],[6.3,2.2,1.2]],.9);yield .95;
+    if(hero)S.stage=6;yield ()=>!Fd.busy;Fd.busy=true;kill(e3);Fd.e.glow.s=1.1;A.move(Fd,[-2.6,2.1,1.1],2.0,{arc:.6});yield 2.05;
+    if(hero)S.stage=3;Fd.e.glow.s=0;A.move(Fd,Fd.home,2.0,{end:()=>{Fd.busy=false;}});toLumen([-3.6,-3.1,-2.7,-2.3],.2,1.0);
+    const e2=elec([-3,1.4,.9]);A.path(e2,[[-3,1.4,.9],[-3,0,.9],[-3,-1.2,.9],[-2.2,-2.3,1.3]],1.2);yield 1.25;
+    const pc2=yield* toPC(e2,hero);pc2.e.glow.s=0;A.move(pc2,pc2.home,1.5,{end:()=>{pc2.busy=false;}});
+    S.active--;if(hero){S.stage=7;yield 2.4;S.heroOn=false;}}
+  P.add((function*(){while(true){yield ()=>S.active<3;const hero=!S.heroOn;if(hero)S.heroOn=true;P.add(O.modo==='ciclica'?cyclic(hero):linear(hero));yield 1.9;}})());
+  P.add((function*(){while(true){yield ()=>O.luz>0;yield .25+1.6*(1-O.luz/100);const a=v3.add(R()<.5?P2:P1,[(R()-.5)*7,0,(R()-.5)*4]);photon(root,A,v3.add(a,[0,12,3]),v3.add(a,[0,1,0]),1.1);}})());
+  return {root,cam:{yaw:.1,pitch:.14,dist:31,t:[1,0,0]},fog:[30,80],bg:['#132018','#030604'],minD:6,maxD:70,
+    update(dt){photon.def=LCOL[O.color||'blanca'];P.update(dt);A.update(dt);F.update(dt);
+      if(S.G>10){S.acc+=dt*4.2*clamp((S.G-10)/90,0,1.4);}while(S.acc>=1){S.acc--;useProton();}
+      S.ring+=(S.ringT-S.ring)*Math.min(1,dt*7);ring.q=qAxis([0,1,0],-S.ring);
+      for(const h of pool){h.v=v3.add(v3.mul(h.v,.98),[(R()-.5)*.3,(R()-.5)*.2,(R()-.5)*.3]);h.p=v3.add(h.p,v3.mul(h.v,dt));if(h.p[0]<-18||h.p[0]>18)h.v[0]*=-1;if(h.p[1]<-6.2||h.p[1]>-2.4)h.v[1]*=-1;if(h.p[2]<-5||h.p[2]>5)h.v[2]*=-1;h.p=[clamp(h.p[0],-18,18),clamp(h.p[1],-6.2,-2.4),clamp(h.p[2],-5,5)];}
+      for(const h of strm){h.v=v3.add(v3.mul(h.v,.98),[(R()-.5)*.3,(R()-.5)*.2,(R()-.5)*.3]);h.p=v3.add(h.p,v3.mul(h.v,dt));if(h.p[0]<-18||h.p[0]>18)h.v[0]*=-1;if(h.p[1]<2.4||h.p[1]>6.2)h.v[1]*=-1;if(h.p[2]<-5||h.p[2]>5)h.v[2]*=-1;h.p=[clamp(h.p[0],-18,18),clamp(h.p[1],2.4,6.2),clamp(h.p[2],-5,5)];}
+      for(const q of PQs){if(q.busy)continue;q.v=v3.add(v3.mul(q.v,.96),[(R()-.5)*.4,0,(R()-.5)*.4]);q.p=v3.add(q.p,v3.mul(q.v,dt));q.p=[clamp(q.p[0],-10.2,-4.4),0,clamp(q.p[2],-4,4)];}},
+    stage:()=>S.stage,charts:()=>[zChart(S.stage)],
+    counters:()=>[['O₂ liberado',S.o2,C_O2],['NADPH',S.nadph,C_NADPH],['ATP',S.atp,C_ATP],['pH del lumen ≈',(8-3*clamp(S.G/S.Gmax,0,1)).toFixed(1).replace('.',','),C_H]],
+    sub:()=>{if(O.color==='rojolejano')return 'Luz roja lejana (> 700 nm): solo la absorbe bien el fotosistema I. El PSII apenas se excita, así que no se rompe el agua ni se forma NADPH; solo avanza el transporte cíclico. Si se añade luz roja normal, la fotosíntesis aumenta más que la suma de las dos luces por separado: efecto Emerson.';if(O.color==='verde')return 'Luz verde: las clorofilas casi no la absorben (la reflejan; por eso vemos las hojas verdes). La fotosíntesis va muy despacio.';if(O.luz<=0)return 'A oscuras: no se excitan los fotosistemas. Se detienen el transporte de electrones, la fotólisis del agua y la síntesis de ATP y NADPH.';if(O.dcmu&&O.modo!=='ciclica')return 'DCMU (diurón): bloquea el paso de electrones del fotosistema II a la plastoquinona. No se libera O₂ ni se forma NADPH; la planta muere. Prueba a activar el modo cíclico: no le afecta.';if(O.modo==='ciclica')return 'Fotofosforilación cíclica: solo actúa el fotosistema I. Los electrones vuelven al citocromo b₆f, se bombean H⁺ y se forma ATP, pero no hay NADPH ni O₂.';return '';}};}
+
+/* ---- 3. Ciclo de Calvin ---- */
+function sCalvin(E,O){
+  const root=new N3(),A=new Anim(),P=new Procs(),F=new FX(),R=rng(17);const S={stage:0,turn:0,co2:0,atp:0,nadph:0,g3p:0,pr:0};
+  const FIX=[0,0,-6],RED=[7,0,3.5],REG=[-7,0,3.5],LUM=[15,0,-2],SUG=[-15,0,-3];
+  const rub=new N3({p:FIX,pick:{t:'RuBisCO',d:'Ribulosa-1,5-bisfosfato carboxilasa/oxigenasa. Formada por 8 subunidades grandes y 8 pequeñas, es la proteína más abundante de la Tierra. Es lenta (unas 3 reacciones por segundo) y también puede usar O₂ en lugar de CO₂: la fotorrespiración.'},pickR:2.2,label:{t:'RuBisCO',dy:-80}});
+  for(let k=0;k<8;k++){const a=(k%4)*TAU/4+(k<4?0:TAU/8),y=k<4?.7:-.7;rub.add(blob(E,{p:[1.05*Math.cos(a),y,1.05*Math.sin(a)],size:[.75,.65,.75],col:'#3f8f6a',seed:200+k,n:16}));}
+  for(let k=0;k<8;k++){const a=(k%4)*TAU/4+TAU/8,y=k<4?1.55:-1.55;rub.add(blob(E,{p:[.95*Math.cos(a),y,.95*Math.sin(a)],size:[.42,.32,.42],col:'#86c79f',seed:210+k,n:8}));}root.add(rub);
+  const pgk=blob(E,{p:v3.add(RED,[-1.4,0,-1.6]),size:[1,1,1],col:'#d0954f',seed:220,n:30,pick:{t:'Fosfoglicerato quinasa',d:'Fosforila el 3-fosfoglicerato con ATP de la fase luminosa: se forma 1,3-bisfosfoglicerato.'},label:{t:'Fosfoglicerato quinasa',dy:-60}});
+  const gap=blob(E,{p:v3.add(RED,[1.4,0,-1.6]),size:[1,1,1],col:'#4b9cc9',seed:221,n:30,pick:{t:'Gliceraldehído-3-P deshidrogenasa',d:'Reduce el 1,3-bisfosfoglicerato con NADPH: se forma gliceraldehído-3-fosfato (G3P), la primera triosa del ciclo.'},label:{t:'G3P deshidrogenasa',dy:60}});root.add(pgk);root.add(gap);
+  const regG=new N3({p:REG,pick:{t:'Enzimas de la regeneración',d:'Un conjunto de enzimas (aldolasa, transcetolasa, fosfatasas…) reorganiza 5 moléculas de G3P (15 C) en 3 de ribulosa-5-fosfato (15 C). La fosforribuloquinasa gasta 3 ATP para formar 3 RuBP.'},pickR:2.4,label:{t:'Regeneración de la RuBP',dy:-90}});
+  for(let k=0;k<6;k++){const a=k*TAU/6;regG.add(blob(E,{p:[1.5*Math.cos(a),(k%2-.5)*.6,1.5*Math.sin(a)-1.4],size:[.6,.55,.6],col:['#8f74c0','#5fa679','#c9a24b','#6aa0a0','#b47aa6','#7f8fb8'][k],seed:230+k,n:12}));}root.add(regG);
+  const gran=new N3({p:LUM,pick:{t:'Tilacoides (fase luminosa)',d:'Proporcionan el ATP y el NADPH que consume el ciclo, y reciben de vuelta ADP, Pi y NADP⁺.',go:1},pickR:2.4,label:{t:'Tilacoides · fase luminosa',dy:-110}});for(let k=0;k<9;k++)gran.add(new N3({geo:E.g.cyl,p:[0,(k-4)*.26,0],s:[1.8,.16,1.8],col:k%2?'#2e7a30':'#2a722c',rim:.5,tex:.3}));root.add(gran);
+  const starch=new N3({geo:E.g.sphere,p:SUG,s:[.6,.4,.5],col:'#ece4cc',rim:.5,tex:.15,pick:{t:'Destino del G3P',d:'Parte del G3P se convierte en almidón dentro del cloroplasto y otra parte sale al citosol para formar sacarosa, que viaja por el floema. También es el punto de partida para fabricar aminoácidos y ácidos grasos.'},pickR:1.4,label:{t:'Almidón / sacarosa',dy:-60}});root.add(starch);
+  const rail=smooth([FIX,RED,REG,FIX].map(p=>v3.add(p,[0,-.6,1.2])),12);root.add(new N3({geo:E.tube(rail,.06,6),col:H('#9fd36b',.4),emit:.5,rim:0,tex:0}));
+  root.add(tag(v3.add(FIX,[0,2.3,2]),'1 · Fijación del CO₂',null,{c:'#9fd36b',dy:-40}));root.add(tag(v3.add(RED,[0,2.2,1]),'2 · Reducción',null,{c:'#9fd36b'}));root.add(tag(v3.add(REG,[0,-1.6,2]),'3 · Regeneración',null,{c:'#9fd36b',dy:50}));
+  const grid=(c,n,cols)=>{const out=[];cols=cols||3;for(let i=0;i<n;i++){const r=Math.floor(i/cols),k=i%cols;out.push(v3.add(c,[(k-(cols-1)/2)*1.9,r*1.3-.4,1.8]));}return out;};
+  function token(kin,kout,to,txt,col,delay){later(P,delay||0,()=>{const t=mol(E,root,kin,v3.add(LUM,[0,1,1]),.2);A.move(t,v3.add(to,[0,1,.4]),1.1,{arc:1.5,end:()=>{kill(t);const b=mol(E,root,kout,v3.add(to,[0,1,.4]),.2);A.move(b,v3.add(LUM,[0,-1,1]),1.4,{arc:1.2,kill:true});if(txt)E.pop(to,txt,col);}});});}
+  P.add((function*(){
+    let rb=grid(FIX,3).map((p,k)=>mol(E,root,'rubp',p,.3,k?null:'RuBP (5C) ×3'));
+    while(true){
+      S.stage=0;const nPR=[0,1,2].filter(()=>R()<(O.o2||0)/100*.9).length;const isPR=[0,1,2].map(k=>k<nPR);
+      rb.forEach((r,k)=>{const g=mol(E,root,isPR[k]?'o2':'co2',[-12+k*1.5,6,-14],.32,k===0?(isPR[k]?'O₂ (fotorrespiración)':'CO₂ (atmósfera)'):null);A.move(g,v3.add(r.p,[0,.8,0]),2.0,{kill:true,delay:k*.25});});yield 2.6;
+      F.pulse(rub,.35,1.4);rb.forEach(kill);const n3=6-nPR;let pg=grid(FIX,n3).map((p,k)=>mol(E,root,'3pg',p,.3,k?null:'3-Fosfoglicerato (3C) ×'+n3));
+      for(let k=0;k<nPR;k++){const g=mol(E,root,'pglicolato',v3.add(FIX,[1.5,1,1.5]),.3,k?null:'2-Fosfoglicolato → fotorrespiración');A.move(g,[-12,5,-12],3,{kill:true,delay:.3});}
+      if(nPR)E.pop(v3.add(FIX,[0,2.2,1]),'RuBisCO + O₂: fotorrespiración ×'+nPR,C_O2);
+      S.co2+=3-nPR;S.pr+=nPR;yield 1.4;
+      S.stage=1;const gr=grid(RED,pg.length);pg.forEach((m,k)=>A.move(m,gr[k],2.0,{delay:k*.06}));yield 2.3;
+      pg.forEach((m,k)=>token('atp','adp',m.p,k?null:'−ATP ×'+pg.length,C_ATP,k*.12));F.pulse(pgk,.35,1.6);S.atp+=pg.length;yield 1.6;pg=pg.map((m,k)=>swapM(E,root,m,'13bpg',k?null:'1,3-Bisfosfoglicerato'));yield .6;
+      S.stage=2;pg.forEach((m,k)=>token('nadph','nadp',m.p,k?null:'−NADPH ×'+pg.length,C_NADPH,k*.12));F.pulse(gap,.35,1.6);S.nadph+=pg.length;yield 1.6;pg=pg.map((m,k)=>swapM(E,root,m,'g3p',k?null:'Gliceraldehído-3-P (G3P)'));yield .8;
+      S.stage=3;if(pg.length>=6){const out=pg.pop();out.label={t:'1 G3P sale del ciclo'};A.move(out,v3.add(SUG,[1.2,.4,.6]),2.4,{kill:true,end:()=>{starch.s=v3.mul(starch.s,1.06);if(starch.s[0]>1.6)starch.s=[.6,.4,.5];}});S.g3p++;E.pop(v3.add(RED,[0,2,1]),'+1 G3P (ganancia neta)','#ece4cc');}else E.pop(v3.add(RED,[0,2,1]),'Sin ganancia neta en esta vuelta','#ffb4a0');yield 2.0;
+      S.stage=4;const gg=grid(REG,pg.length);pg.forEach((m,k)=>A.move(m,gg[k],2.0,{delay:k*.06}));yield 2.3;
+      F.pulse(regG,.35,2);const g3=grid(REG,3);g3.forEach((p,k)=>token('atp','adp',p,k?null:'−ATP ×3',C_ATP,k*.15));S.atp+=3;yield 1.5;pg.forEach(kill);rb=g3.map((p,k)=>mol(E,root,'rubp',p,.3,k?null:'RuBP regenerada ×3'));yield .8;
+      const gf=grid(FIX,3);rb.forEach((m,k)=>A.move(m,gf[k],2.2));yield 2.4;S.turn++;}})());
+  return {root,cam:{yaw:0,pitch:.8,dist:26,t:[0,0,.8]},fog:[30,80],bg:['#16231a','#040805'],minD:8,maxD:70,
+    update(dt){P.update(dt);A.update(dt);F.update(dt);rub.q=qAxis([0,1,0],(rub._a=(rub._a||0)+dt*.2));},stage:()=>S.stage,
+    counters:()=>[['Vueltas (3 CO₂ cada una)',S.turn,'#e6ebf0'],['CO₂ fijado',S.co2,C_CO2],['ATP consumido',S.atp,C_ATP],['NADPH consumido',S.nadph,C_NADPH],['G3P exportados',S.g3p,'#ece4cc'],['Fijaciones de O₂',S.pr,C_O2]],
+    sub:()=>(O.o2||0)>=35?'Con calor y sequía los estomas se cierran: baja el CO₂ y sube el O₂ dentro de la hoja. La RuBisCO fija más O₂, se pierde carbono y energía y la fotosíntesis rinde menos.':''};}
+
+/* ---- 4. Plantas C3, C4 y CAM ---- */
+function sC4(E,O){
+  const T=O.tipo;const root=new N3(),A=new Anim(),P=new Procs(),F=new FX(),R=rng(19);const S={stage:0,co2:0,mal:0,pr:0,atp:0,night:false,t:0,vac:0};
+  const enzB=(p,col,t,d,dy)=>{const b=blob(E,{p,size:[.9,.85,.9],col,seed:300+((p[0]*7)|0)+((p[1]*3)|0),n:24,pick:{t,d},label:{t,dy:dy||-60}});root.add(b);return b;};
+  const stoma=[];const ST=[-16,0,0];for(const s of [1,-1]){const g=new N3({geo:E.capsule(3.2,.85),p:[ST[0],s*1.1,0],q:qAxis([1,0,0],Math.PI/2),col:'#5fa142',rim:.6,tex:.35});root.add(g);stoma.push(g);}
+  root.add(tag(v3.add(ST,[0,2.4,0]),'Estoma',{t:'Estoma',d:'Poro de la epidermis delimitado por dos células oclusivas. Por él entra el CO₂ y sale el vapor de agua: cerrarlo ahorra agua, pero corta el suministro de CO₂.'}));
+  const chl=(c,n,sz)=>{for(let k=0;k<n;k++){const a=k*TAU/n;root.add(new N3({geo:E.g.sphere,p:v3.add(c,[Math.cos(a)*sz[0]*.8,Math.sin(a)*sz[1]*.75,-sz[2]*.55]),q:qAxis([0,0,1],a),s:[.9,.38,.55],col:'#3e8a35',rim:.5,tex:.3}));}};
+  let pepc,mdh,me,rbc,ppdk;const PEPC_d='Enzima del citosol que fija el CO₂ (como HCO₃⁻) sobre el fosfoenolpiruvato. Tiene mucha más afinidad por el CO₂ que la RuBisCO y no reacciona con el O₂.';
+  if(T==='C4'){
+    const MC=[-7,0,0],BS=[5,0,0];root.add(new N3({geo:E.g.sphere,p:MC,s:[5,4,3.4],col:H('#8ccf62',.16),rim:.9,tex:.2,pick:{t:'Célula del mesófilo',d:'Fija el CO₂ con la PEP carboxilasa y lo "bombea" en forma de malato hacia la vaina.'},pickR:1}));
+    root.add(new N3({geo:E.g.sphere,p:BS,s:[4.6,4,3.4],col:H('#3f7a34',.24),rim:.9,tex:.2,pick:{t:'Célula de la vaina del haz',d:'Rodea los vasos conductores. Aquí se libera el CO₂ del malato y se concentra junto a la RuBisCO: el ciclo de Calvin ocurre aquí.'},pickR:1}));
+    chl(MC,6,[5,4,3.4]);chl(BS,8,[4.6,4,3.4]);for(const y of [-1.2,0,1.2])root.add(new N3({geo:E.g.cyl,p:[-1.6,y,0],q:qAxis([0,0,1],Math.PI/2),s:[.16,1.6,.16],col:'#c9e0a0',rim:.6}));
+    root.add(tag([-7,4.3,0],'Mesófilo',null,{c:'#8ccf62'}));root.add(tag([5,4.3,0],'Vaina del haz',null,{c:'#5fa142'}));root.add(tag([-1.6,-1.2,0],'Plasmodesmos',null,{dy:50}));
+    pepc=enzB([-8,0,-.6],'#c4665b','PEP carboxilasa',PEPC_d);mdh=enzB([-5,1.6,-.6],'#b47aa6','Malato deshidrogenasa','Reduce el oxalacetato a malato con NADPH.');
+    me=enzB([2.4,0,-.6],'#d0954f','Enzima málica','Descarboxila el malato: libera CO₂ y piruvato y forma NADPH.');rbc=enzB([6.6,0,-.6],'#3f8f6a','RuBisCO · ciclo de Calvin','Recibe CO₂ muy concentrado, así que apenas fija O₂: casi no hay fotorrespiración.');
+    ppdk=enzB([-4.4,-2.2,-.6],'#5fa679','Piruvato fosfato diquinasa','Regenera el fosfoenolpiruvato a partir del piruvato gastando ATP (que pasa a AMP).',60);
+    P.add((function*(){while(true){
+      S.stage=0;const c=mol(E,root,'co2',[-20,0,.8],.32,'CO₂');A.path(c,[c.p,[-16,0,.8],[-8,.9,.8]],2.4);const pep=mol(E,root,'pep',[-8.6,-.9,.9],.3,'PEP (3C)');yield 2.5;
+      S.stage=1;F.pulse(pepc,.4,1.4);kill(c);let m=swapM(E,root,pep,'oxa','Oxalacetato (4C)');S.co2++;yield 1.2;A.move(m,[-5,1.6,.9],1.1);yield 1.2;F.pulse(mdh,.4,1.2);m=swapM(E,root,m,'mal','Malato (4C)');yield .9;
+      S.stage=2;A.path(m,[m.p,[-2.6,0,.9],[-.6,0,.9],[2.2,.2,.9]],2.4);yield 2.5;
+      S.stage=3;F.pulse(me,.4,1.4);const c2=mol(E,root,'co2',[2.6,.8,1],.32,'CO₂ concentrado');let py=swapM(E,root,m,'piruvato','Piruvato (3C)');A.move(c2,[6.4,.8,1],1.3);yield 1.4;F.pulse(rbc,.4,1.4);kill(c2);E.pop([6.6,1,.9],'→ ciclo de Calvin','#9fd36b');S.mal++;
+      S.stage=4;A.path(py,[py.p,[-.6,-1.2,.9],[-2.6,-1.2,.9],[-4.4,-2.2,.9]],2.4);yield 2.5;F.pulse(ppdk,.4,1.2);const t=mol(E,root,'atp',[-4.4,-4.4,1],.22);A.move(t,[-4.4,-2.6,1],.8,{end:()=>{kill(t);const a=mol(E,root,'amp',[-4.4,-2.6,1],.22);A.move(a,[-4,-6,2],1.2,{kill:true});}});S.atp+=2;yield 1.0;py=swapM(E,root,py,'pep',null);A.move(py,[-8.6,-.9,.9],1.6,{kill:true});E.pop([-4.4,-2,1],'Piruvato + ATP → PEP',C_ATP);yield 1.7;}})());}
+  else if(T==='CAM'){
+    const CC=[-2,0,0];root.add(new N3({geo:E.g.sphere,p:CC,s:[9,5,4],col:H('#8ccf62',.14),rim:.9,tex:.2,pick:{t:'Célula del mesófilo (CAM)',d:'Separa las dos fijaciones en el tiempo: de noche fija CO₂ y guarda ácido málico; de día lo libera para el ciclo de Calvin con los estomas cerrados.'},pickR:1}));
+    const vac=new N3({geo:E.g.sphere,p:[0,0,-1],s:[3.6,3,2.4],col:H('#a7c6e8',.2),rim:.9,tex:.1,pick:{t:'Vacuola',d:'Durante la noche se llena de ácido málico (la savia se vuelve ácida); durante el día se vacía.'},pickR:1,label:{t:'Vacuola · ácido málico',dy:-120}});root.add(vac);chl(CC,8,[9,5,4]);
+    pepc=enzB([-7,1,-.6],'#c4665b','PEP carboxilasa (noche)',PEPC_d);me=enzB([4.6,1.6,-.6],'#d0954f','Enzima málica (día)','Libera el CO₂ del malato almacenado.');rbc=enzB([7.2,-1,-.6],'#3f8f6a','RuBisCO · ciclo de Calvin (día)','De día recibe el CO₂ procedente del malato, con los estomas cerrados.');
+    const malS=[];
+    P.add((function*(){while(true){
+      S.night=true;S.stage=0;for(let k=0;k<5;k++){S.stage=k<1?0:1;const c=mol(E,root,'co2',[-20,0,.8],.32,k?null:'CO₂ (de noche)');A.path(c,[c.p,[-16,0,.8],[-7,1.2,.9]],2.0);yield 2.1;F.pulse(pepc,.4,1);kill(c);const m=mol(E,root,'mal',[-7,1,.9],.3,k?null:'Malato');S.co2++;A.move(m,[(R()-.5)*4,(R()-.5)*3,0],1.6);malS.push(m);S.vac=malS.length;yield 1.0;}
+      S.stage=2;yield 2.5;S.night=false;S.stage=3;
+      while(malS.length){const m=malS.shift();S.vac=malS.length;A.move(m,[4.4,1.6,.9],1.4);yield 1.5;F.pulse(me,.4,1);const c=swapM(E,root,m,'co2','CO₂ (de día)');A.move(c,[7.2,-.8,.9],1.0,{kill:true});yield 1.1;F.pulse(rbc,.4,1);S.mal++;E.pop([7.2,-.6,.9],'→ ciclo de Calvin','#9fd36b');S.stage=4;yield .4;}
+      yield 2;}})());}
+  else{
+    const MC=[-4,0,0];root.add(new N3({geo:E.g.sphere,p:MC,s:[7,4.2,3.4],col:H('#8ccf62',.16),rim:.9,tex:.2,pick:{t:'Célula del mesófilo (C3)',d:'La RuBisCO fija directamente el CO₂ que entra por los estomas. El primer producto estable es el 3-fosfoglicerato (3 C): de ahí el nombre C3.'},pickR:1}));chl(MC,8,[7,4.2,3.4]);
+    rbc=enzB([-3,0,-.6],'#3f8f6a','RuBisCO','Fija CO₂ … pero, si hay poco CO₂ y mucho O₂, también fija O₂ (fotorrespiración).');
+    P.add((function*(){while(true){const pr=R()<(O.calor?.45:.12);S.stage=0;const c=mol(E,root,pr?'o2':'co2',[-20,0,.8],.32,pr?'O₂':'CO₂');A.path(c,[c.p,[-16,0,.8],[-3,.9,.9]],2.4);yield 2.5;
+      F.pulse(rbc,.4,1.2);kill(c);if(pr){S.stage=2;S.pr++;const g=mol(E,root,'pglicolato',[-3,.9,.9],.3,'2-Fosfoglicolato');A.move(g,[6,6,1],2.4,{kill:true});E.pop([-3,1.2,.9],'Fotorrespiración: se pierde C',C_O2);}else{S.stage=1;S.co2++;const p=mol(E,root,'3pg',[-3,.9,.9],.3,'3-Fosfoglicerato ×2');A.move(p,[6,0,1],2.2,{kill:true});E.pop([-3,1.2,.9],'→ ciclo de Calvin','#9fd36b');}yield 2.4;}})());}
+  return {root,cam:{yaw:.05,pitch:.22,dist:30,t:[-3,0,0]},fog:[30,80],bg:['#16231a','#040805'],minD:8,maxD:70,
+    update(dt){P.update(dt);A.update(dt);F.update(dt);const open=T==='CAM'?S.night:(T==='C3'&&O.calor?.35:1);for(let k=0;k<2;k++){const y=(k?-1:1)*(1.0+.25*(typeof open==='number'?open:(open?1:0)));stoma[k].p=[ST[0],stoma[k].p[1]+(y-stoma[k].p[1])*Math.min(1,dt*2),0];}
+      if(T==='CAM'){const tgt=S.night?[.09,.11,.2]:[.13,.2,.13];E.bg[0][0]+=(tgt[0]-E.bg[0][0])*dt;E.bg[0][1]+=(tgt[1]-E.bg[0][1])*dt;E.bg[0][2]+=(tgt[2]-E.bg[0][2])*dt;E.fogC=v3.mul(E.bg[0],.92);}},
+    stage:()=>S.stage,
+    counters:()=>T==='C4'?[['CO₂ fijado por PEPC',S.co2,C_CO2],['CO₂ entregado a la RuBisCO',S.mal,'#9fd36b'],['ATP extra gastado',S.atp,C_ATP]]:T==='CAM'?[['Momento',S.night?'Noche':'Día','#e6ebf0'],['Malato en la vacuola',S.vac,'#a7c6e8'],['CO₂ captado de noche',S.co2,C_CO2],['CO₂ al ciclo de Calvin',S.mal,'#9fd36b']]:[['CO₂ fijado',S.co2,C_CO2],['Fijaciones de O₂',S.pr,C_O2],['Eficiencia',(S.co2+S.pr?Math.round(100*S.co2/(S.co2+S.pr)):100)+' %','#9fd36b']],
+    sub:()=>T==='CAM'?(S.night?'Noche: los estomas se abren, entra CO₂ y se almacena como ácido málico en la vacuola.':'Día: estomas cerrados para no perder agua. El malato libera CO₂ y, con la luz, funciona el ciclo de Calvin.'):''};}
+
+/* ---- 5. Factores limitantes (experimento con Elodea) ---- */
+function rateModel(L,C,T){const fL=1.15*L/(L+28),fC=1.15*C/(C+22);const fT=T<=0||T>=50?0:Math.exp(-Math.pow((T-27)/12,2))*(T>38?Math.max(0,(50-T)/12):1);const g=Math.min(fL,fC,1)*fT;const resp=.12*Math.min(1,Math.exp((T-25)/20));return {fL,fC,fT,g,net:g-resp};}
+function sFactors(E,O){
+  const root=new N3(),A=new Anim(),P=new Procs(),F=new FX(),R=rng(23);const S={stage:0,o2:0,acc:0};
+  root.add(new N3({geo:E.capsule(13,2.2),p:[0,0,0],col:H('#dfeaf2',.1),rim:.95,tex:0,pick:{t:'Tubo de ensayo',d:'Contiene agua con bicarbonato (fuente de CO₂) y una ramita de Elodea, una planta acuática. Contar las burbujas de O₂ por minuto mide la velocidad de la fotosíntesis.'},pickR:1}));
+  root.add(new N3({geo:E.capsule(12,2.05),p:[0,-.4,0],col:H('#4f8fb8',.1),rim:.6,tex:.05}));
+  const stem=[[0,-7,0],[.3,-4,.2],[-.2,-1,0],[.3,2,-.2],[.2,4.6,0]];const sp=smooth(stem,10);root.add(new N3({geo:E.tube(sp,.12,8),col:'#5f9a3a',rim:.5,tex:.3}));
+  const pl=new N3({pick:{t:'Elodea',d:'Planta acuática muy usada en el laboratorio: el O₂ de la fotosíntesis sale en burbujas por el corte del tallo.'},pickR:3,label:{t:'Elodea',dy:-40}});pl.p=[0,1,0];root.add(pl);
+  for(let i=4;i<sp.length-2;i+=3){const c=sp[i];for(let k=0;k<3;k++){const a=k*TAU/3+i;const d=[Math.cos(a),.35,Math.sin(a)];root.add(new N3({geo:E.g.sphere,p:v3.add(c,v3.mul(d,.7)),q:qFromTo([1,0,0],d),s:[.75,.07,.24],col:'#4c9a36',rim:.6,tex:.3}));}}
+  const tip=sp[sp.length-1];
+  const lamp=new N3({p:[-12,1,3]});lamp.add(new N3({geo:E.g.cyl,p:[-.9,0,0],q:qAxis([0,0,1],Math.PI/2),s:[1.5,1.6,1.5],col:'#3b3f45',rim:.5,tex:.2}));const bulb=lamp.add(new N3({geo:E.g.sphere,s:1,col:'#fff1b8',emit:1,rim:0,tex:0}));const lg=lamp.add(new N3({glow:{s:4,c:[1,.9,.55,.8]}}));lamp.pick={t:'Foco de luz',d:'Cuanto más cerca del tubo, mayor es la intensidad luminosa que recibe la planta.'};lamp.pickR=1.6;lamp.label={t:'Luz',dy:-50};root.add(lamp);
+  const hc=new N3({frozen:true});root.add(hc);const dots=[];for(let k=0;k<60;k++){const d=ball(E,[(R()-.5)*3.2,-6+R()*12,(R()-.5)*3.2],.07,'#e6eef6',{emit:.2,rim:.4,tex:0});root.add(d);dots.push(d);}
+  dots[0].label={t:'HCO₃⁻ / CO₂',dy:40};
+  const bub=[];function bubble(p){const b=ball(E,p,.14+R()*.08,H('#f2f8ff',.35),{rim:.95,tex:0});b.v=1.6+R()*.8;root.add(b);bub.push(b);}
+  root.add(tag([3,-6,2],'Termómetro del baño',null,{dy:40}));const th=new N3({geo:E.g.cyl,p:[3.2,-2,1.8],s:[.15,8,.15],col:H('#e6eef6',.3),rim:.9});root.add(th);const thq=new N3({geo:E.g.cyl,p:[3.2,-5,1.8],s:[.09,2,.09],col:'#e2402c',emit:.4});root.add(thq);
+  return {root,cam:{yaw:.45,pitch:.15,dist:26,t:[-3,0,0]},fog:[30,80],bg:['#121a22','#030507'],minD:8,maxD:60,
+    update(dt){A.update(dt);F.update(dt);const L=O.luz*FEFF[O.color||'blanca'],C=O.co2,T=O.temp;const m=rateModel(L,C,T);
+      lamp.p[0]+=((-6-(1-O.luz/100)*12)-lamp.p[0])*Math.min(1,dt*3);lg.glow.s=.5+4.5*O.luz/100;bulb.emit=.2+.8*O.luz/100;bulb.col=O.luz>0?H(LHEX[O.color||'blanca']):H('#5b5a50');const lc=LCOL[O.color||'blanca'];lg.glow.c=[lc[0],lc[1],lc[2],.8];
+      dots.forEach((d,i)=>{d.visible=i<C*.6;d.p=[d.p[0]+Math.sin(i+d.p[1])*dt*.1,d.p[1]+(Math.sin(i*1.7+d.p[0]*2))*dt*.1,d.p[2]];});
+      const tq=clamp(T/50,0,1);thq.s=[.09,.4+7.4*tq,.09];thq.p=[3.2,-6+(.4+7.4*tq)/2,1.8];
+      if(m.net>0){S.acc+=dt*m.net*5;while(S.acc>=1){S.acc--;bubble(v3.add(tip,[(R()-.5)*.2,0,(R()-.5)*.2]));S.o2++;}}
+      for(let i=bub.length-1;i>=0;i--){const b=bub[i];b.p=[b.p[0]+Math.sin(b.p[1]*4+i)*.004,b.p[1]+b.v*dt,b.p[2]];if(b.p[1]>7.4){kill(b);bub.splice(i,1);}}
+      S.stage=m.net<=0?3:m.fT<.7?2:(m.fL<m.fC?0:1);},
+    stage:()=>S.stage,
+    counters:()=>{const m=rateModel(O.luz*FEFF[O.color||'blanca'],O.co2,O.temp);return [['Burbujas de O₂ por minuto',Math.max(0,Math.round(m.net*5*60)),C_O2],['Fotosíntesis bruta',Math.round(m.g*100)+' %','#9fd36b'],['Factor limitante',m.net<=0&&m.g<.05?'—':m.fT<.7?'Temperatura':(m.fL<m.fC?'Luz':'CO₂'),'#e6ebf0'],['Burbujas contadas',S.o2,'#cfd6dd']];},
+    charts:()=>factorsCharts(O),
+    sub:()=>{const m=rateModel(O.luz*FEFF[O.color||'blanca'],O.co2,O.temp);if(O.temp>=42)return 'Temperatura muy alta: las enzimas, como la RuBisCO, se desnaturalizan y la fotosíntesis cae en picado.';if(m.net<=0)return 'Por debajo del punto de compensación: la planta consume en la respiración tanto O₂ como produce (o más). No salen burbujas.';return '';}};}
+
+/* ---- 6. Balance global ---- */
+function sSum(E,O){
+  const root=new N3(),A=new Anim(),P=new Procs(),F=new FX(),R=rng(29);const S={stage:0,glc:0};
+  const C0=[0,1,0];root.add(new N3({geo:E.g.cyl,p:[0,-.3,0],s:[3,.12,3],col:'#2a2f2a',rim:.3,tex:.3}));
+  root.add(tag([-9,4.6,0],'6 CO₂',null,{c:C_CO2}));root.add(tag([-9,-2.6,0],'12 H₂O',null,{c:'#9fd3ff',dy:40}));root.add(tag([9,4.6,0],'18 ATP',null,{c:C_ATP}));root.add(tag([9,-2.6,0],'12 NADPH',null,{c:C_NADPH,dy:40}));
+  P.add((function*(){while(true){
+    const co2=[],w=[],atp=[],nad=[];S.stage=0;
+    for(let k=0;k<6;k++){const a=k*TAU/6;co2.push(mol(E,root,'co2',[-9+Math.cos(a)*1.6,3+Math.sin(a)*1.0,0],.32));yield .08;}
+    for(let k=0;k<12;k++){w.push(mol(E,root,'h2o',[-10.5+(k%4)*1,-1+Math.floor(k/4)*.9,(k%2)*.5],.3));yield .05;}yield 1.0;
+    S.stage=1;const os=[];for(let k=0;k<6;k++){const o=mol(E,root,'o2',[-9.5+(k%3)*1.2,-.5,0],.32,k?null:'6 O₂ a la atmósfera');os.push(o);A.move(o,[-6+k*1.2,9,-2],2.6,{kill:true,delay:.4+k*.1});}w.slice(0,12).forEach((m,k)=>A.move(m,[-9.5+(k%3)*1.2,-.5,0],.4,{kill:true}));
+    for(let k=0;k<18;k++){atp.push(mol(E,root,'atp',[7.5+(k%6)*.6,2.6+Math.floor(k/6)*.9,(k%2)*.4],.18));yield .04;}for(let k=0;k<12;k++){nad.push(mol(E,root,'nadph',[7.6+(k%4)*.9,-1.2+Math.floor(k/4)*.8,(k%2)*.4],.15));yield .04;}
+    E.pop([0,6,0],'Fase luminosa: 12 H₂O → 6 O₂ + 24 H⁺ + 24 e⁻',C_O2);yield 2.2;
+    S.stage=2;for(const m of co2.concat(atp,nad))A.move(m,v3.add(C0,[(R()-.5)*1.4,(R()-.5)*1.4,(R()-.5)*1.4]),1.6+R()*.6,{kill:true});E.pop([0,4,0],'6 vueltas del ciclo de Calvin','#9fd36b');yield 2.6;
+    S.stage=3;const g=mol(E,root,'glucosa',C0,.55,'Glucosa (C₆H₁₂O₆)');F.flash(root,C0,[1,.9,.6,1],4,1);S.glc++;
+    for(let k=0;k<6;k++){const ww=mol(E,root,'h2o',C0,.3,k?null:'6 H₂O');A.move(ww,[2+k*.8,-3,2],1.6,{kill:true,delay:.3});}
+    for(let k=0;k<18;k++){const a=mol(E,root,'adp',C0,.15);A.move(a,[9,3,-1],1.6,{kill:true,delay:.6});}E.pop([9,3,0],'ADP + Pi y NADP⁺ vuelven a los tilacoides','#e6ebf0');yield 4.5;A.move(g,[0,1,6],1.2,{kill:true});yield 1.4;}})());
+  return {root,cam:{yaw:0,pitch:.2,dist:25,t:[0,1.2,0]},fog:[30,70],bg:['#16231a','#040805'],minD:8,maxD:60,update(dt){P.update(dt);A.update(dt);F.update(dt);},stage:()=>S.stage,counters:()=>[['Glucosas formadas',S.glc,'#ece4cc']]};}
+
+/* ---------- catálogo de escenas ---------- */
+const SCENES=[
+  {id:'cloro',name:'El cloroplasto',place:'Visión general',title:'El cloroplasto por dentro',lead:'La fotosíntesis transforma energía luminosa en energía química. Ocurre en dos fases y en dos lugares del cloroplasto: la fase luminosa en las membranas de los tilacoides y la fase oscura (ciclo de Calvin) en el estroma.',eq:'6 CO₂ + 12 H₂O + luz → C₆H₁₂O₆ + 6 O₂ + 6 H₂O',
+    stages:[['La luz llega a los tilacoides','Los pigmentos de los grana absorben fotones.'],['Fotólisis del agua','El agua se rompe en el lumen y se libera O₂.'],['Se forman ATP y NADPH','La fase luminosa los fabrica en la cara del estroma.'],['Fijación del CO₂','En el estroma, el ciclo de Calvin incorpora el CO₂ y fabrica azúcares, que se guardan como almidón.']],
+    notes:[['Anabolismo','Conjunto de reacciones de síntesis: a partir de moléculas sencillas se fabrican otras más complejas consumiendo energía (ATP) y poder reductor (NADPH). La fotosíntesis es el anabolismo autótrofo más importante.'],['Origen endosimbiótico','Los cloroplastos descienden de cianobacterias: tienen doble membrana, ADN circular y ribosomas 70S, y se dividen por bipartición.']],build:sChloro},
+  {id:'luz',name:'Fase luminosa',place:'Membrana del tilacoide',title:'Fase luminosa',lead:'La luz excita los dos fotosistemas. Los electrones arrancados al agua recorren la membrana del tilacoide hasta el NADP⁺, y su energía se usa para bombear H⁺ al lumen. Al volver al estroma por la ATP sintasa, se forma ATP.',eq:'2 H₂O + 2 NADP⁺ + 3 ADP + 3 Pi + luz → O₂ + 2 NADPH + 2 H⁺ + 3 ATP',
+    controls:[{type:'chips',id:'modo',label:'Transporte de electrones',options:[['aciclica','Acíclico (lineal)'],['ciclica','Cíclico']],def:'aciclica'},{type:'range',id:'luz',label:'Intensidad de la luz',min:0,max:100,step:5,def:80,fmt:v=>v+' %'},{type:'chips',id:'color',label:'Color de la luz',options:[['blanca','Blanca'],['azul','Azul (450 nm)'],['verde','Verde (550 nm)'],['roja','Roja (680 nm)'],['rojolejano','Rojo lejano (715 nm)']],def:'blanca'},{type:'toggle',id:'dcmu',label:'Herbicida DCMU (diurón)',desc:'Bloquea el paso PSII → plastoquinona',def:false}],
+    stages:[['Fotosistema II capta la luz','Un fotón excita la antena; la energía salta hasta el P680, que pierde un electrón.'],['Fotólisis del agua','El complejo Mn₄CaO₅ repone el electrón del P680 rompiendo agua: se liberan O₂ y H⁺ al lumen.'],['Plastoquinona','Recoge 2 e⁻ del PSII y 2 H⁺ del estroma y viaja por la bicapa hasta el citocromo b₆f.'],['Citocromo b₆f','Pasa los electrones a la plastocianina y libera H⁺ en el lumen.'],['Plastocianina','Lleva los electrones por el lumen hasta el fotosistema I.'],['Fotosistema I','Otro fotón excita el P700, que impulsa el electrón hacia el lado del estroma.'],['Ferredoxina','En el modo acíclico lleva los e⁻ a la NADP⁺ reductasa (se forma NADPH); en el cíclico, de vuelta al b₆f.'],['ATP sintasa','Los H⁺ del lumen vuelven al estroma a través de CF₀ y CF₁ fabrica ATP (fotofosforilación).']],
+    notes:[['Esquema en Z','Si se representan los transportadores según su potencial redox, el recorrido PSII → PQ → b₆f → PC → PSI → Fd → NADP⁺ dibuja una Z: la luz «sube» dos veces el electrón para que pueda llegar del agua al NADP⁺.'],['¿Por qué existe la vía cíclica?','El ciclo de Calvin necesita 3 ATP por cada 2 NADPH, y la vía acíclica produce algo menos de ATP. La fotofosforilación cíclica fabrica el ATP que falta sin generar NADPH.'],['Pigmentos','Las clorofilas a y b absorben sobre todo luz azul y roja y reflejan la verde. Los carotenoides amplían el espectro aprovechable y protegen frente al exceso de luz.']],build:sLight},
+  {id:'calvin',name:'Ciclo de Calvin',place:'Estroma',title:'Ciclo de Calvin (fase oscura)',lead:'No necesita luz directamente, pero sí el ATP y el NADPH de la fase luminosa. Cada vuelta del esquema fija 3 CO₂ y produce 1 gliceraldehído-3-fosfato neto. Cuenta los carbonos de cada molécula.',eq:'3 CO₂ + 9 ATP + 6 NADPH + 5 H₂O → G3P + 9 ADP + 8 Pi + 6 NADP⁺',
+    controls:[{type:'range',id:'o2',label:'Calor y sequía (fotorrespiración)',min:0,max:60,step:5,def:0,fmt:v=>v+' %'}],
+    stages:[['Fijación (carboxilación)','La RuBisCO une cada CO₂ a una ribulosa-1,5-bisfosfato (5 C). El compuesto de 6 C se rompe en dos 3-fosfoglicerato (3 C).'],['Reducción · ATP','Cada 3-fosfoglicerato se fosforila con ATP y pasa a 1,3-bisfosfoglicerato.'],['Reducción · NADPH','El NADPH lo reduce a gliceraldehído-3-fosfato (G3P).'],['Salida de un G3P','De cada 6 G3P, uno es ganancia neta y sale a fabricar glucosa, sacarosa, almidón, aminoácidos o lípidos.'],['Regeneración','Los otros 5 G3P (15 C) se reorganizan en 3 RuBP (15 C) gastando 3 ATP. El ciclo puede repetirse.']],
+    rows:[['Para 1 G3P (3 vueltas de RuBisCO)','3 CO₂ · 9 ATP · 6 NADPH'],['Para 1 glucosa (6 vueltas)','6 CO₂ · 18 ATP · 12 NADPH'],['Molécula que acepta el CO₂','RuBP (5 C)'],['Primer producto estable','3-fosfoglicerato (3 C)',1]],rowsTitle:'Balance',
+    notes:[['Fotorrespiración','La RuBisCO también puede unir O₂ a la RuBP: se forma un 3-fosfoglicerato y un 2-fosfoglicolato, que la planta recicla en el peroxisoma y la mitocondria perdiendo CO₂ y energía. Es más frecuente con calor y sequía (estomas cerrados). Mueve el control para verlo. (La animación lo simplifica.)'],['¿Fase «oscura»?','Se llama así porque no usa la luz directamente, pero ocurre de día: varias de sus enzimas, incluida la RuBisCO, se activan con la luz.']],build:sCalvin},
+  {id:'c4',name:'Plantas C3, C4 y CAM',place:'Hoja',title:'Estrategias contra la fotorrespiración',lead:'Las plantas de climas cálidos y secos tienen que cerrar los estomas para no perder agua, y entonces la RuBisCO se queda sin CO₂. Las plantas C4 separan las dos fijaciones en el espacio; las CAM, en el tiempo.',eq:'PEP (3C) + CO₂ → oxalacetato (4C) → malato (4C)',
+    controls:[{type:'chips',id:'tipo',label:'Tipo de planta',options:[['C3','C3 (trigo, arroz)'],['C4','C4 (maíz, caña)'],['CAM','CAM (cactus, piña)']],def:'C4',rebuild:true},{type:'toggle',id:'calor',label:'Día caluroso (solo C3)',desc:'Los estomas se entrecierran y sube la fotorrespiración',def:false}],
+    stages:o=>o.tipo==='C4'?[['El CO₂ entra por los estomas','Llega a las células del mesófilo.'],['La PEP carboxilasa lo fija','Se forma oxalacetato (4 C), que se reduce a malato.'],['El malato pasa a la vaina','Viaja por los plasmodesmos hasta la vaina del haz.'],['Se libera el CO₂ junto a la RuBisCO','La enzima málica descarboxila el malato: el CO₂ se concentra y entra en el ciclo de Calvin.'],['Se regenera el PEP','El piruvato vuelve al mesófilo y se transforma en PEP gastando ATP.']]:o.tipo==='CAM'?[['Noche: estomas abiertos','Entra CO₂ cuando hace fresco y se pierde poca agua.'],['Se almacena ácido málico','La PEP carboxilasa fija el CO₂ y el malato se guarda en la vacuola.'],['Amanece','Los estomas se cierran.'],['Día: se libera el CO₂','El malato sale de la vacuola y se descarboxila.'],['Ciclo de Calvin','Con la luz, la RuBisCO fija el CO₂ liberado.']]:[['El CO₂ entra por los estomas','Va directamente a la RuBisCO del mesófilo.'],['Fijación en el ciclo de Calvin','Se forman dos moléculas de 3-fosfoglicerato (3 C).'],['Fotorrespiración','A veces la RuBisCO fija O₂: se pierde carbono. Activa «día caluroso» para que ocurra más.']],
+    notes:[['Ventajas y costes','Las C4 casi no fotorrespiran y aprovechan mejor el agua, pero gastan 2 ATP más por cada CO₂. Las CAM pierden muy poca agua, aunque crecen despacio.'],['Ejemplos','C3: trigo, arroz, soja, la mayoría de los árboles. C4: maíz, caña de azúcar, sorgo. CAM: cactus, piña, crasuláceas, ágaves.']],build:sC4},
+  {id:'factores',name:'Factores limitantes',place:'Laboratorio',title:'¿Qué limita la fotosíntesis?',lead:'Reproduce el experimento clásico con Elodea: cuenta las burbujas de O₂ mientras cambias la luz, el CO₂ y la temperatura. La velocidad la marca el factor que esté más lejos de su óptimo (ley de Blackman).',eq:'velocidad = mínimo(luz, CO₂) × efecto de la temperatura − respiración',
+    controls:[{type:'range',id:'luz',label:'Intensidad luminosa',min:0,max:100,step:5,def:60,fmt:v=>v+' %'},{type:'range',id:'co2',label:'Concentración de CO₂',min:0,max:100,step:5,def:40,fmt:v=>v+' %'},{type:'range',id:'temp',label:'Temperatura',min:0,max:50,step:1,def:25,fmt:v=>v+' °C'},{type:'chips',id:'color',label:'Color de la luz',options:[['blanca','Blanca'],['azul','Azul'],['verde','Verde'],['roja','Roja'],['rojolejano','Rojo lejano']],def:'blanca'}],
+    
+    stages:[['Limita la luz','Al aumentar la luz, aumenta la velocidad: la fase luminosa no da abasto.'],['Limita el CO₂','Aunque haya más luz, la curva se aplana: la RuBisCO no recibe CO₂ suficiente.'],['Limita la temperatura','Lejos de 25–30 °C las enzimas trabajan peor; por encima de 40 °C se desnaturalizan.'],['Punto de compensación','La fotosíntesis apenas iguala a la respiración: no se desprende O₂ neto.']],
+    notes:[['Cómo leer la gráfica','La curva muestra la velocidad neta para el CO₂ y la temperatura actuales; el punto es tu intensidad de luz. Cuando la curva se hace horizontal, otro factor pasa a ser el limitante.'],['Otros factores','La disponibilidad de agua (cierre de estomas), la concentración de O₂ (fotorrespiración) y el color de la luz: el verde es el que peor se aprovecha.']],build:sFactors},
+  {id:'resumen',name:'Balance global',place:'Resumen',title:'Balance global de la fotosíntesis',lead:'Para fabricar una glucosa hacen falta 6 vueltas del ciclo de Calvin, 18 ATP y 12 NADPH. El O₂ desprendido procede del agua, no del CO₂ (se demostró con agua marcada con ¹⁸O).',eq:'6 CO₂ + 12 H₂O + luz → C₆H₁₂O₆ + 6 O₂ + 6 H₂O',
+    stages:[['Entradas','6 CO₂ del aire y 12 H₂O del suelo.'],['Fase luminosa','La fotólisis de 12 H₂O libera 6 O₂ y proporciona los electrones para 12 NADPH; además se forman 18 ATP.'],['Fase oscura','6 vueltas del ciclo de Calvin consumen 6 CO₂, 18 ATP y 12 NADPH.'],['Producto','Una glucosa (o su equivalente en sacarosa o almidón) y 6 H₂O.']],
+    rows:[['CO₂ fijado','6'],['ATP consumido','18'],['NADPH consumido','12'],['O₂ liberado','6'],['Fotones necesarios (aprox.)','≈ 48',1]],rowsTitle:'Por cada glucosa',
+    notes:[['Fotosíntesis anoxigénica','Las bacterias purpúreas y las verdes del azufre tienen un único fotosistema y no usan agua como dador de electrones, sino H₂S u otros compuestos: no liberan O₂ (desprenden azufre).'],['Importancia','La fotosíntesis produce casi todo el O₂ de la atmósfera y la materia orgánica que sostiene las cadenas tróficas. Además retira CO₂ del aire.']],build:sSum}];
+
+/* =========================================================
+   ESCENAS AÑADIDAS · anabolismo
+   ========================================================= */
+const LCOL={blanca:[1,.92,.5],azul:[.35,.55,1],verde:[.35,1,.35],roja:[1,.28,.2],rojolejano:[.55,.08,.1]};
+const LHEX={blanca:'#fff1b8',azul:'#8fb4ff',verde:'#9dff8f',roja:'#ff6a50',rojolejano:'#8a1c22'};
+const LEFF={blanca:[1,1],azul:[.9,.9],verde:[.25,.25],roja:[.9,.9],rojolejano:[.03,.7]};
+const FEFF={blanca:1,azul:.9,verde:.3,roja:.85,rojolejano:.15};
+const LNM={azul:450,verde:550,roja:680,rojolejano:715};
+function gs(x,m,s){return Math.exp(-((x-m)*(x-m))/(2*s*s));}
+function specA(l){return {a:.95*gs(l,430,16)+.78*gs(l,662,12)+.12*gs(l,615,18),b:.82*gs(l,455,14)+.55*gs(l,643,11),c:l>530?0:.62*gs(l,452,16)+.7*gs(l,482,13)+.28*gs(l,425,12)};}
+function lineD(pts){return 'M'+pts.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' L');}
+function specChart(O){const X=l=>24+(l-400)/330*268;const Y=a=>150-a*125;const pa=[],pb=[],pc=[];for(let l=400;l<=730;l+=5){const s=specA(l);pa.push([X(l),Y(s.a)]);pb.push([X(l),Y(s.b)]);pc.push([X(l),Y(s.c)]);}
+  const col=O.color||'blanca';const out={title:'Espectro de absorción de los pigmentos',xl:'',yl:'Absorción',paths:[{d:lineD(pa),c:'#59d36b',w:2.2},{d:lineD(pb),c:'#2f9e8f',w:2},{d:lineD(pc),c:'#f2b33d',w:2}],dots:[],labels:[{x:X(400),y:160,t:'400',c:'#7f8a96'},{x:X(500),y:160,t:'500',c:'#7f8a96'},{x:X(600),y:160,t:'600',c:'#7f8a96'},{x:X(700),y:160,t:'700 nm',c:'#7f8a96'}],legend:[['Clorofila a','#59d36b'],['Clorofila b','#2f9e8f'],['Carotenoides','#f2b33d']]};
+  if(LNM[col]){const l=LNM[col];out.paths.push({d:'M'+X(l).toFixed(1)+' 150 L'+X(l).toFixed(1)+' 14',c:LHEX[col],w:2.5,dash:'4 3'});out.dots.push({x:X(l).toFixed(1),y:Y(specA(l).a).toFixed(1),c:LHEX[col],r:5});}else out.labels.push({x:160,y:20,t:'Luz blanca: todas las longitudes de onda',c:'#c9d2db'});return out;}
+const ZP=[['H₂O',.82],['P680',1.15],['P680*',-.8],['Feofitina',-.55],['PQ',0],['Cit b₆f',.3],['PC',.37],['P700',.49],['P700*',-1.3],['Fe-S',-.6],['Fd',-.42],['NADP⁺',-.32]];
+function zChart(stage){const X=i=>30+i*23.5;const Y=e=>18+(e+1.4)/2.75*126;const pts=ZP.map((p,i)=>[X(i),Y(p[1])]);
+  const segA=lineD(pts.slice(0,2)),up1=lineD(pts.slice(1,3)),mid=lineD(pts.slice(2,8)),up2=lineD(pts.slice(7,9)),end=lineD(pts.slice(8));
+  const map=[2,0,4,5,6,8,10,11];const k=map[stage]!=null?map[stage]:2;
+  return {title:'Esquema en Z (potencial redox)',xl:'Recorrido de los electrones',yl:'E (V)  ↑ más reductor',paths:[{d:segA+' '+mid.replace('M','M')+' '+end,c:'#62b8ff',w:2},{d:up1,c:'#ffd75a',w:2.6,dash:'4 3'},{d:up2,c:'#ffd75a',w:2.6,dash:'4 3'}],
+    dots:[{x:pts[k][0].toFixed(1),y:pts[k][1].toFixed(1),c:'#ff8a6a',r:6}],
+    labels:ZP.map((p,i)=>({x:pts[i][0],y:pts[i][1]+(p[1]>0.2?11:-11),t:p[0],c:i===k?'#ffd9cf':'#9aa5b1'})).concat([{x:X(1)+16,y:Y(.2),t:'luz',c:'#ffd75a',a:'start'},{x:X(7)+16,y:Y(-.4),t:'luz',c:'#ffd75a',a:'start'}])};}
+function factorsCharts(O){const ef=FEFF[O.color||'blanca'];const pts=[];for(let i=0;i<=40;i++){const L=i*2.5;const r=rateModel(L*ef,O.co2,O.temp).net;pts.push([24+L*2.68,Math.min(156,150-r*118)]);}const cur=rateModel(O.luz*ef,O.co2,O.temp).net;
+  return [{title:'Velocidad neta frente a la intensidad luminosa',xl:'Intensidad luminosa',yl:'Velocidad neta',paths:[{d:lineD(pts),c:'#9fd36b',w:2.2},{d:'M24 132 L292 132',c:'rgba(255,255,255,.18)',w:1,dash:'3 4'}],dots:[{x:(24+O.luz*2.68).toFixed(1),y:Math.min(156,150-cur*118).toFixed(1),c:'#ff8a6a',r:5.5}],labels:[]},specChart(O)];}
+function photonC(c,root,A,from,to,dur,end){const n=photon(root,A,from,to,dur,end);if(c)n.glow.c=[c[0],c[1],c[2],1];return n;}
+
+/* ---- Gluconeogénesis y glucógeno ---- */
+function sGluco(E,O){
+  const root=new N3(),A=new Anim(),P=new Procs(),F=new FX(),R=rng(91);const S={stage:0,atp:0,gtp:0,nadh:0,glc:0,gly:0,vis:70};
+  const en=(p,size,col,t,d,dy)=>{const b=blob(E,{p,size,col,seed:900+((p[0]*11)|0),n:30,pick:{t,d},label:{t,dy:dy||-60}});root.add(b);return b;};
+  root.add(new N3({geo:E.capsule(4,2.3),p:[13.5,0,-.4],q:qAxis([0,0,1],Math.PI/2),col:H('#d8653a',.16),rim:.9,tex:.3,pick:{t:'Mitocondria',d:'La gluconeogénesis empieza en la matriz: el piruvato se carboxila a oxalacetato.'},pickR:1,label:{t:'Mitocondria',dy:-110}}));
+  const PC=en([13,0,-1.3],[.95,.9,.95],'#c4665b','Piruvato carboxilasa','Primer rodeo: carboxila el piruvato a oxalacetato en la mitocondria gastando ATP. Necesita biotina.');
+  const PK=en([7.5,0,-1.3],[.95,.9,.95],'#8f74c0','Fosfoenolpiruvato carboxiquinasa','Segundo paso del primer rodeo: descarboxila y fosforila el oxalacetato con GTP y forma fosfoenolpiruvato.');
+  const RV=new N3({p:[1.5,0,-1.3],pick:{t:'Enzimas reversibles de la glucólisis',d:'Siete de las diez reacciones de la glucólisis son reversibles y se usan en sentido contrario. Aquí se gastan 2 ATP y 2 NADH.'},pickR:2.2,label:{t:'Enzimas reversibles de la glucólisis',dy:-80}});for(let k=0;k<7;k++)RV.add(blob(E,{p:[(k-3)*.6,Math.sin(k)*.5,0],size:[.42,.42,.42],col:['#c9a24b','#b47aa6','#7f8fb8','#d0954f','#4b9cc9','#5fa679','#8f74c0'][k],seed:910+k,n:8}));root.add(RV);
+  const FB=en([-4,0,-1.3],[.95,.9,.95],'#5fa679','Fructosa-1,6-bisfosfatasa','Segundo rodeo: elimina un fosfato por hidrólisis (sin formar ATP). Es el principal punto de control de la gluconeogénesis.');
+  const PG=en([-8,0,-1.3],[.8,.8,.8],'#6aa0a0','Fosfoglucosa isomerasa','Convierte la fructosa-6-P en glucosa-6-P.');
+  const G6=en([-12.5,1.6,-1.3],[.95,.9,.95],'#4b9cc9','Glucosa-6-fosfatasa','Tercer rodeo, en el retículo del hepatocito: libera glucosa a la sangre. El músculo no la tiene, así que no puede ceder glucosa a la sangre.');
+  const GS=en([-12.5,-2.6,-1.3],[.95,.9,.95],'#c9a24b','Glucógeno sintasa','Añade glucosas activadas como UDP-glucosa a las cadenas del glucógeno (enlaces α-1,4). La enzima ramificante crea los enlaces α-1,6.',60);
+  root.add(new N3({geo:E.tube(smooth([[-18,-9,-1],[-17,0,0],[-18,9,-1]],8),.7,12),col:H('#c0392b',.35),rim:.8,tex:.1,pick:{t:'Capilar sanguíneo',d:'La glucosa sale del hígado a la sangre para mantener la glucemia durante el ayuno.'},pickR:1}));root.add(tag([-17,4,0],'Sangre',null,{c:'#ff8a8a'}));
+  const GC=[-14,-6.5,0];const gpos=[GC];const Rg=rng(92);for(let k=1;k<300;k++){const par=gpos[Math.max(0,gpos.length-1-Math.floor(Rg()*Math.min(25,gpos.length)))];let d=v3.norm(v3.add(v3.sub(par,GC),[(Rg()-.5)*1.2,(Rg()-.5)*1.2,(Rg()-.5)*1.2]));if(k<3)d=v3.norm([Rg()-.5,Rg()-.5,Rg()-.5]);gpos.push(v3.add(par,v3.mul(d,.42)));}
+  const gly=new N3({pick:{t:'Gránulo de glucógeno',d:'Polímero ramificado de glucosa (cada esfera es una glucosa). Las ramas permiten añadir o soltar muchas glucosas a la vez.'},p:[0,0,0]});const gn=gpos.map(p=>{const b=ball(E,p,.26,'#ece4cc',{geo:E.g.ball,rim:.6,tex:.1});b.visible=false;gly.add(b);return b;});root.add(gly);root.add(tag(GC,'Glucógeno',gly.pick,{dy:60}));
+  const showG=n=>{gn.forEach((b,i)=>b.visible=i<n);};showG(S.vis);
+  function cof(at,a,b,txt,col){const c=mol(E,root,a,v3.add(at,[-1.6,3.4,1.6]),.22);A.move(c,v3.add(at,[0,1,.6]),.8,{end:()=>{kill(c);if(!b)return;const d=mol(E,root,b,v3.add(at,[0,1,.6]),.22);if(txt)E.pop(d.p,txt,col);A.move(d,v3.add(at,[2,3.8,1.6]),1.2,{kill:true,delay:.2});}});}
+  P.add((function*(){while(true){
+    S.stage=0;let a=mol(E,root,'piruvato',[18,.8,1],.3,'Piruvato ×2'),b=mol(E,root,'piruvato',[18,-.8,1],.3);A.move(a,[13,.8,1],1.4);A.move(b,[13,-.8,1],1.4);yield 1.5;F.pulse(PC,.4,1.4);cof([13,.8,1],'atp','adp','−2 ATP','#f3b765');S.atp+=2;yield 1;a=swapM(E,root,a,'oxa','Oxalacetato');b=swapM(E,root,b,'oxa');yield .6;
+    S.stage=1;A.move(a,[7.5,.8,1],1.4);A.move(b,[7.5,-.8,1],1.4);yield 1.5;F.pulse(PK,.4,1.4);cof([7.5,.8,1],'gtp','gdp','−2 GTP','#9fd36b');S.gtp+=2;const c=mol(E,root,'co2',[7.5,1.6,1],.3);A.move(c,[8,8,1],2,{kill:true,delay:.6});yield 1;a=swapM(E,root,a,'pep','Fosfoenolpiruvato');b=swapM(E,root,b,'pep');yield .6;
+    S.stage=2;A.move(a,[1.5,.8,1],1.6);A.move(b,[1.5,-.8,1],1.6);yield 1.7;F.pulse(RV,.4,2);cof([1.5,.8,1],'atp','adp','−2 ATP','#f3b765');later(P,.4,()=>cof([1.5,-.8,1],'nadh','nad','−2 NADH','#62b8ff'));S.atp+=2;S.nadh+=2;yield 1.4;a=swapM(E,root,a,'g3p','Triosas fosfato');b=swapM(E,root,b,'dhap');yield .6;A.move(b,a.p,.6,{kill:true});yield .6;a=swapM(E,root,a,'f16bp','Fructosa-1,6-bisfosfato');yield .6;
+    S.stage=3;A.move(a,[-4,0,1],1.6);yield 1.7;F.pulse(FB,.4,1.4);const pi=mol(E,root,'pi',[-4,.8,1],.26);A.move(pi,[-3,5,2],1.6,{kill:true});E.pop([-4,1,1],'−Pi (hidrólisis)','#e6ebf0');a=swapM(E,root,a,'f6p','Fructosa-6-fosfato');yield 1.2;A.move(a,[-8,0,1],1.3);yield 1.4;F.pulse(PG,.4,1);a=swapM(E,root,a,'g6p','Glucosa-6-fosfato');yield .8;
+    if(O.dest==='glucogeno'){S.stage=5;A.move(a,[-12.5,-2.6,1],1.4);yield 1.5;F.pulse(GS,.4,1.6);cof([-12.5,-2.6,1],'gtp','gdp','UTP → UDP-glucosa','#c9b6ff');yield 1.1;A.move(a,gpos[Math.min(S.vis,gpos.length-1)],1.2,{kill:true});yield 1.3;S.vis=Math.min(gpos.length,S.vis+1);showG(S.vis);S.gly++;E.pop(GC,'+1 glucosa al glucógeno','#ece4cc');}
+    else{S.stage=4;A.move(a,[-12.5,1.6,1],1.4);yield 1.5;F.pulse(G6,.4,1.4);const p2=mol(E,root,'pi',[-12.5,2.4,1],.26);A.move(p2,[-11,7,2],1.6,{kill:true});a=swapM(E,root,a,'glucosa','Glucosa → sangre');A.path(a,[a.p,[-16,1,.6],[-17,5,0]],2,{kill:true});S.glc++;yield 2.1;}
+    yield 1;}})());
+  P.add((function*(){while(true){yield 1.2;if(O.dest==='glucogeno'&&S.vis<gpos.length){S.vis++;showG(S.vis);}else if(O.dest!=='glucogeno'&&S.vis>40){S.vis--;showG(S.vis);}}})());
+  return {root,cam:{yaw:.05,pitch:.18,dist:31,t:[-1,-1,0]},fog:[30,80],bg:['#1c1912','#060504'],minD:6,maxD:70,update(dt){P.update(dt);A.update(dt);F.update(dt);},stage:()=>S.stage,
+    counters:()=>[['ATP gastados',S.atp,'#f3b765'],['GTP gastados',S.gtp,'#9fd36b'],['NADH gastados',S.nadh,'#62b8ff'],[O.dest==='glucogeno'?'Glucosas al glucógeno':'Glucosas a la sangre',O.dest==='glucogeno'?S.gly:S.glc,'#ece4cc']]};}
+
+/* ---- Síntesis de ácidos grasos ---- */
+function sFAS(E,O){
+  const root=new N3(),A=new Anim(),P=new Procs(),F=new FX(),R=rng(95);const S={stage:0,k:0,n:2,nadph:0,atp:0,co2:0,pal:0};
+  root.add(new N3({geo:E.capsule(4,2.5),p:[-14,0,-.4],q:qAxis([0,0,1],Math.PI/2),col:H('#d8653a',.18),rim:.9,tex:.3,pick:{t:'Mitocondria',d:'El acetil-CoA se forma en la matriz (a partir de piruvato), pero no atraviesa la membrana: sale en forma de citrato.'},pickR:1,label:{t:'Mitocondria',dy:-110}}));
+  const en=(p,size,col,t,d,dy)=>{const b=blob(E,{p,size,col,seed:950+((p[0]*9)|0),n:30,pick:{t,d},label:{t,dy:dy||-60}});root.add(b);return b;};
+  const AL=en([-7,2.4,-1.3],[.95,.9,.95],'#5fa679','ATP-citrato liasa','En el citosol rompe el citrato en acetil-CoA y oxalacetato, gastando ATP.');
+  const AC=en([-2.2,2.4,-1.3],[1,.95,1],'#c4665b','Acetil-CoA carboxilasa','Paso limitante: añade CO₂ (como HCO₃⁻) al acetil-CoA y forma malonil-CoA (3 C). Usa biotina y ATP. La activa la insulina y la inhibe el palmitoil-CoA.');
+  const FC=[6,0,-1.4];const fas=new N3({p:FC,pick:{t:'Ácido graso sintasa',d:'Complejo multienzimático gigante (dímero en forma de X) con siete actividades y una proteína transportadora de acilos (ACP) que lleva la cadena de un centro activo a otro.'},pickR:3.4,label:{t:'Ácido graso sintasa (complejo multienzimático)',dy:-120}});
+  fas.add(blob(E,{q:qAxis([0,0,1],.55),size:[3.4,.95,1.05],col:'#4b9cc9',seed:960,n:80}));fas.add(blob(E,{q:qAxis([0,0,1],-.55),size:[3.4,.95,1.05],col:'#3a7fb0',seed:961,n:80}));root.add(fas);
+  const acp=new N3({p:FC});const arm=acp.add(new N3({p:[1.2,0,1.3],glow:{s:.6,c:[1,.85,.4,1]}}));root.add(acp);
+  root.add(tag(v3.add(FC,[1.2,0,1.3]),'ACP (brazo móvil)',null,{dy:60,c:'#ffd75a'}));root.add(tag([-14,4.8,0],'Citosol: aquí se fabrican los ácidos grasos',null,{c:'#e6ebf0',dy:-30}));
+  let chain=null;const CP=v3.add(FC,[-1.2,-.4,2.0]);
+  function setChain(n,lab){if(chain)kill(chain);chain=M(E,'fa'+n,.3);chain.p=CP.slice();chain.q=qAxis([0,0,1],-.35);chain.label={t:lab||('Acil-ACP (C'+n+')')};root.add(chain);}
+  function cof(at,a,b,txt,col){const c=mol(E,root,a,v3.add(at,[-1.6,3.6,1.6]),.22);A.move(c,v3.add(at,[0,1,.6]),.8,{end:()=>{kill(c);if(!b)return;const d=mol(E,root,b,v3.add(at,[0,1,.6]),.22);if(txt)E.pop(d.p,txt,col);A.move(d,v3.add(at,[2,3.8,1.6]),1.2,{kill:true,delay:.2});}});}
+  function* acetyl(){S.stage=0;let c=mol(E,root,'cit',[-12,0,1],.3,'Citrato');A.move(c,[-7,1.2,1],1.4);yield 1.5;F.pulse(AL,.4,1.2);cof([-7,1.2,1],'atp','adp','−ATP','#f3b765');S.atp++;yield .8;c=swapM(E,root,c,'acetilcoa','Acetil-CoA');const o=mol(E,root,'oxa',[-7,.4,1],.26);A.move(o,[-12,-2,0],1.6,{kill:true});yield .6;return c;}
+  P.add((function*(){while(true){
+    S.k=0;S.n=2;let ac=yield* acetyl();A.move(ac,CP,1.6,{kill:true});yield 1.7;setChain(2,'Acetil-ACP (C2, cebador)');yield .8;
+    while(S.n<16){
+      let m=yield* acetyl();S.stage=1;A.move(m,[-2.2,1.2,1],1.2);yield 1.3;F.pulse(AC,.4,1.2);cof([-2.2,1.2,1],'atp','adp','−ATP',' #f3b765'.trim());S.atp++;const hc=mol(E,root,'co2',[-1,6,1],.26);A.move(hc,[-2.2,1.6,1],.8,{kill:true});yield .9;m=swapM(E,root,m,'malonilcoa','Malonil-CoA (3C)');yield .6;
+      S.stage=2;A.move(m,v3.add(CP,[2.4,.6,0]),1.4,{kill:true});yield 1.5;F.pulse(fas,.3,1.2);S.n+=2;S.k++;setChain(S.n,'β-Cetoacil-ACP (C'+S.n+')');const c2=mol(E,root,'co2',v3.add(CP,[1.6,.8,.3]),.26);A.move(c2,v3.add(CP,[3,6,1]),1.8,{kill:true});S.co2++;E.pop(CP,'Condensación: +2 C, sale CO₂','#cfd6dd');yield 1.2;
+      S.stage=3;cof(CP,'nadph','nadp','−NADPH','#62b8ff');S.nadph++;yield 1.1;chain.label={t:'β-Hidroxiacil-ACP'};
+      S.stage=4;const w=mol(E,root,'h2o',v3.add(CP,[.4,.6,.4]),.26);A.move(w,v3.add(CP,[2,-4,2]),1.4,{kill:true});E.pop(CP,'Deshidratación: sale H₂O','#9fd3ff');yield 1;chain.label={t:'Enoil-ACP'};
+      S.stage=5;cof(CP,'nadph','nadp','−NADPH','#62b8ff');S.nadph++;yield 1.1;chain.label={t:'Acil-ACP (C'+S.n+')'};yield .5;}
+    S.stage=6;F.pulse(fas,.5,1.6);const pal=M(E,'fa16',.3);pal.p=chain.p.slice();pal.q=chain.q.slice();pal.label={t:'Palmitato (C16)'};kill(chain);chain=null;root.add(pal);A.move(pal,[13,-6,1],3,{kill:true});S.pal++;yield 3.4;}})());
+  return {root,cam:{yaw:0,pitch:.14,dist:28,t:[-2.5,0,0]},fog:[30,75],bg:['#1d1b14','#060504'],minD:6,maxD:70,update(dt){P.update(dt);A.update(dt);F.update(dt);acp.q=qAxis([0,0,1],(acp._a=(acp._a||0)+dt*1.5));},stage:()=>S.stage,
+    counters:()=>[['Vuelta',S.k+' / 7','#e6ebf0'],['Longitud de la cadena','C'+S.n,'#d9b98c'],['NADPH gastados',S.nadph,'#62b8ff'],['ATP gastados',S.atp,'#f3b765'],['CO₂ liberado',S.co2,'#cfd6dd'],['Palmitatos',S.pal,'#ece4cc']]};}
+
+/* ---- Fijación del nitrógeno ---- */
+MDEF.n2=()=>{const m=MB();const a=m.a('N',[-.55,0,0]);m.a('N',[.55,0,0],a);return m;};
+MDEF.nh3=()=>{const m=MB();const n=m.a('N',[0,0,0]);for(const d of [[1,-.4,0],[-.5,-.4,.85],[-.5,-.4,-.85]])m.a('H',v3.mul(v3.norm(d),.95),n);return m;};
+MDEF.glutamina=()=>{const m=chainMol(5,{s:'acid',H:false});const n=m.a('N',v3.add(m.at[1].p,[0,1.3,.3]),1);addH(m,n,[0,1,0],2);addO(m,4,[1,.5,0]);const n2=m.a('N',v3.add(m.at[4].p,[.8,-1,0]),4);addH(m,n2,[1,-1,0],2);return m;};
+function sN2(E,O){
+  const root=new N3(),A=new Anim(),P=new Procs(),F=new FX(),R=rng(97);const S={stage:0,n2:0,nh3:0,atp:0,e:0};
+  const NC=[-8,0,-.5];root.add(new N3({geo:E.g.sphere,p:NC,s:4.4,col:'#d7a7a4',clip:1,rim:.6,tex:.4,pick:{t:'Célula infectada del nódulo',d:'Célula de la raíz de una leguminosa llena de bacteroides de Rhizobium. Es rosada por la leghemoglobina.'},pickR:1,pickClip:true,label:{t:'Célula del nódulo de la raíz',dy:-140}}));
+  const bac=new N3({frozen:true});for(let k=0;k<34;k++){let p;do{p=[(R()-.5)*7,(R()-.5)*7,-R()*3.6];}while(v3.len(p)>3.6);bac.add(new N3({geo:E.capsule(1,.32),p:v3.add(NC,p),q:qAxis([R(),R(),R()],R()*3),col:'#a8577c',rim:.5,tex:.3,clip:1}));}
+  for(let k=0;k<60;k++){let p;do{p=[(R()-.5)*7.6,(R()-.5)*7.6,-R()*4];}while(v3.len(p)>3.9);bac.add(ball(E,v3.add(NC,p),.14,'#d23a3a',{geo:E.g.ball,clip:1,emit:.2,tex:0}));}root.add(bac);
+  root.add(tag(v3.add(NC,[1.2,.8,-1]),'Bacteroides (Rhizobium)',{t:'Bacteroides',d:'Bacterias Rhizobium diferenciadas dentro de la célula vegetal. Reciben azúcares de la planta y le dan amonio a cambio: es una simbiosis mutualista.'},{dy:-40}));
+  root.add(tag(v3.add(NC,[-1.4,-1.5,-1.2]),'Leghemoglobina',{t:'Leghemoglobina',d:'Proteína parecida a la hemoglobina. Atrapa el O₂ para que no inactive la nitrogenasa, pero lo suministra a la respiración de la bacteria.'},{dy:50,c:'#ff8a8a'}));
+  const NZ=[6,0,0];const nz=new N3({p:NZ,pick:{t:'Nitrogenasa',d:'Complejo formado por la proteína de hierro (dímero) y la proteína de molibdeno-hierro (tetrámero). Rompe el triple enlace del N₂, uno de los más fuertes que existen, gastando 16 ATP. El O₂ la destruye.'},pickR:3,label:{t:'Nitrogenasa',dy:-150}});
+  for(let k=0;k<4;k++)nz.add(blob(E,{p:[k%2?.95:-.95,k<2?.9:-.9,0],size:[.95,.9,.95],col:k%2?'#5b86c4':'#4f79b5',seed:970+k,n:26}));
+  const fe1=blob(E,{p:[0,2.9,0],size:[1.3,.75,.9],col:'#d0954f',seed:975,n:26});const fe2=blob(E,{p:[0,-2.9,0],size:[1.3,.75,.9],col:'#d0954f',seed:976,n:26});nz.add(fe1);nz.add(fe2);
+  const co=nz.add(new N3({p:[0,0,1],glow:{s:.9,c:[1,.55,.2,1]}}));root.add(nz);
+  root.add(tag(v3.add(NZ,[0,2.9,0]),'Proteína Fe (gasta ATP)',null,{dy:-40,c:'#d0954f'}));root.add(tag(v3.add(NZ,[0,0,1]),'Cofactor FeMo',null,{dy:60,c:'#ffb070'}));
+  const GS=blob(E,{p:[13,-3.2,-1],size:[.95,.9,.95],col:'#5fa679',seed:980,n:28,pick:{t:'Glutamina sintetasa / GOGAT',d:'Incorporan el amonio a los aminoácidos: NH₃ + glutamato + ATP → glutamina. La glutamina viaja por el xilema al resto de la planta.'},label:{t:'Glutamina sintetasa',dy:-60}});root.add(GS);
+  const fd=new N3({p:[1.5,4.2,.8]});fd.add(blob(E,{size:[.4,.4,.4],col:'#a5552f',seed:981,n:10}));fd.label={t:'Ferredoxina (e⁻)',dy:-40};root.add(fd);
+  P.add((function*(){while(true){
+    S.stage=0;for(let k=0;k<8;k++){const e=electron([1.5,4.2,.8]);root.add(e);A.move(e,v3.add(NZ,[0,2.9,.9]),.35);const a=mol(E,root,'atp',[9,6,1],.18);A.move(a,v3.add(NZ,[.9,3.3,.8]),.35,{kill:true});yield .38;F.pulse(fe1,.3,.3);A.move(e,v3.add(NZ,[0,0,1]),.3,{kill:true});const d=mol(E,root,'adp',v3.add(NZ,[.9,3.3,.8]),.18);A.move(d,[10,8,1],1,{kill:true});S.atp+=2;S.e++;co.glow.s=.9+S.e%9*.15;yield .2;}E.pop(v3.add(NZ,[0,3.8,0]),'8 e⁻ · 16 ATP → 16 ADP + 16 Pi','#f3b765');
+    S.stage=1;const n2=mol(E,root,'n2',[2,-6,3],.4,'N₂ (N≡N)');A.move(n2,v3.add(NZ,[0,0,1.4]),1.6);for(let k=0;k<8;k++){const h=proton(E,[NZ[0]+(R()-.5)*8,-6,2]);root.add(h);A.move(h,v3.add(NZ,[0,0,1.2]),1.6,{kill:true,delay:k*.05});}yield 1.8;F.pulse(nz,.4,1.4);kill(n2);
+    S.stage=2;co.glow.s=.9;S.e=0;const a1=mol(E,root,'nh3',v3.add(NZ,[.4,.2,1.4]),.4,'2 NH₃');const a2=mol(E,root,'nh3',v3.add(NZ,[-.4,-.2,1.4]),.4);const h2=mol(E,root,'h2',v3.add(NZ,[0,.6,1.4]),.4,'H₂');A.move(h2,[8,8,3],2,{kill:true});S.n2++;S.nh3+=2;E.pop(v3.add(NZ,[0,1,1.4]),'N₂ + 8 H⁺ + 8 e⁻ → 2 NH₃ + H₂','#9fd36b');yield 1;
+    S.stage=3;A.move(a1,[12.4,-2.4,1],1.6);A.move(a2,[12.4,-2.4,1],1.6,{kill:true});yield 1.7;F.pulse(GS,.4,1.2);const gq=swapM(E,root,a1,'glutamina','Glutamina → resto de la planta');A.move(gq,[17,-7,0],2.4,{kill:true});yield 1.6;
+    S.stage=4;const o=mol(E,root,'o2',[-14,6,1],.3,'O₂');A.move(o,v3.add(NC,[-1.4,-1.5,.2]),2,{kill:true});E.pop(v3.add(NC,[-1.4,-1,.2]),'La leghemoglobina capta el O₂','#ff8a8a');yield 2.2;}})());
+  return {root,cam:{yaw:0,pitch:.14,dist:29,t:[0,0,0]},clip:[0,0,1,0],fog:[30,75],bg:['#1d1416','#070405'],minD:6,maxD:70,update(dt){P.update(dt);A.update(dt);F.update(dt);},stage:()=>S.stage,
+    counters:()=>[['N₂ fijado',S.n2,'#8fb4ff'],['NH₃ producido',S.nh3,'#9fd36b'],['ATP gastados',S.atp,'#f3b765']]};}
+
+/* ---- Experimentos históricos ---- */
+CPK.X='#ffcf3a';RAD.X=.36;
+MDEF.h2o18=()=>{const m=MB();const o=m.a('X',[0,0,0]);m.a('H',[.76,.58,0],o);m.a('H',[-.76,.58,0],o);return m;};
+MDEF.co218=()=>{const m=MB();const c=m.a('C',[0,0,0]);m.a('X',[1.16,0,0],c);m.a('X',[-1.16,0,0],c);return m;};
+MDEF.o218=()=>{const m=MB();const o=m.a('X',[-.6,0,0]);m.a('X',[.6,0,0],o);return m;};
+function plant(E,p,s){const g=new N3({p,s});g.add(new N3({geo:E.g.cyl,p:[0,.9,0],s:[.06,1.8,.06],col:'#4c8a33'}));for(let k=0;k<6;k++){const a=k*2.2;g.add(new N3({geo:E.g.sphere,p:[Math.cos(a)*.35,.4+k*.25,Math.sin(a)*.35],q:qFromTo([1,0,0],[Math.cos(a),.4,Math.sin(a)]),s:[.4,.05,.2],col:'#4fa33a',rim:.6}));}return g;}
+function sHist(E,O){
+  const X=O.exp;const root=new N3(),A=new Anim(),P=new Procs(),F=new FX(),R=rng(99);const S={stage:0,t:0,a:0,b:0};
+  root.add(new N3({geo:E.g.cyl,p:[0,-3.2,0],s:[13,.2,6],col:'#3a3128',rim:.3,tex:.4}));
+  let upd=()=>{};let cnt=()=>[];
+  if(X==='vanhelmont'){
+    root.add(new N3({geo:E.g.cyl,p:[0,-2.1,0],s:[2.6,2.2,2.6],col:'#b8643c',rim:.5,tex:.35,pick:{t:'Maceta',d:'Van Helmont pesó la tierra seca al principio (90,7 kg) y al final (90,6 kg).'},pickR:1.6,label:{t:'Maceta con 90,7 kg de tierra',dy:60}}));root.add(new N3({geo:E.g.cyl,p:[0,-1,0],s:[2.45,.1,2.45],col:'#4a3324',tex:.6}));
+    const tree=new N3({p:[0,-.95,0],s:.25,label:{t:'Sauce',dy:-80}});tree.add(new N3({geo:E.g.cyl,p:[0,1.5,0],s:[.25,3,.25],col:'#6b4a2e',tex:.5}));for(let k=0;k<12;k++){const a=k*1.9;tree.add(new N3({geo:E.g.sphere,p:[Math.cos(a)*(.6+R()*.6),3+R()*1.6,Math.sin(a)*(.6+R()*.6)],s:.7+R()*.4,col:'#5e9e3c',rim:.5,tex:.45}));}root.add(tree);
+    upd=dt=>{S.t=(S.t+dt)%24;const g=clamp(S.t/16,0,1);tree.s=v3.mul([1,1,1],.25+.75*g);S.stage=S.t<2?0:S.t<16?1:S.t<19?2:3;if(S.stage===1&&R()<dt*2){const d=new N3({p:[(R()-.5)*1.6,3,(R()-.5)*1.6],glow:{s:.35,c:[.4,.7,1,1]}});root.add(d);A.move(d,[d.p[0],-1,d.p[2]],.8,{kill:true,lin:true});}};
+    cnt=()=>{const g=clamp(S.t/16,0,1);return [['Años',(5*g).toFixed(1).replace('.',','),'#e6ebf0'],['Masa del sauce',(2.3+74.4*g).toFixed(1).replace('.',',')+' kg','#9fd36b'],['Masa de la tierra',(90.7-.1*g).toFixed(1).replace('.',',')+' kg','#d0954f']];};}
+  else if(X==='priestley'){
+    const jars=[-4,4].map((x,i)=>{root.add(new N3({geo:E.capsule(3.2,1.8),p:[x,.4,0],col:H('#dfeaf2',.12),rim:.95,tex:0,pick:{t:'Campana de vidrio',d:'Aire encerrado, sin intercambio con el exterior.'},pickR:1,label:{t:i?'Vela + planta de menta':'Vela sola',dy:-130}}));root.add(new N3({geo:E.g.cyl,p:[x,-3,0],s:[2.2,.25,2.2],col:'#55504a'}));root.add(new N3({geo:E.g.cyl,p:[x,-2.2,0],s:[.3,1.4,.3],col:'#efe9d8'}));const fl=new N3({p:[x,-1.25,0],glow:{s:1.4,c:[1,.7,.25,1]}});root.add(fl);return fl;});
+    const mint=plant(E,[4.9,-2.9,0],1.3);mint.visible=false;root.add(mint);
+    upd=dt=>{S.t=(S.t+dt)%26;const t=S.t;S.stage=t<6?0:t<13?1:t<20?2:3;mint.visible=t>=6;
+      jars[0].glow.s=t<6?1.4*Math.max(0,1-t/5.5):t<14?0:t<15.5?1.2*(1-(t-14)/1.5):0;
+      jars[1].glow.s=t<6?1.4*Math.max(0,1-t/5.5):t<14?0:1.4+Math.sin(t*9)*.1;
+      if(t>=6&&t<13&&R()<dt*3){const b=new N3({p:[4.9+(R()-.5),-1.6+R()*1.4,0],glow:{s:.3,c:[.6,1,.6,1]}});root.add(b);A.move(b,v3.add(b.p,[0,1.2,0]),1,{kill:true});}};
+    cnt=()=>[['Días',S.t<6?'0':S.t<13?String(Math.round((S.t-6)/7*10)):'10','#e6ebf0'],['Vela sola',jars[0].glow.s>.1?'Arde':'Apagada','#ffb070'],['Vela con planta',jars[1].glow.s>.1?'Arde':'Apagada','#9fd36b']];}
+  else if(X==='rubenkamen'){
+    const fl=[-4.5,4.5].map((x,i)=>{root.add(new N3({geo:E.g.sphere,p:[x,-.6,0],s:2.3,col:H('#dfeaf2',.12),rim:.95,tex:0,pick:{t:i?'Matraz B':'Matraz A',d:i?'Agua normal y CO₂ marcado con ¹⁸O.':'Agua marcada con ¹⁸O y CO₂ normal.'},pickR:1,label:{t:i?'B · H₂O + C¹⁸O₂':'A · H₂¹⁸O + CO₂',dy:-130}}));root.add(new N3({geo:E.g.cyl,p:[x,2.4,0],s:[.55,1.6,.55],col:H('#dfeaf2',.12),rim:.95,tex:0}));root.add(new N3({geo:E.g.sphere,p:[x,-1.4,0],s:[2.1,1.3,2.1],col:H('#4f9a5a',.25),rim:.6,tex:.2}));
+      for(let k=0;k<26;k++){let p;do{p=[(R()-.5)*3.6,-2.2+R()*1.8,(R()-.5)*3.6];}while(Math.hypot(p[0],p[1]+.6,p[2])>2);root.add(ball(E,[x+p[0],p[1],p[2]],.12,'#3f9a3a',{geo:E.g.ball,tex:0}));}return x;});
+    const lamp=new N3({p:[0,4.6,2],glow:{s:4,c:[1,.92,.6,.8]}});root.add(lamp);root.add(tag([0,6,0],'¹⁸O = oxígeno pesado (en amarillo)',null,{c:'#ffcf3a'}));
+    P.add((function*(){while(true){S.stage=0;const ins=[['h2o18','co2'],['h2o','co218']];ins.forEach((pr,i)=>pr.forEach((k,j)=>{const m=mol(E,root,k,[fl[i]+(j?1.4:-1.4),6.5,1],.4,null);A.move(m,[fl[i]+(j?.6:-.6),-1.2,.6],1.8,{kill:true,delay:j*.3});}));yield 2.4;
+      S.stage=1;F.flash(root,[0,4.6,2],[1,.95,.6,1],6,1.2);yield 1.5;
+      S.stage=2;for(let k=0;k<4;k++){fl.forEach((x,i)=>{const o=mol(E,root,i?'o2':'o218',[x+(R()-.5)*1.4,-1.2,.6],.4,k?null:(i?'O₂ normal':'¹⁸O₂ marcado'));A.path(o,[o.p,[x,1.2,.4],[x,4,.4],[x+(i?2:-2),7,.4]],2.6,{kill:true});});S.a++;yield .7;}yield 1.8;
+      S.stage=3;E.pop([-4.5,3,0],'El O₂ lleva la marca',  '#ffcf3a');E.pop([4.5,3,0],'El O₂ no lleva la marca','#cfd6dd');yield 3;}})());
+    cnt=()=>[['O₂ del matraz A','marcado (¹⁸O)','#ffcf3a'],['O₂ del matraz B','normal','#cfd6dd']];}
+  else{
+    const lol=new N3({p:[-4,.6,0]});lol.add(new N3({geo:E.g.cyl,q:qAxis([1,0,0],Math.PI/2),s:[2.6,.35,3.2],col:H('#dfeaf2',.15),rim:.95,tex:0}));lol.add(new N3({geo:E.g.cyl,q:qAxis([1,0,0],Math.PI/2),s:[2.45,.3,3.0],col:H('#3f9a3a',.45),rim:.5,tex:.3}));lol.pick={t:'«Piruleta» de Calvin',d:'Recipiente plano y fino con algas Chlorella, iluminado por ambos lados. Se inyectaba ¹⁴CO₂ y, a los pocos segundos, se dejaba caer una muestra en metanol hirviendo para detener las reacciones.'};lol.pickR=2.8;lol.label={t:'«Piruleta» con Chlorella',dy:-120};root.add(lol);
+    for(const x of [-8,0])root.add(new N3({p:[x,.6,0],glow:{s:3,c:[1,.92,.6,.7]}}));
+    const syr=new N3({geo:E.g.cyl,p:[-4,4.6,0],s:[.25,2,.25],col:'#c9d2db',label:{t:'¹⁴CO₂ radiactivo',dy:-40,c:'#ffcf3a'}});root.add(syr);
+    const paper=new N3({geo:E.g.cyl,p:[6.5,.6,0],q:qAxis([1,0,0],Math.PI/2),s:[3.2,.05,3.2],col:'#e8e4d8',rim:.2,tex:.2,pick:{t:'Cromatografía y autorradiografía',d:'Los compuestos de la muestra se separan en un papel y se colocan sobre una película fotográfica: las manchas oscuras son los compuestos que han incorporado ¹⁴C.'},pickR:1,label:{t:'Cromatograma',dy:-130}});root.add(paper);
+    const SP=[[2,'3-Fosfoglicerato',[5.2,-.6]],[5,'Triosas fosfato',[7.4,1.4]],[10,'Hexosas fosfato',[6,2.4]],[20,'Ribulosa bisfosfato',[8,-.2]],[30,'Sacarosa',[5,1.8]],[60,'Aminoácidos y ácidos',[7.2,-1.8]]];
+    const spots=SP.map(s=>{const n=new N3({geo:E.g.sphere,p:[s[2][0],s[2][1]+.6,.12],s:[.38,.3,.04],col:'#2a2622',rim:0,tex:.3});n.visible=false;root.add(n);const t=tag([s[2][0],s[2][1]+.6,.2],s[1],null,{dy:-26,c:'#e6ebf0'});t.visible=false;root.add(t);return [n,t];});
+    upd=dt=>{S.t=(S.t+dt)%20;const tt=S.t<2?0:(S.t-2)*4;S.a=tt;spots.forEach((p,i)=>{const on=tt>=SP[i][0];p[0].visible=on;p[1].visible=on;});syr.visible=S.t<3;S.stage=S.t<2?0:tt<6?1:tt<60?2:3;};
+    cnt=()=>[['Tiempo con ¹⁴CO₂',Math.min(60,Math.round(S.a))+' s','#ffcf3a'],['Compuestos marcados',SP.filter(s=>S.a>=s[0]).length,'#e6ebf0']];}
+  return {root,cam:{yaw:.1,pitch:.2,dist:20,t:[X==='calvin'?1:0,.5,0]},fog:[25,60],bg:['#1d1a14','#060504'],minD:6,maxD:50,update(dt){P.update(dt);A.update(dt);F.update(dt);upd(dt);},stage:()=>S.stage,counters:()=>cnt()};}
+
+/* ---- Quimiosíntesis ---- */
+MDEF.no2=()=>{const m=MB();const n=m.a('N',[0,0,0]);m.a('O',[1,.6,0],n);m.a('O',[-1,.6,0],n);return m;};
+MDEF.no3=()=>{const m=MB();const n=m.a('N',[0,0,0]);for(let k=0;k<3;k++)m.a('O',[1.2*Math.cos(k*TAU/3),1.2*Math.sin(k*TAU/3),0],n);return m;};
+MDEF.nh2oh=()=>{const m=MB();const n=m.a('N',[0,0,0]);m.a('H',[-.6,.7,0],n);m.a('H',[-.6,-.7,0],n);const o=m.a('O',[1.3,0,0],n);m.a('H',[1.8,.7,0],o);return m;};
+function sChemo(E,O){
+  const T=O.org;const root=new N3(),A=new Anim(),P=new Procs(),F=new FX(),R=rng(101);const S={stage:0,sub:0,atp:0,nadh:0,co2:0};
+  root.add(bilayer(E,{x0:-16,x1:16,z0:-4.5,z1:4.5,excl:[[-11,0,1.5],[-1,0,2],[4,0,1.8],[10,0,1.6]]}));
+  root.add(tag([-14.5,4.6,-2],'Periplasma (exterior)',null,{c:'#ff8ac0'}));root.add(tag([-14.5,-4.6,-2],'Citoplasma de la bacteria',null,{c:'#62b8ff'}));
+  const en=(p,size,col,t,d,dy)=>{const b=blob(E,{p,size,col,seed:1000+((p[0]*9)|0)+((p[1]*5)|0),n:30,pick:{t,d},label:{t,dy:dy||-60}});root.add(b);return b;};
+  let S1,S2;if(T==='nitrosomonas'){S1=en([-11,0,0],[1.2,1.3,1.2],'#5fa679','Amoníaco monooxigenasa (AMO)','Oxida el amoníaco a hidroxilamina usando O₂.',-110);S2=en([-7,2.6,0],[1,.8,1],'#c9a24b','Hidroxilamina oxidorreductasa (HAO)','Oxida la hidroxilamina a nitrito y libera 4 electrones.');}
+  else{S1=en([-9,2,0],[1.3,1.3,1.2],'#5fa679','Nitrito oxidorreductasa (NXR)','Oxida el nitrito a nitrato y libera 2 electrones. Es una reacción con muy poca energía.');}
+  const C1=en([-1,0,0],[1.6,1.3,1.4],'#4f7cc9','Complejo I (funciona al revés)','Flujo inverso de electrones: usa la fuerza del gradiente de H⁺ para «subir» electrones hasta el NAD⁺ y fabricar NADH.',-120);
+  const C4=en([4,0,0],[1.5,1.3,1.4],'#3fa7a0','Citocromo oxidasa (complejo IV)','Cede los electrones al O₂ y bombea H⁺: así se crea el gradiente.',-120);
+  const ASx=en([10,-1.4,0],[1,1.6,1],'#e2a03e','ATP sintasa','Los H⁺ vuelven al citoplasma y se forma ATP.',60);
+  const CV=new N3({p:[3,-6.5,0],pick:{t:'Ciclo de Calvin',d:'Igual que las plantas, estas bacterias fijan el CO₂ con la RuBisCO usando el ATP y el NADH obtenidos de la oxidación química.'},pickR:1.8,label:{t:'Ciclo de Calvin · fija CO₂',dy:60}});CV.add(new N3({geo:E.torus(1.5,.07),q:qAxis([1,0,0],Math.PI/2),col:H('#9fd36b',.6),emit:.6,rim:0,tex:0}));root.add(CV);
+  const cc=new N3({p:[-3,2.6,1.2]});cc.add(blob(E,{size:[.5,.5,.5],col:'#d2524a',seed:1010,n:12}));cc.e=cc.add(new N3({glow:{s:0,c:[.45,1,1,1]}}));cc.label={t:'Citocromo c',dy:-40};root.add(cc);
+  function pump(x){const h=proton(E,[x,-3.4,.8]);root.add(h);A.path(h,[h.p,[x,0,.8],[x+(R()-.5)*3,3.4,.8]],1.1,{kill:true});}
+  P.add((function*(){while(true){
+    S.stage=0;if(T==='nitrosomonas'){const n=mol(E,root,'nh3',[-14,4,1],.4,'NH₃');A.move(n,[-11,1.6,1],1.4);yield 1.5;F.pulse(S1,.4,1.2);const h=swapM(E,root,n,'nh2oh','NH₂OH',.4);A.move(h,[-7,3.6,1],1.2);yield 1.3;F.pulse(S2,.4,1.2);const no=swapM(E,root,h,'no2','NO₂⁻ (nitrito)',.4);A.move(no,[-12,7,1],2,{kill:true});E.pop([-7,4,1],'NH₃ → NO₂⁻ + e⁻','#9fd36b');}
+    else{const n=mol(E,root,'no2',[-14,5,1],.4,'NO₂⁻');A.move(n,[-9,3.4,1],1.4);yield 1.5;F.pulse(S1,.4,1.2);const no=swapM(E,root,n,'no3','NO₃⁻ (nitrato)',.4);A.move(no,[-13,7,1],2,{kill:true});E.pop([-9,4,1],'NO₂⁻ → NO₃⁻ + 2 e⁻','#9fd36b');}
+    S.sub++;yield .6;
+    S.stage=1;const e=electron(T==='nitrosomonas'?[-7,2.6,1]:[-9,2,1]);root.add(e);A.move(e,[-3,2.6,1.4],1,{kill:true});yield 1;cc.e.glow.s=1.1;
+    S.stage=2;A.move(cc,[3.4,2.5,1.2],1.4);yield 1.5;cc.e.glow.s=0;A.move(cc,[-3,2.6,1.2],1.4);F.pulse(C4,.4,1.2);pump(3.6);pump(4.4);const w=mol(E,root,'h2o',[4,-2.6,1],.3);A.move(w,[6,-6,2],1.6,{kill:true});E.pop([4,-2,1],'½O₂ → H₂O · bombea H⁺',C_H);yield 1.2;
+    S.stage=3;for(let k=0;k<2;k++){const h=proton(E,[10.6,3.4,.8]);root.add(h);A.path(h,[h.p,[10.6,0,1],[10.6,-3,1]],1,{kill:true,delay:k*.3});}yield 1.2;F.pulse(ASx,.4,1);const at=mol(E,root,'atp',[10,-3.4,1],.24,'ATP');A.move(at,[4,-6.2,1],1.6,{kill:true});S.atp++;yield 1.2;
+    S.stage=4;const h2=proton(E,[-1.6,3.4,.8]);root.add(h2);A.path(h2,[h2.p,[-1.6,0,1],[-1.6,-3,1]],1,{kill:true});const e2=electron([-3,2.4,1]);root.add(e2);A.path(e2,[e2.p,[-1,0,1],[-1,-2.4,1]],1.4,{kill:true});yield 1.4;F.pulse(C1,.4,1.2);const nh=mol(E,root,'nadh',[-1,-3,1],.24,'NADH');A.move(nh,[2,-6.2,1],1.6,{kill:true});E.pop([-1,-2.6,1],'Flujo inverso: gasta gradiente → NADH','#62b8ff');S.nadh++;yield 1.4;
+    S.stage=5;const c=mol(E,root,'co2',[-4,-9,1],.3,'CO₂');A.move(c,[2,-6.4,1],1.4,{kill:true});yield 1.5;F.pulse(CV,.6,1.4);S.co2++;E.pop([3,-6,1],'CO₂ → materia orgánica','#9fd36b');yield 1.5;}})());
+  return {root,cam:{yaw:.05,pitch:.12,dist:30,t:[-1,-1.4,0]},fog:[30,75],bg:['#171a22','#040508'],minD:6,maxD:70,update(dt){P.update(dt);A.update(dt);F.update(dt);},stage:()=>S.stage,
+    counters:()=>[[T==='nitrosomonas'?'NH₃ oxidado':'NO₂⁻ oxidado',S.sub,'#9fd36b'],['ATP',S.atp,'#f3b765'],['NADH (flujo inverso)',S.nadh,'#62b8ff'],['CO₂ fijado',S.co2,'#cfd6dd']]};}
+
+const NEWSC=[
+  {id:'hist',name:'Experimentos históricos',place:'Laboratorio',title:'Experimentos que descubrieron la fotosíntesis',lead:'Cuatro experimentos clásicos, muy habituales en las preguntas de examen. Elige uno y observa qué se hizo y qué demostró.',eq:'',
+    controls:[{type:'chips',id:'exp',label:'Experimento',options:[['vanhelmont','Van Helmont (1648)'],['priestley','Priestley (1771)'],['rubenkamen','Ruben y Kamen (1941)'],['calvin','Calvin y Benson (1950)']],def:'vanhelmont',rebuild:true}],
+    stages:o=>({vanhelmont:[['Inicio','Planta un sauce de 2,3 kg en 90,7 kg de tierra seca.'],['Cinco años de riego','Solo añade agua de lluvia.'],['Resultado','El sauce pesa 76,7 kg y la tierra solo ha perdido 57 g.'],['Conclusión','La masa de la planta no procede del suelo. Él pensó que venía del agua; no tuvo en cuenta el CO₂ del aire, que aporta casi todo el carbono.']],
+      priestley:[['Vela en aire cerrado','En una campana cerrada la vela se apaga: el aire queda «dañado» (hoy sabemos que se agota el O₂). Un ratón en las mismas condiciones también moría.'],['Días con una planta','Introduce una rama de menta en la campana y espera varios días.'],['Se vuelve a encender','Con la planta, la vela vuelve a arder; sin ella, no.'],['Conclusión','Las plantas «restauran» el aire. Ingenhousz demostró después que solo lo hacen con luz y por sus partes verdes.']],
+      rubenkamen:[['Dos montajes','A: agua marcada con ¹⁸O y CO₂ normal. B: agua normal y CO₂ marcado.'],['Iluminación','Las algas hacen la fotosíntesis.'],['Se recoge el O₂','Se analiza con un espectrómetro de masas.'],['Conclusión','Solo sale O₂ marcado en el matraz A: el oxígeno que se desprende procede del agua, no del CO₂.']],
+      calvin:[['Inyección de ¹⁴CO₂','Se añade CO₂ radiactivo a las algas iluminadas.'],['Pocos segundos','Al cabo de 2–5 segundos solo aparece marcado el 3-fosfoglicerato: es el primer producto de la fijación del CO₂.'],['Más tiempo','Aparecen marcados triosas, hexosas, ribulosa bisfosfato y, después, sacarosa y aminoácidos.'],['Conclusión','Ordenando los compuestos según el tiempo se dedujo la ruta cíclica: el ciclo de Calvin (Nobel en 1961).']]})[o.exp],
+    notes:[['Método científico','Todos siguen el mismo esquema: una pregunta, una hipótesis, un experimento con control y una conclusión. Fíjate en cuál es el control en cada caso.']],build:sHist},
+  {id:'quimio',name:'Quimiosíntesis',place:'Bacteria del suelo',title:'Quimiosíntesis',lead:'Algunas bacterias fabrican materia orgánica sin luz. Obtienen la energía oxidando sustancias inorgánicas y la usan, igual que las plantas, para fijar CO₂ en el ciclo de Calvin. Como el sustrato cede electrones con poca energía, necesitan un flujo inverso de electrones para fabricar NADH.',eq:'Nitrosomonas: 2 NH₃ + 3 O₂ → 2 NO₂⁻ + 2 H⁺ + 2 H₂O + energía\nNitrobacter: 2 NO₂⁻ + O₂ → 2 NO₃⁻ + energía',
+    controls:[{type:'chips',id:'org',label:'Bacteria',options:[['nitrosomonas','Nitrosomonas (NH₃ → NO₂⁻)'],['nitrobacter','Nitrobacter (NO₂⁻ → NO₃⁻)']],def:'nitrosomonas',rebuild:true}],
+    stages:[['Oxidación del sustrato inorgánico','Una enzima de la membrana oxida el amoníaco o el nitrito y libera electrones.'],['Citocromo c','Los electrones pasan al citocromo c.'],['Complejo IV','Los electrones llegan al O₂ y se bombean H⁺: se crea un gradiente.'],['ATP sintasa','Los H⁺ vuelven y se forma ATP.'],['Flujo inverso de electrones','Parte del gradiente se gasta en «empujar» electrones hasta el NAD⁺: se forma NADH.'],['Ciclo de Calvin','Con ATP y NADH se fija el CO₂ y se fabrica materia orgánica.']],
+    notes:[['Grupos de bacterias quimiosintéticas','Nitrificantes (del nitrógeno): Nitrosomonas y Nitrobacter. Incoloras del azufre: oxidan H₂S o S. Del hierro: oxidan Fe²⁺ a Fe³⁺. Del hidrógeno: oxidan H₂.'],['Importancia','Las nitrificantes cierran el ciclo del nitrógeno: transforman el amonio en nitrato, que es la forma que absorben las plantas. En las fuentes hidrotermales submarinas, las bacterias del azufre son la base de ecosistemas enteros sin luz.']],build:sChemo},
+  {id:'gluco',name:'Gluconeogénesis y glucógeno',place:'Hígado',title:'Gluconeogénesis y glucógeno',lead:'La gluconeogénesis fabrica glucosa a partir de piruvato, lactato, glicerol o aminoácidos. Usa la mayoría de las enzimas de la glucólisis al revés, pero tiene que «rodear» sus tres pasos irreversibles con enzimas propias. La glucosa obtenida puede ir a la sangre o almacenarse como glucógeno.',eq:'2 Piruvato + 4 ATP + 2 GTP + 2 NADH + 6 H₂O → Glucosa + 4 ADP + 2 GDP + 6 Pi + 2 NAD⁺',
+    controls:[{type:'chips',id:'dest',label:'Destino de la glucosa',options:[['sangre','A la sangre'],['glucogeno','Al glucógeno']],def:'sangre'}],
+    stages:[['Piruvato → oxalacetato','La piruvato carboxilasa, en la mitocondria, gasta ATP (1.er rodeo).'],['Oxalacetato → fosfoenolpiruvato','La PEP carboxiquinasa gasta GTP y libera CO₂.'],['Glucólisis al revés','Las enzimas reversibles suben hasta fructosa-1,6-bisfosfato. Se gastan ATP y NADH, y dos triosas se unen en una hexosa.'],['Fructosa-1,6-bisfosfatasa','2.º rodeo: se quita un fosfato y se obtiene fructosa-6-P → glucosa-6-P.'],['Glucosa-6-fosfatasa','3.er rodeo: se libera glucosa a la sangre (solo en hígado y riñón).'],['Síntesis de glucógeno','La glucosa-6-P pasa a UDP-glucosa (gasta UTP) y la glucógeno sintasa la añade al gránulo.']],
+    notes:[['¿Cuándo ocurre?','En el ayuno y en el ejercicio prolongado, estimulada por el glucagón y el cortisol. Mantiene la glucosa en sangre que necesitan el cerebro y los glóbulos rojos.'],['Glucogenogénesis y glucogenólisis','Tras comer, la insulina activa la glucógeno sintasa. En ayunas, el glucagón y la adrenalina activan la glucógeno fosforilasa, que libera glucosa-1-fosfato.']],build:sGluco},
+  {id:'agsint',name:'Síntesis de ácidos grasos',place:'Citosol',title:'Síntesis de ácidos grasos',lead:'Es casi el proceso inverso de la β-oxidación, pero no idéntico: ocurre en el citosol, usa NADPH y alarga la cadena de dos en dos carbonos a partir de malonil-CoA, en un único complejo multienzimático.',eq:'8 Acetil-CoA + 7 ATP + 14 NADPH → Palmitato + 8 CoA + 7 ADP + 7 Pi + 14 NADP⁺ + 6 H₂O',
+    stages:[['Salida del acetil-CoA','El acetil-CoA sale de la mitocondria como citrato y la ATP-citrato liasa lo libera en el citosol.'],['Carboxilación','La acetil-CoA carboxilasa forma malonil-CoA (3 C) gastando ATP.'],['Condensación','El malonilo se une a la cadena y pierde CO₂: la cadena gana 2 carbonos.'],['1.ª reducción','El grupo ceto se reduce a hidroxilo con NADPH.'],['Deshidratación','Sale una molécula de agua y se forma un doble enlace.'],['2.ª reducción','El doble enlace se reduce con NADPH. Se repite hasta 16 C.'],['Liberación','La tioesterasa separa el palmitato (C16). Otras enzimas pueden alargarlo o añadir dobles enlaces.']],
+    rowsTitle:'Comparación con la β-oxidación',rows:[['Lugar','citosol / matriz'],['Transportador del acilo','ACP / CoA'],['Coenzima','NADPH / FAD y NAD⁺'],['Unidad de 2 C','malonil-CoA / acetil-CoA'],['Regulación clave','acetil-CoA carboxilasa / CPT-I',1]],
+    notes:[['¿De dónde sale el NADPH?','De la ruta de las pentosas fosfato y de la enzima málica. Por eso las células que fabrican mucha grasa (hígado, tejido adiposo, glándula mamaria) tienen muy activa la ruta de las pentosas.'],['Evitar ciclos inútiles','El malonil-CoA inhibe la CPT-I: mientras se fabrican ácidos grasos no pueden entrar en la mitocondria para oxidarse.']],build:sFAS},
+  {id:'n2',name:'Fijación del nitrógeno',place:'Nódulo de la raíz',title:'Fijación biológica del nitrógeno',lead:'Aunque el aire tiene un 78 % de N₂, casi ningún ser vivo puede usarlo. Algunas bacterias, como Rhizobium en los nódulos de las leguminosas, lo reducen a amoníaco con la nitrogenasa. Es un proceso anabólico muy costoso.',eq:'N₂ + 8 H⁺ + 8 e⁻ + 16 ATP → 2 NH₃ + H₂ + 16 ADP + 16 Pi',
+    stages:[['Carga de electrones','La ferredoxina cede electrones a la proteína Fe, que los pasa a la proteína MoFe gastando 2 ATP por electrón.'],['Llega el N₂','La molécula de N₂ se une al cofactor de hierro-molibdeno junto con H⁺.'],['Reducción a amoníaco','Se rompe el triple enlace: se forman 2 NH₃ y un H₂.'],['Asimilación','La glutamina sintetasa incorpora el amonio a la glutamina, que se reparte por la planta.'],['Protección frente al O₂','La leghemoglobina atrapa el O₂, que inactivaría la nitrogenasa.']],
+    notes:[['Simbiosis','La planta da azúcares (de la fotosíntesis) y un ambiente con poco O₂; la bacteria le da amonio. Por eso las leguminosas enriquecen el suelo y se usan en la rotación de cultivos.'],['Otros fijadores','Cianobacterias (con heterocistos), Azotobacter (vida libre) y Frankia (con alisos). La industria lo hace con el proceso Haber-Bosch, a 450 °C y 200 atm.']],build:sN2}];
+SCENES.push(...NEWSC);
+(function(){const order=['cloro','luz','calvin','c4','factores','hist','quimio','gluco','agsint','n2','resumen'];const all=SCENES.slice();SCENES.length=0;for(const id of order)SCENES.push(all.find(s=>s.id===id));})();
+
+return {Engine,SCENES};
+})();
+
+class Component extends DCLogic {
+  constructor(props){super(props);this.state={sc:0,playing:true,speed:1,labels:true,v:0,snap:'',sel:null,noGL:false};this.opts={};this.E=null;this.cur=null;this._raf=0;this.glEl=null;this.ovEl=null;this.glRef=el=>{this.glEl=el;};this.ovRef=el=>{this.ovEl=el;};}
+  componentDidMount(){this._alive=true;this._tries=0;this.boot();}
+  componentWillUnmount(){this._alive=false;cancelAnimationFrame(this._raf);if(this.E)this.E.dispose();this.E=null;}
+  boot(){if(!this._alive)return;let gl=this.glEl,ov=this.ovEl;if(!gl||!ov){const r=document.querySelectorAll('canvas[data-mt]');if(r.length>=2){gl=r[0];ov=r[1];}}
+    if(!gl||!ov||!gl.clientWidth){if(this._tries++<100)setTimeout(()=>this.boot(),100);return;}
+    let E=null;try{E=new MTB_ANA.Engine(gl,ov);}catch(e){console.error(e);E=null;}if(!E||!E.ok){this.setState({noGL:true});return;}
+    this.E=E;E.onPick=n=>{this.setState({sel:n&&n.pick?n.pick:null});};this.load(this.state.sc);this.last=performance.now();this._acc=0;
+    const loop=t=>{if(!this._alive)return;this._raf=requestAnimationFrame(loop);this.frame(t);};this._raf=requestAnimationFrame(loop);}
+  sceneOpts(i){const d=MTB_ANA.SCENES[i];if(!this.opts[d.id]){const o={};for(const c of d.controls||[])o[c.id]=c.def;this.opts[d.id]=o;}return this.opts[d.id];}
+  load(i){const d=MTB_ANA.SCENES[i];if(this.E){this.E.beginScene();this.cur=d.build(this.E,this.sceneOpts(i));this.E.setScene(this.cur);this.E.sel=null;}this.setState({sc:i,sel:null,snap:''});}
+  frame(t){const E=this.E;if(!E||!this.cur)return;let dt=(t-this.last)/1000;this.last=t;if(!(dt>0))dt=0;dt=Math.min(dt,.05);const st=this.state;
+    try{this.cur.update(st.playing?dt*st.speed:0);E.render(this.cur.root,dt);E.overlay(dt);}catch(e){console.error(e);}
+    this._acc+=dt;if(this._acc>.2){this._acc=0;this.pushSnap();}}
+  pushSnap(){const c=this.cur;if(!c)return;const snap=JSON.stringify([c.stage(),c.counters(),c.sub?c.sub():'']);if(snap!==this.state.snap)this.setState({snap});}
+  stepOnce(){const c=this.cur;if(!c)return;const s0=c.stage();let k=0;while(k++<900&&c.stage()===s0)c.update(1/30);this.setState({playing:false});this.pushSnap();}
+  setOpt(id,val,rebuild){const d=MTB_ANA.SCENES[this.state.sc];this.opts[d.id][id]=val;if(rebuild)this.load(this.state.sc);else this.setState({v:this.state.v+1});}
+  renderVals(){
+    const L=MTB_ANA,st=this.state,d=L.SCENES[st.sc],c=this.cur,O=this.sceneOpts(st.sc);const stage=c?c.stage():0;const sub=c&&c.sub?c.sub():'';
+    const ctrls=d.controls||[];const stg=typeof d.stages==='function'?d.stages(O):d.stages;const rows=typeof d.rows==='function'?d.rows(O):(d.rows||[]);
+    const toggles=ctrls.filter(x=>x.type==='toggle').map(x=>({label:x.label,desc:x.desc,on:!!O[x.id],cls:O[x.id]?'mt-tg on':'mt-tg',toggle:()=>this.setOpt(x.id,!O[x.id],x.rebuild)}));
+    const chips=ctrls.filter(x=>x.type==='chips').map(x=>({label:x.label,opts:x.options.map(op=>({label:op[1],cls:O[x.id]===op[0]?'mt-chip on':'mt-chip',pick:()=>this.setOpt(x.id,op[0],x.rebuild)}))}));
+    const counters=c?c.counters().map(k=>({label:k[0],value:String(k[1]),dot:'background:'+(k[2]||'#9aa5b1')})):[];
+    const sel=st.sel;const ranges=ctrls.filter(x=>x.type==='range').map(x=>({label:x.label,min:x.min,max:x.max,step:x.step,value:O[x.id],disp:x.fmt?x.fmt(O[x.id]):String(O[x.id]),onChange:e=>this.setOpt(x.id,parseFloat(e.target.value),x.rebuild)}));const chs=(c&&c.charts)?c.charts():[];const charts=chs.map(h=>{const P=[0,1,2,3,4].map(i=>Object.assign({d:'M0 0',c:'none',w:0,dash:'none'},(h.paths||[])[i]||{}));const D=[0,1,2].map(i=>Object.assign({x:-10,y:-10,r:0,c:'none'},(h.dots||[])[i]||{}));return {title:h.title,xl:h.xl||'',yl:h.yl||'',p1:P[0],p2:P[1],p3:P[2],p4:P[3],p5:P[4],d1:D[0],d2:D[1],d3:D[2],labels:(h.labels||[]).map(l=>({t:l.t,st:'left:'+(l.x/3).toFixed(2)+'%;top:'+(l.y/1.7).toFixed(2)+'%;color:'+(l.c||'#c9d2db')+';transform:translate('+(l.a==='end'?'-100%':l.a==='start'?'0':'-50%')+',-50%)'})),legend:(h.legend||[]).map(g=>({t:g[0],dot:'background:'+g[1]})),hasLegend:!!(h.legend&&h.legend.length)};});
+    return {glRef:this.glRef,ovRef:this.ovRef,noGL:st.noGL,
+      scenes:L.SCENES.map((s,i)=>({num:String(i+1).padStart(2,'0'),name:s.name,cls:i===st.sc?'mt-scn on':'mt-scn',go:()=>this.load(i)})),
+      kicker:'Escena '+(st.sc+1)+' de '+L.SCENES.length+' · '+d.place,title:d.title,lead:d.lead,eq:d.eq||'',hasEq:!!d.eq,
+      stages:stg.map((x,i)=>({n:i+1,t:x[0],d:x[1],on:i===stage,cls:i===stage?'mt-stg on':'mt-stg'})),
+      stageNow:stg[stage]?stg[stage][0]:'',stageNum:String(stage+1),
+      toggles,hasToggles:toggles.length>0,chips,hasChips:chips.length>0,counters,hasCounters:counters.length>0,
+      notes:(d.notes||[]).map(x=>({t:x[0],d:x[1]})),hasNotes:!!(d.notes&&d.notes.length),rows:rows.map(r=>({a:r[0],b:r[1],cls:r[2]?'mt-row tot':'mt-row'})),hasRows:rows.length>0,rowsTitle:d.rowsTitle||'',
+      hasSel:!!sel,selTitle:sel?sel.t:'',selText:sel?sel.d:'',hasSelGo:!!(sel&&sel.go!=null),selGoLabel:sel&&sel.go!=null?'Ir a: '+L.SCENES[sel.go].name:'',selGo:()=>{if(sel&&sel.go!=null)this.load(sel.go);},
+      closeSel:()=>{if(this.E)this.E.sel=null;this.setState({sel:null});},
+      playing:st.playing,paused:!st.playing,togglePlay:()=>this.setState({playing:!this.state.playing}),step:()=>this.stepOnce(),
+      recenter:()=>{if(this.E&&this.cur){this.E.userMoved=false;const cm=this.cur.cam;this.E.goal={yaw:cm.yaw,pitch:cm.pitch,dist:cm.dist,t:cm.t.slice()};}},
+      speeds:[.5,1,2].map(v=>({label:v===.5?'½×':v+'×',cls:st.speed===v?'mt-btn sm on':'mt-btn sm',pick:()=>this.setState({speed:v})})),
+      labelsCls:st.labels?'mt-btn on':'mt-btn',toggleLabels:()=>{const v=!this.state.labels;if(this.E)this.E.showLabels=v;this.setState({labels:v});},
+      sub,hasSub:!!sub,ranges,hasRanges:ranges.length>0,charts,hasCharts:charts.length>0};
+  }
+}
+
+__dcComp=new Component({});__dcRender();__dcComp.componentDidMount();
+</script>
+</body>
+</html>
